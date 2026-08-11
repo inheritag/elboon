@@ -1,225 +1,147 @@
 /**
- * Main Application Logic for Elboon Landing Page
+ * Elboon Landing Page Script
  */
-
 document.addEventListener('DOMContentLoaded', () => {
-    initScrollReveal();
-    initFAQAccordion();
-    initWaitlistForm();
+  initScrollReveal();
+  initFAQAccordion();
+  initWaitlistForm();
 });
 
-/**
- * Initializes IntersectionObserver for reveal animations
- */
+/* Scroll Reveal */
 function initScrollReveal() {
-    const revealElements = document.querySelectorAll('.feature-card, .accordion-item, .trust-item, .cat-card, .reveal');
-    
-    if (!revealElements.length) return;
+  const els = document.querySelectorAll('.feature-card, .accordion-item, .cat-pill');
+  els.forEach(el => el.classList.add('reveal'));
 
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px 0px -50px 0px',
-        threshold: 0.1
-    };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    revealElements.forEach(el => observer.observe(el));
+  els.forEach(el => observer.observe(el));
 }
 
-/**
- * Initializes FAQ Accordion functionality
- */
+/* FAQ Accordion */
 function initFAQAccordion() {
-    const faqItems = document.querySelectorAll('.accordion-item');
-    
-    faqItems.forEach(item => {
-        const question = item.querySelector('.accordion-header');
-        
-        if (question) {
-            question.addEventListener('click', () => {
-                const isActive = item.classList.contains('active');
-                
-                // Close all other open items
-                faqItems.forEach(otherItem => {
-                    if (otherItem !== item) {
-                        otherItem.classList.remove('active');
-                        const otherAnswer = otherItem.querySelector('.accordion-content');
-                        if (otherAnswer) {
-                            otherAnswer.style.maxHeight = null;
-                        }
-                    }
-                });
-                
-                // Toggle current item
-                if (!isActive) {
-                    item.classList.add('active');
-                    const answer = item.querySelector('.accordion-content');
-                    if (answer) {
-                        answer.style.maxHeight = answer.scrollHeight + "px";
-                    }
-                } else {
-                    item.classList.remove('active');
-                    const answer = item.querySelector('.accordion-content');
-                    if (answer) {
-                        answer.style.maxHeight = null;
-                    }
-                }
-            });
+  const items = document.querySelectorAll('.accordion-item');
+
+  items.forEach(item => {
+    item.querySelector('.accordion-header').addEventListener('click', () => {
+      const isActive = item.classList.contains('active');
+
+      items.forEach(other => {
+        if (other !== item) {
+          other.classList.remove('active');
+          other.querySelector('.accordion-body').style.maxHeight = null;
         }
+      });
+
+      if (isActive) {
+        item.classList.remove('active');
+        item.querySelector('.accordion-body').style.maxHeight = null;
+      } else {
+        item.classList.add('active');
+        const body = item.querySelector('.accordion-body');
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
     });
+  });
 }
 
-/**
- * Initializes Waitlist Form handling
- */
+/* Waitlist Form */
 function initWaitlistForm() {
-    const form = document.getElementById('waitlist-form');
-    const emailInput = document.getElementById('email-input');
-    const submitBtn = document.getElementById('submit-btn');
-    const feedbackDiv = document.getElementById('form-feedback');
-    const confettiCanvas = document.getElementById('confetti-canvas');
-    
-    if (!form || !emailInput || !submitBtn) return;
-    
-    // Check local storage for previous submission
-    const savedEmail = localStorage.getItem('elboon_email');
-    if (savedEmail) {
-        showJoinedState(savedEmail);
+  const form = document.getElementById('waitlist-form');
+  const input = document.getElementById('email-input');
+  const btn = document.getElementById('submit-btn');
+  const feedback = document.getElementById('form-feedback');
+  const canvas = document.getElementById('confetti-canvas');
+
+  if (!form) return;
+
+  const saved = localStorage.getItem('elboon_email');
+  if (saved) {
+    input.value = saved;
+    input.disabled = true;
+    btn.disabled = true;
+    btn.textContent = 'Joined!';
+    showFeedback('Welcome back! You are on our waitlist.', 'success');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = input.value.trim();
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email || !re.test(email)) {
+      showFeedback('Please enter a valid email address.', 'error');
+      return;
     }
-    
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const email = emailInput.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!emailRegex.test(email)) {
-            showFeedback('Please enter a valid email address.', 'error');
-            return;
-        }
-        
-        // Simulate network request
-        submitBtn.classList.add('loading');
-        submitBtn.disabled = true;
-        emailInput.disabled = true;
-        
-        setTimeout(() => {
-            submitBtn.classList.remove('loading');
-            
-            // Save to local storage
-            localStorage.setItem('elboon_email', email);
-            
-            showJoinedState(email, true);
-            
-            if (confettiCanvas) {
-                triggerConfetti(confettiCanvas);
-            }
-            
-        }, 1200);
-    });
-    
-    function showFeedback(message, type) {
-        if (!feedbackDiv) return;
-        feedbackDiv.textContent = message;
-        feedbackDiv.className = type;
-        feedbackDiv.style.display = 'block';
-    }
-    
-    function showJoinedState(email, isNew = false) {
-        emailInput.value = email;
-        emailInput.disabled = true;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Joined!';
-        submitBtn.classList.add('joined');
-        
-        if (isNew) {
-            showFeedback('You are on the list! We will be in touch soon.', 'success');
-        } else {
-            showFeedback('Welcome back! You are on our waitlist.', 'success');
-        }
-    }
+
+    btn.disabled = true;
+    input.disabled = true;
+    btn.textContent = 'Joining...';
+
+    await new Promise(r => setTimeout(r, 1200));
+
+    localStorage.setItem('elboon_email', email);
+    btn.textContent = 'Joined!';
+    showFeedback('You are on the list! We will be in touch soon.', 'success');
+    triggerConfetti(canvas);
+  });
+
+  function showFeedback(msg, type) {
+    feedback.textContent = msg;
+    feedback.className = 'form-feedback ' + type;
+  }
 }
 
-/**
- * Triggers a confetti explosion effect on the given canvas
- */
+/* Confetti */
 function triggerConfetti(canvas) {
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.display = 'block';
-    
-    const colors = ['#FF5A36', '#7C3AED', '#10B981', '#F59E0B', '#FFFFFF'];
-    const particles = [];
-    const particleCount = 140;
-    const gravity = 0.35;
-    const friction = 0.95;
-    
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 12 + Math.random() * 16;
-        
-        particles.push({
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            size: 6 + Math.random() * 8,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            rotation: Math.random() * 360,
-            rotationSpeed: (Math.random() - 0.5) * 10,
-            opacity: 1
-        });
-    }
-    
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        let allFaded = true;
-        
-        particles.forEach(p => {
-            if (p.opacity > 0) {
-                allFaded = false;
-                
-                // Update position
-                p.vx *= friction;
-                p.vy *= friction;
-                p.vy += gravity;
-                p.x += p.vx;
-                p.y += p.vy;
-                
-                // Update rotation and opacity
-                p.rotation += p.rotationSpeed;
-                p.opacity -= 0.012;
-                
-                // Draw particle (rectangle)
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate((p.rotation * Math.PI) / 180);
-                ctx.globalAlpha = Math.max(0, p.opacity);
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                ctx.restore();
-            }
-        });
-        
-        if (!allFaded) {
-            requestAnimationFrame(animate);
-        } else {
-            canvas.style.display = 'none';
-        }
-    }
-    
-    animate();
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#E8503A', '#7C3AED', '#10B981', '#F59E0B', '#3B82F6'];
+  const particles = [];
+
+  for (let i = 0; i < 120; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 10 + Math.random() * 14;
+    particles.push({
+      x: canvas.width / 2, y: canvas.height / 2,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 4,
+      size: 5 + Math.random() * 7,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 10,
+      opacity: 1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = 0;
+    particles.forEach(p => {
+      if (p.opacity <= 0) return;
+      alive++;
+      p.vx *= 0.96; p.vy *= 0.96; p.vy += 0.35;
+      p.x += p.vx; p.y += p.vy;
+      p.rotation += p.rotSpeed; p.opacity -= 0.013;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    });
+    if (alive > 0) requestAnimationFrame(animate);
+    else { canvas.style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  }
+  animate();
 }

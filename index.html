@@ -1,209 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elboon - Shop Everything. Save Every Time.</title>
-    <meta name="description" content="Elboon is an all-purpose e-commerce store with premium quality products at unbeatable prices, daily flash deals, and 3-day delivery.">
-    
-    <!-- OpenGraph Tags -->
-    <meta property="og:title" content="Elboon - Shop Everything. Save Every Time.">
-    <meta property="og:description" content="A new standard in shopping. Sign up for early access to exclusive launches, daily deals, and curated collections.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://elboon.com">
-    <meta property="og:image" content="https://elboon.com/og-image.jpg">
-    
-    <!-- Twitter Cards -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Elboon - Shop Everything. Save Every Time.">
-    <meta name="twitter:description" content="A new standard in shopping. Sign up for early access to exclusive launches, daily deals, and curated collections.">
-    <meta name="twitter:image" content="https://elboon.com/og-image.jpg">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Elboon - Shop Everything. Save Every Time.</title>
+  <meta name="description" content="Discover curated products across every category with unbeatable daily deals. Join the Elboon waitlist for exclusive early access and launch discounts.">
+
+  <meta property="og:title" content="Elboon - Shop Everything. Save Every Time.">
+  <meta property="og:description" content="Discover curated products across every category with unbeatable daily deals. Join the waitlist for exclusive early access.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://elboon.com">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Elboon - Shop Everything. Save Every Time.">
+  <meta name="twitter:description" content="Discover curated products across every category with unbeatable daily deals. Join the waitlist for exclusive early access.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
 </head>
-<body class="dark-theme">
-    <!-- Navbar -->
-    <nav class="navbar glass">
-        <div class="container">
-            <a href="#" class="logo">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#FF7F50" />
-                            <stop offset="1" stop-color="#9370DB" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M16 2L30 16L16 30L2 16L16 2Z" stroke="url(#logo-grad)" stroke-width="3"/>
-                    <path d="M16 8L24 16L16 24L8 16L16 8Z" fill="url(#logo-grad)"/>
-                </svg>
-                <span class="logo-text">Elboon</span>
-            </a>
-            <div class="nav-right">
-                <span class="badge badge-pill glass">Coming Soon</span>
-            </div>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">e.</span>
+        <span class="logo-text">elboon</span>
+      </a>
+      <span class="nav-badge">Coming Soon</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          Launching Soon. Waitlist Open.
         </div>
-    </nav>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero container">
-            <div class="hero-content">
-                <div class="status-pill glass">
-                    <span class="pulse-dot"></span>
-                    Launching Soon - Waitlist Open
-                </div>
-                
-                <h1 class="hero-title">
-                    <span class="gradient-text">Shop Everything.</span><br>
-                    <span class="gradient-text">Save Every Time.</span>
-                </h1>
-                
-                <p class="hero-subtitle">
-                    A new standard in shopping. Sign up for early access to exclusive launches, daily deals, and curated collections.
-                </p>
-                
-                <div class="waitlist-card glass">
-                    <form id="waitlist-form" class="waitlist-form">
-                        <input type="email" id="email-input" placeholder="Enter your email" required class="glass-input">
-                        <button type="submit" id="submit-btn" class="btn-primary gradient-bg">Join the Waitlist</button>
-                    </form>
-                    <div id="form-feedback"></div>
-                    <p class="social-proof">Join 3,400+ shoppers already on the waitlist</p>
-                </div>
-            </div>
-            
-            <div class="hero-visual">
-                <div class="category-grid">
-                    <!-- Cards -->
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Electronics</span>
-                    </div>
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Fashion</span>
-                    </div>
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Home & Living</span>
-                    </div>
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Beauty</span>
-                    </div>
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Sports</span>
-                    </div>
-                    <div class="cat-card glass">
-                        <svg viewBox="0 0 24 24" class="cat-icon" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="22.08" x2="12" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Toys & Games</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <h1>Shop <span class="accent">Everything.</span><br>Save <span class="accent">Every Time.</span></h1>
 
-        <!-- Trust Bar -->
-        <section class="trust-bar glass container">
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Verified Quality</span>
-            </div>
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Daily Flash Deals</span>
-            </div>
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h4l3 3v5h-7V8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18.5" cy="18.5" r="2.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>3-Day Delivery</span>
-            </div>
-        </section>
+        <p class="subtitle">
+          Discover curated products across every category with unbeatable daily deals. Join the waitlist for exclusive early access.
+        </p>
 
-        <!-- Features Section -->
-        <section class="features container">
-            <div class="feature-card glass">
-                <h3>Curated Quality</h3>
-                <p>We handpick every product. No knockoffs, no compromises. Only items that meet our quality bar make it to the store.</p>
-            </div>
-            <div class="feature-card glass">
-                <h3>Flash Deals Daily</h3>
-                <p>New deals drop every single day. Limited stock, big savings. The earlier you shop, the more you save.</p>
-            </div>
-            <div class="feature-card glass">
-                <h3>Fast 3-Day Delivery</h3>
-                <p>No more waiting weeks. We ship from local hubs and keep you updated every step of the way via email.</p>
-            </div>
-        </section>
+        <form id="waitlist-form" class="waitlist-form" novalidate>
+          <div class="form-row">
+            <input type="email" id="email-input" placeholder="Enter your email address" required autocomplete="email">
+            <button type="submit" id="submit-btn" class="btn-primary">Join Waitlist</button>
+          </div>
+          <div id="form-feedback" class="form-feedback"></div>
+        </form>
 
-        <!-- FAQ Section -->
-        <section class="faq container">
-            <h2 class="faq-title">Frequently Asked Questions</h2>
-            <div class="accordion">
-                <div class="accordion-item glass">
-                    <button class="accordion-header">
-                        What is Elboon?
-                        <svg viewBox="0 0 24 24" class="accordion-icon" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <div class="accordion-content">
-                        <p>Elboon is your new go-to online store for quality products across every category. From electronics to fashion to home essentials, we curate the best items and pair them with daily flash deals so you always get more for less.</p>
-                    </div>
-                </div>
-                <div class="accordion-item glass">
-                    <button class="accordion-header">
-                        What kind of products do you sell?
-                        <svg viewBox="0 0 24 24" class="accordion-icon" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <div class="accordion-content">
-                        <p>Everything. Electronics, fashion, beauty, home goods, sports gear, toys, and more. We are building a general marketplace with a focus on quality and affordability.</p>
-                    </div>
-                </div>
-                <div class="accordion-item glass">
-                    <button class="accordion-header">
-                        How does delivery work?
-                        <svg viewBox="0 0 24 24" class="accordion-icon" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <div class="accordion-content">
-                        <p>We ship physical products from local warehouses with a standard 3-day delivery window. You will receive email updates at every stage: order confirmed, packed, shipped, and delivered.</p>
-                    </div>
-                </div>
-                <div class="accordion-item glass">
-                    <button class="accordion-header">
-                        How do I get early access?
-                        <svg viewBox="0 0 24 24" class="accordion-icon" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <div class="accordion-content">
-                        <p>Just enter your email in the waitlist form above. Waitlist members get first access when we launch, along with exclusive opening deals.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+        <p class="proof-text">Join 3,400+ shoppers already on the waitlist.</p>
+      </div>
+    </section>
 
-    <!-- Footer -->
-    <footer class="footer container glass">
-        <div class="footer-left">
-            <a href="#" class="logo">
-                <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 2L30 16L16 30L2 16L16 2Z" stroke="url(#logo-grad)" stroke-width="3"/>
-                    <path d="M16 8L24 16L16 24L8 16L16 8Z" fill="url(#logo-grad)"/>
-                </svg>
-                <span class="logo-text">Elboon</span>
-            </a>
-            <span class="tagline">Shop Everything. Save Every Time.</span>
+    <!-- Category Pills -->
+    <section class="categories">
+      <div class="container categories-inner">
+        <div class="cat-pill"><span>📱</span> Electronics</div>
+        <div class="cat-pill"><span>👗</span> Fashion</div>
+        <div class="cat-pill"><span>🏠</span> Home</div>
+        <div class="cat-pill"><span>💄</span> Beauty</div>
+        <div class="cat-pill"><span>⚽</span> Sports</div>
+        <div class="cat-pill"><span>🧸</span> Toys</div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+      <div class="container features-inner">
+        <div class="feature-card">
+          <div class="feature-icon icon-quality">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Curated Quality</h3>
+          <p>We handpick every product. No knockoffs, no compromises. Only items that meet our quality bar make it to the store.</p>
         </div>
-        <div class="footer-right">
-            &copy; 2026 Elboon. All rights reserved.
+        <div class="feature-card">
+          <div class="feature-icon icon-deals">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Flash Deals Daily</h3>
+          <p>New deals drop every single day. Limited stock, big savings. The earlier you shop, the more you save.</p>
         </div>
-    </footer>
+        <div class="feature-card">
+          <div class="feature-icon icon-delivery">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <h3>3-Day Delivery</h3>
+          <p>No more waiting weeks. We ship from local hubs and keep you updated every step of the way via email.</p>
+        </div>
+      </div>
+    </section>
 
-    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
-    
-    <script src="app.js"></script>
+    <!-- FAQ -->
+    <section class="faq">
+      <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="accordion">
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>What is Elboon?</span>
+              <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p>Elboon is your new go-to online store for quality products across every category. From electronics to fashion to home essentials, we curate the best items and pair them with daily flash deals so you always get more for less.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>What kind of products do you sell?</span>
+              <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p>Everything. Electronics, fashion, beauty, home goods, sports gear, toys, and more. We are building a general marketplace with a focus on quality and affordability.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>How does delivery work?</span>
+              <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p>We ship physical products from local warehouses with a standard 3-day delivery window. You will receive email updates at every stage: order confirmed, packed, shipped, and delivered.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>How do I get early access?</span>
+              <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p>Just enter your email in the waitlist form above. Waitlist members get first access when we launch, along with exclusive opening deals.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <a href="#" class="logo"><span class="logo-mark">e.</span> <span class="logo-text">elboon</span></a>
+        <p>Shop Everything. Save Every Time.</p>
+      </div>
+      <p class="footer-copy">&copy; 2026 Elboon. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+  <script src="app.js"></script>
 </body>
 </html>
