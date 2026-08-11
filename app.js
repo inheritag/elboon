@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Initializes IntersectionObserver for reveal animations
  */
 function initScrollReveal() {
-    const revealElements = document.querySelectorAll('.feature-card, .faq-item, .section-header, .trust-pill, .category-card, .reveal');
+    const revealElements = document.querySelectorAll('.feature-card, .accordion-item, .trust-item, .cat-card, .reveal');
     
     if (!revealElements.length) return;
 
@@ -38,10 +38,10 @@ function initScrollReveal() {
  * Initializes FAQ Accordion functionality
  */
 function initFAQAccordion() {
-    const faqItems = document.querySelectorAll('.faq-item');
+    const faqItems = document.querySelectorAll('.accordion-item');
     
     faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
+        const question = item.querySelector('.accordion-header');
         
         if (question) {
             question.addEventListener('click', () => {
@@ -51,7 +51,7 @@ function initFAQAccordion() {
                 faqItems.forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
-                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        const otherAnswer = otherItem.querySelector('.accordion-content');
                         if (otherAnswer) {
                             otherAnswer.style.maxHeight = null;
                         }
@@ -61,13 +61,13 @@ function initFAQAccordion() {
                 // Toggle current item
                 if (!isActive) {
                     item.classList.add('active');
-                    const answer = item.querySelector('.faq-answer');
+                    const answer = item.querySelector('.accordion-content');
                     if (answer) {
                         answer.style.maxHeight = answer.scrollHeight + "px";
                     }
                 } else {
                     item.classList.remove('active');
-                    const answer = item.querySelector('.faq-answer');
+                    const answer = item.querySelector('.accordion-content');
                     if (answer) {
                         answer.style.maxHeight = null;
                     }
