@@ -61,6 +61,7 @@
     {/if}
   </form>
 
+  <div class="table-scroll">
   <table class="product-table">
     <thead>
       <tr><th></th><th>Name</th><th>Price</th><th>Stock</th><th>Offers</th><th>Listed</th><th></th></tr>
@@ -104,6 +105,7 @@
       {/each}
     </tbody>
   </table>
+  </div>
 </section>
 
 <style>
@@ -131,6 +133,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 16px;
+  }
+
+  @media (max-width: 640px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
   }
 
   .thumb {

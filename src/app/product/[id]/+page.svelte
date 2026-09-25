@@ -149,8 +149,8 @@
   .product-detail {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    padding: 32px 0;
+    gap: clamp(20px, 4vw, 40px);
+    padding: clamp(20px, 4vw, 32px) 0;
     align-items: start;
   }
 
@@ -327,7 +327,7 @@
 
   .related-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
     gap: 16px;
     margin-top: 12px;
   }
@@ -362,6 +362,15 @@
   @media (max-width: 720px) {
     .product-detail {
       grid-template-columns: 1fr;
+    }
+
+    .price {
+      font-size: 24px;
+    }
+
+    .step {
+      width: 44px;
+      height: 44px;
     }
   }
 </style>

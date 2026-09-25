@@ -76,7 +76,7 @@
 
 <style>
   .cart-page {
-    padding: 40px 0 64px;
+    padding: clamp(24px, 5vw, 40px) 0 64px;
     max-width: 720px;
   }
 
@@ -125,8 +125,8 @@
   }
 
   .step {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border: none;
     background: var(--bg-subtle);
     font-size: 16px;
@@ -165,7 +165,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 16px;
   }
 
   .backdrop {
@@ -182,10 +182,12 @@
     background: #fff;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    padding: 28px 24px 20px;
+    padding: 24px 20px 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: 90dvh;
+    overflow-y: auto;
   }
 
   .sheet h2 {

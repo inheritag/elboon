@@ -191,6 +191,7 @@
     color: var(--text-muted);
     font-size: 13px;
     margin-top: 24px;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .footer-inner {
@@ -210,7 +211,24 @@
     color: var(--text-primary);
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 720px) {
+    .header-inner {
+      height: 64px;
+    }
+
+    .logo {
+      font-size: 22px;
+    }
+
+    nav {
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .nav-item {
+      padding: 8px 10px;
+    }
+
     .nav-label {
       position: absolute;
       width: 1px;
@@ -219,8 +237,9 @@
       clip: rect(0 0 0 0);
     }
 
-    nav {
-      gap: 14px;
+    .footer-inner {
+      justify-content: center;
+      min-height: 56px;
     }
   }
 </style>

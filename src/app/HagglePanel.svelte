@@ -188,7 +188,7 @@
     background: transparent;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 42px;
+    font-size: clamp(28px, 8vw, 42px);
     letter-spacing: -0.03em;
     line-height: 1;
     color: var(--haggle-ink);
