@@ -82,7 +82,7 @@
         {:else if data.category}
           <p>Nothing listed in {categoryLabel ?? 'this category'} yet.</p>
         {:else}
-          <p>No products listed yet.</p>
+          <p>Nothing for sale yet.</p>
         {/if}
         {#if data.category || data.q}
           <a class="btn btn-primary" href="/">Browse all</a>

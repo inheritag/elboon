@@ -112,6 +112,9 @@
         </a>
       </nav>
     </div>
+    {#if !page.url.pathname.startsWith('/admin')}
+      <p class="preview-note">Preview. Not taking orders yet.</p>
+    {/if}
   </header>
 
   {#if $cartFly && flyTo}
@@ -288,6 +291,11 @@
       color: FieldText;
       border: 1px solid CanvasText;
     }
+
+    .preview-note {
+      color: CanvasText;
+      border-top-color: CanvasText;
+    }
   }
 
   .cart-link.bumping .count {
@@ -329,6 +337,16 @@
       transform: translate(calc(var(--ex) - 12px), calc(var(--ey) - 12px)) scale(0.4);
       opacity: 0;
     }
+  }
+
+  .preview-note {
+    margin: 0;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
   }
 
   .site-footer {
