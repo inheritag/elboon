@@ -59,7 +59,6 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>elboon · guest checkout · delivery by logistics partners</p>
       <nav>
         <a href="/privacy">Privacy</a>
         <a href="/account">Account</a>
@@ -196,7 +195,7 @@
 
   .footer-inner {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     gap: 16px;
     min-height: 64px;
