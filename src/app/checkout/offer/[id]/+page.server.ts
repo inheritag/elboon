@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 
   const customer = await customerFromCookies(cookies);
   if (row.user_id && customer?.id !== row.user_id) {
-    redirect(303, `/account/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+    redirect(303, `/?auth=login&redirectTo=${encodeURIComponent(url.pathname)}`);
   }
 
   const offer: Offer = {

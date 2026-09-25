@@ -2,11 +2,17 @@
   import { enhance } from '$app/forms';
   import { formatPrice } from '../../../../domain/product';
   import { isLowStock } from '../../../../domain/stock';
+  import NumberStepper from '../../../NumberStepper.svelte';
+  import OfferToggle from '../../../OfferToggle.svelte';
+  import PhotoDropzone from '../../../PhotoDropzone.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let categoryChoice = $state('__new__');
   let primed = $state(false);
+  let price = $state<number | ''>('');
+  let stockQty = $state(0);
+  let lowStockThreshold = $state(3);
   $effect.pre(() => {
     if (primed) return;
     categoryChoice = data.categories[0]?.slug ?? '__new__';
@@ -34,26 +40,34 @@
           <input name="newCategory" required placeholder="New category name" />
         {/if}
       </div>
-      <div class="field"><label for="price">Price</label><input id="price" name="price" type="number" min="0.01" step="0.01" required /></div>
-      <div class="field"><label for="stockQty">Stock qty</label><input id="stockQty" name="stockQty" type="number" min="0" value="0" /></div>
+      <div class="field">
+        <label for="price">Price</label>
+        <NumberStepper id="price" name="price" min={0.01} step={0.01} required bind:value={price} />
+      </div>
+      <div class="field">
+        <label for="stockQty">Stock qty</label>
+        <NumberStepper id="stockQty" name="stockQty" min={0} step={1} bind:value={stockQty} />
+      </div>
       <div class="field">
         <label for="lowStockThreshold">Low-stock threshold</label>
-        <input id="lowStockThreshold" name="lowStockThreshold" type="number" min="0" value="3" />
+        <NumberStepper
+          id="lowStockThreshold"
+          name="lowStockThreshold"
+          min={0}
+          step={1}
+          bind:value={lowStockThreshold}
+        />
       </div>
-      <div class="field">
-        <label for="images">Photos</label>
-        <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple />
-        <p class="hint">Front, side, extra views. One is fine.</p>
-      </div>
-      <div class="field">
+      <div class="field listed">
         <label for="active">Listed for sale</label>
         <input id="active" name="active" type="checkbox" checked />
       </div>
-      <div class="field">
-        <label for="offerEnabled">Make-an-offer item</label>
-        <input id="offerEnabled" name="offerEnabled" type="checkbox" />
-      </div>
     </div>
+    <div class="field">
+      <p class="field-label">Photos</p>
+      <PhotoDropzone />
+    </div>
+    <OfferToggle />
     <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="2"></textarea></div>
     <button class="btn btn-primary" type="submit">Add product</button>
     {#if form?.error}
@@ -118,12 +132,6 @@
     margin-bottom: 8px;
   }
 
-  .hint {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: 6px;
-  }
-
   .new-product-form {
     padding: 20px;
     margin: 16px 0 32px;
@@ -133,6 +141,17 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 16px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .listed input {
+    width: auto;
   }
 
   @media (max-width: 640px) {

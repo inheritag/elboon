@@ -52,7 +52,7 @@
 
 <form onsubmit={submit} class="card pay-form">
   <h2>Delivery</h2>
-  <p class="hint">No account. We only pass these details to our logistics partner for this order.</p>
+  <p class="hint">We pass the address to a courier for this order.</p>
 
   {#if collectEmail}
     <div class="field">

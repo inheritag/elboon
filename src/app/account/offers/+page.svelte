@@ -1,29 +1,22 @@
 <script lang="ts">
-  import { formatPrice } from '../../../domain/product';
+  import OfferCard from '../../OfferCard.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
 </script>
 
 <section class="container offers">
+  <p class="back"><a href="/account">Your account</a></p>
   <h1>Your offers</h1>
   <p>Accepted and countered offers can be checked out at the agreed price.</p>
 
   {#each data.offers as offer}
-    <article class="card row">
-      <div>
-        <h2>{offer.product_name}</h2>
-        <p>You offered {formatPrice(offer.offer_price_cents, 'GBP')}</p>
-        <p class="status">{offer.status}</p>
-      </div>
-      {#if offer.checkoutPriceCents !== null}
-        <a class="btn btn-primary" href="/checkout/offer/{offer.id}">
-          Checkout at {formatPrice(offer.checkoutPriceCents, 'GBP')}
-        </a>
-      {/if}
-    </article>
+    <OfferCard {offer} />
   {:else}
-    <p>No offers yet.</p>
+    <div class="empty">
+      <p>No offers yet.</p>
+      <a class="btn btn-primary" href="/">Browse products</a>
+    </div>
   {/each}
 </section>
 
@@ -33,23 +26,22 @@
     padding: 40px 0 64px;
   }
 
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    margin: 12px 0;
-    flex-wrap: wrap;
+  .back {
+    margin-bottom: 8px;
   }
 
-  h2 {
-    font-size: 18px;
+  .back a {
+    color: var(--accent);
+    text-decoration: underline;
   }
 
-  .status {
-    text-transform: capitalize;
+  .empty {
+    margin-top: 20px;
     color: var(--text-secondary);
-    font-size: 14px;
+  }
+
+  .empty .btn {
+    margin-top: 14px;
+    width: auto;
   }
 </style>

@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
   const customer = await customerFromCookies(cookies);
-  if (!customer) redirect(303, '/account/login?redirectTo=/account/offers');
+  if (!customer) redirect(303, '/?auth=login&redirectTo=/account/offers');
 
   const offers = await getStore().listOffersForUser(customer.id);
   return {

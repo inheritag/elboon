@@ -1,13 +1,22 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import NumberStepper from '../../../../NumberStepper.svelte';
+  import OfferToggle from '../../../../OfferToggle.svelte';
+  import PhotoDropzone from '../../../../PhotoDropzone.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let categoryChoice = $state('');
   let primed = $state(false);
+  let price = $state(0);
+  let stockQty = $state(0);
+  let lowStockThreshold = $state(3);
   $effect.pre(() => {
     if (primed) return;
     categoryChoice = data.product.category;
+    price = Number((data.product.price_cents / 100).toFixed(2));
+    stockQty = data.product.stock_qty;
+    lowStockThreshold = data.product.low_stock_threshold;
     primed = true;
   });
 </script>
@@ -17,26 +26,10 @@
   <h1>Edit {data.product.name}</h1>
 
   <form method="POST" enctype="multipart/form-data" use:enhance class="card">
-    {#if data.product.image_urls.length > 0}
-      <p class="field-label">Photos</p>
-      <p class="hint">Uncheck a photo to remove it.</p>
-      <ul class="previews">
-        {#each data.product.image_urls as url}
-          <li>
-            <img src={url} alt="" />
-            <label>
-              <input type="checkbox" name="keep" value={url} checked />
-              Keep
-            </label>
-          </li>
-        {/each}
-      </ul>
-    {/if}
-
     <div class="field">
-      <label for="images">Add photos</label>
-      <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple />
-      <p class="hint">Front, side, extra views. One is fine.</p>
+      <p class="field-label">Photos</p>
+      <p class="hint">Uncheck a photo to remove it. Drop more below.</p>
+      <PhotoDropzone existing={data.product.image_urls} />
     </div>
 
     <div class="field"><label for="name">Name</label><input id="name" name="name" value={data.product.name} required /></div>
@@ -54,17 +47,23 @@
     </div>
     <div class="field">
       <label for="price">Price</label>
-      <input id="price" name="price" type="number" min="0.01" step="0.01" value={(data.product.price_cents / 100).toFixed(2)} required />
+      <NumberStepper id="price" name="price" min={0.01} step={0.01} required bind:value={price} />
     </div>
-    <div class="field"><label for="stockQty">Stock qty</label><input id="stockQty" name="stockQty" type="number" min="0" value={data.product.stock_qty} /></div>
+    <div class="field">
+      <label for="stockQty">Stock qty</label>
+      <NumberStepper id="stockQty" name="stockQty" min={0} step={1} bind:value={stockQty} />
+    </div>
     <div class="field">
       <label for="lowStockThreshold">Low-stock threshold</label>
-      <input id="lowStockThreshold" name="lowStockThreshold" type="number" min="0" value={data.product.low_stock_threshold} />
+      <NumberStepper
+        id="lowStockThreshold"
+        name="lowStockThreshold"
+        min={0}
+        step={1}
+        bind:value={lowStockThreshold}
+      />
     </div>
-    <div class="field">
-      <label for="offerEnabled">Make-an-offer item</label>
-      <input id="offerEnabled" name="offerEnabled" type="checkbox" checked={data.product.offer_enabled} />
-    </div>
+    <OfferToggle checked={data.product.offer_enabled} />
     <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3">{data.product.description}</textarea></div>
 
     <button class="btn btn-primary" type="submit">Save changes</button>
@@ -101,35 +100,7 @@
 
   .hint {
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     margin: 0 0 10px;
-  }
-
-  .previews {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    list-style: none;
-    margin-bottom: 16px;
-  }
-
-  .previews li {
-    width: 96px;
-  }
-
-  .previews img {
-    width: 96px;
-    height: 96px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    display: block;
-    margin-bottom: 6px;
-  }
-
-  .previews label {
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 </style>

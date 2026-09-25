@@ -2,6 +2,7 @@
   import { enhance } from '$app/forms';
   import { readHaggle } from '../../../../domain/haggle';
   import { formatPrice } from '../../../../domain/product';
+  import OfferThread from '../../../OfferThread.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -19,26 +20,27 @@
   {#each data.offers as offer}
     {@const read = readHaggle(offer.offer_price_cents, offer.product_price_cents)}
     <article class="card ticket">
+      <OfferThread labels={['Them', 'You', 'Them']} step={2} />
       <p class="tone">{read.label} · {read.percentOfAsk}% of listed</p>
       <h2><a href="/product/{offer.product_id}">{offer.product_name}</a></h2>
-      <p>
-        Listed {formatPrice(offer.product_price_cents, 'GBP')} · they offered
-        {formatPrice(offer.offer_price_cents, 'GBP')}
-      </p>
-      <p>
-        <a href="mailto:{offer.customer_email}">{offer.customer_email}</a>
-      </p>
+      <p class="who"><a href="mailto:{offer.customer_email}">{offer.customer_email}</a></p>
+
+      <div class="prices">
+        <div class="col">
+          <span class="label">Listed</span>
+          <strong>{formatPrice(offer.product_price_cents, 'GBP')}</strong>
+        </div>
+        <div class="col proposed">
+          <span class="label">They offered</span>
+          <strong>{formatPrice(offer.offer_price_cents, 'GBP')}</strong>
+        </div>
+      </div>
 
       <div class="offer-actions">
         <form method="POST" action="?/respond" use:enhance>
           <input type="hidden" name="offerId" value={offer.id} />
           <input type="hidden" name="actionType" value="accept" />
-          <button class="btn btn-primary" type="submit">Accept</button>
-        </form>
-        <form method="POST" action="?/respond" use:enhance>
-          <input type="hidden" name="offerId" value={offer.id} />
-          <input type="hidden" name="actionType" value="ignore" />
-          <button class="btn btn-secondary" type="submit">Ignore</button>
+          <button class="btn btn-secondary" type="submit">Accept</button>
         </form>
         <form method="POST" action="?/respond" use:enhance class="counter-form">
           <input type="hidden" name="offerId" value={offer.id} />
@@ -52,6 +54,11 @@
             value={defaultCounter(offer.offer_price_cents, offer.product_price_cents)}
           />
           <button class="btn btn-secondary" type="submit">Counter</button>
+        </form>
+        <form method="POST" action="?/respond" use:enhance>
+          <input type="hidden" name="offerId" value={offer.id} />
+          <input type="hidden" name="actionType" value="ignore" />
+          <button class="btn btn-secondary" type="submit">Ignore</button>
         </form>
       </div>
     </article>
@@ -93,11 +100,62 @@
     text-decoration: underline;
   }
 
+  .who {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 8px 0 16px;
+  }
+
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .col strong {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .proposed {
+    animation: slide-in var(--dur) var(--ease-out);
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   .offer-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
     gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 14px;
+    align-items: stretch;
+  }
+
+  .offer-actions form {
+    display: flex;
+  }
+
+  .offer-actions .btn {
+    width: 100%;
   }
 
   .counter-form {
@@ -106,7 +164,8 @@
   }
 
   .counter-form input[type='number'] {
-    width: 120px;
+    width: 100%;
+    min-width: 0;
     padding: 8px 10px;
     border: 1px solid var(--border);
     background: #fff;
@@ -114,5 +173,11 @@
 
   .muted {
     color: var(--text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .offer-actions {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

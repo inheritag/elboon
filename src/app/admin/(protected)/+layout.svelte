@@ -17,15 +17,12 @@
 </script>
 
 <div class="admin-shell">
-  <nav class="admin-nav container">
+  <nav class="admin-nav container" aria-label="Seller desk">
     {#each links as link}
-      <a href={link.href} class:current={active(link.href)}>{link.label}</a>
+      <a href={link.href} class:current={active(link.href)} aria-current={active(link.href) ? 'page' : undefined}
+        >{link.label}</a
+      >
     {/each}
-    <span class="spacer"></span>
-    <a href="/">View shop</a>
-    <form method="POST" action="/admin/logout">
-      <button class="link-out" type="submit">Log out</button>
-    </form>
   </nav>
   {@render children()}
 </div>
@@ -48,19 +45,16 @@
   .admin-nav a.current {
     background: var(--accent-light);
     color: var(--accent);
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
 
-  .spacer {
-    flex: 1;
-  }
-
-  .link-out {
-    background: none;
-    border: none;
-    font: inherit;
-    font-weight: 600;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 6px 12px;
+  @media (forced-colors: active) {
+    .admin-nav a.current {
+      background: Canvas;
+      color: CanvasText;
+      outline: 2px solid CanvasText;
+      outline-offset: -2px;
+      text-decoration: underline;
+    }
   }
 </style>

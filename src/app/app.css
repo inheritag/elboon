@@ -37,6 +37,13 @@
   --haggle-green: #3f6212;
 
   --max-width: 1120px;
+  --header-h: 88px;
+  --chip-radius: 12px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 260ms;
+  --shadow-hover: 0 8px 22px color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
 
 *, *::before, *::after {
@@ -100,18 +107,15 @@ a:hover {
 .btn,
 .nav-item {
   transition:
-    background 150ms ease,
-    border-color 150ms ease,
-    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
-.btn:hover,
-.nav-item:hover {
-  transform: scale(1.05);
-}
-
-.btn:active {
-  transform: scale(0.95);
+.btn:active,
+.nav-item:active {
+  transform: scale(0.98);
 }
 
 .btn:hover {
@@ -121,6 +125,7 @@ a:hover {
 .btn-primary {
   background: var(--accent);
   color: #fff;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
@@ -158,7 +163,7 @@ a:hover {
   margin-bottom: 6px;
 }
 
-.field input,
+.field input:not([type='checkbox']):not([type='file']):not([type='radio']),
 .field select,
 .field textarea {
   width: 100%;
@@ -170,10 +175,11 @@ a:hover {
   background: #fff;
 }
 
-.field input:focus,
+.field input:not([type='checkbox']):not([type='file']):not([type='radio']):focus,
 .field select:focus,
 .field textarea:focus,
 .btn:focus-visible,
+.nav-item:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -209,9 +215,39 @@ a:focus-visible {
   -webkit-overflow-scrolling: touch;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  appearance: textfield;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .btn:hover,
-  .nav-item:hover {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn:active,
+  .nav-item:active {
     transform: none;
   }
 }
@@ -227,6 +263,7 @@ a:focus-visible {
 .badge-low-stock {
   background: var(--accent-light);
   color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .badge-haggle {
@@ -241,6 +278,132 @@ a:focus-visible {
 .error-text {
   color: #b91c1c;
   font-size: 14px;
+  font-weight: 600;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: #14110e;
+    --text-secondary: #14110e;
+    --text-muted: #3d3832;
+    --bg-subtle: #d9d4c8;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .card,
+  .nav-item {
+    border-width: 2px;
+  }
+
+  .btn:focus-visible,
+  .nav-item:focus-visible,
+  a:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --bg: Canvas;
+    --bg-subtle: Canvas;
+    --border: CanvasText;
+    --text-primary: CanvasText;
+    --text-secondary: CanvasText;
+    --text-muted: GrayText;
+    --accent: LinkText;
+    --accent-hover: LinkText;
+    --accent-light: Canvas;
+    --haggle-paper: Canvas;
+    --haggle-ink: CanvasText;
+    --haggle-rule: CanvasText;
+    --haggle-gold: CanvasText;
+    --haggle-green: CanvasText;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-hover: none;
+  }
+
+  body {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  a:hover {
+    color: LinkText;
+    text-decoration: underline;
+  }
+
+  .btn,
+  .nav-item {
+    border: 2px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  .btn-primary {
+    border-width: 3px;
+    font-weight: 800;
+  }
+
+  .btn-secondary {
+    border-width: 2px;
+  }
+
+  .btn:disabled,
+  .btn:disabled:hover {
+    color: GrayText;
+    border-color: GrayText;
+    opacity: 1;
+  }
+
+  .card {
+    background: Canvas;
+    border: 2px solid CanvasText;
+  }
+
+  .badge,
+  .badge-low-stock,
+  .badge-haggle {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .error-text {
+    color: CanvasText;
+    text-decoration: underline;
+  }
+
+  .field input:not([type='checkbox']):not([type='file']):not([type='radio']),
+  .field select,
+  .field textarea {
+    background: Field;
+    color: FieldText;
+    border: 1px solid CanvasText;
+  }
+
+  .btn:focus-visible,
+  .nav-item:focus-visible,
+  a:focus-visible,
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  [data-hero] {
+    background: Canvas;
+    color: CanvasText;
+    border-block: 2px solid CanvasText;
+  }
+
+  [data-hero] h1,
+  [data-hero] .lede,
+  [data-hero] p {
+    color: CanvasText;
+  }
 }
 
 .product-card,

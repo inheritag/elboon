@@ -1,6 +1,6 @@
 <section class="container cancel">
   <h1>Checkout cancelled</h1>
-  <p>Your cart is still saved. You can pick up where you left off.</p>
+  <p>Your cart is saved.</p>
   <a class="btn btn-primary" href="/cart">Back to cart</a>
 </section>
 

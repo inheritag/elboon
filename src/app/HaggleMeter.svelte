@@ -1,12 +1,10 @@
 <script lang="ts">
   import { readHaggle } from '../domain/haggle';
-  import { formatPrice } from '../domain/product';
 
   let {
     offerCents = $bindable(),
     askingCents,
     minCents = 0,
-    currency = 'GBP',
     interactive = false
   }: {
     offerCents: number;
@@ -21,10 +19,6 @@
 </script>
 
 <div class="meter" data-tone={read.tone} class:interactive>
-  <div class="ends">
-    <span>Your offer {formatPrice(offerCents, currency)}</span>
-    <span>Listed {formatPrice(askingCents, currency)}</span>
-  </div>
   <div class="track">
     <div class="fill" style="width: {fill}%"></div>
     {#if interactive}
@@ -46,16 +40,7 @@
 
 <style>
   .meter {
-    margin: 12px 0 16px;
-  }
-
-  .ends {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin: 4px 0 16px;
   }
 
   .track {
@@ -162,5 +147,23 @@
   .meter[data-tone='close'] .range::-moz-range-thumb,
   .meter[data-tone='asking'] .range::-moz-range-thumb {
     border-color: var(--haggle-green);
+  }
+
+  @media (forced-colors: active) {
+    .track {
+      background: Canvas;
+      border: 2px solid CanvasText;
+    }
+
+    .fill {
+      background: Highlight;
+    }
+
+    .knob,
+    .range::-webkit-slider-thumb,
+    .range::-moz-range-thumb {
+      background: Canvas;
+      border: 3px solid CanvasText;
+    }
   }
 </style>

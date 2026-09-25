@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { haggleDefaultCents, haggleFloorCents, readHaggle } from '../domain/haggle';
   import { formatPrice } from '../domain/product';
+  import { authHref } from './auth-href';
   import { addToCart, originFromEvent } from './cart';
   import HaggleMeter from './HaggleMeter.svelte';
+  import OfferThread from './OfferThread.svelte';
 
   let {
     productId,
@@ -66,38 +69,45 @@
 </script>
 
 <section class="haggle" data-tone={read.tone}>
-  <div class="ribbon">Haggle</div>
-  <p class="asking">Listed at {formatPrice(askingCents, currency)}</p>
+  <OfferThread step={status === 'sent' ? 2 : 1} />
 
-  {#if status === 'sent'}
-    <div class="sent">
-      <p class="bid">{formatPrice(bidCents, currency)}</p>
-      <p>Offer sent. We’ll email {email} if we accept or counter.</p>
-      {#if !signedInEmail}
-        <p class="fine">
-          <a href="/account/signup?redirectTo=/account/offers&email={encodeURIComponent(email)}">Create an account</a>
-          so the deal is waiting when you come back.
-        </p>
+  <div class="prices">
+    <div class="col listed">
+      <span class="label">Listed</span>
+      <strong>{formatPrice(askingCents, currency)}</strong>
+    </div>
+    <div class="col proposed">
+      <span class="label">Your offer</span>
+      {#if status === 'sent'}
+        <strong>{formatPrice(bidCents, currency)}</strong>
       {:else}
-        <p class="fine"><a href="/account/offers">See it under Your offers</a></p>
+        <label class="bid-label" for="haggle-amount">Your offer</label>
+        <input
+          id="haggle-amount"
+          class="bid"
+          type="number"
+          min={floorCents / 100}
+          max={askingCents / 100}
+          step="0.5"
+          value={bidPounds}
+          oninput={onTyped}
+          required
+        />
       {/if}
     </div>
-  {:else}
-    <label class="bid-label" for="haggle-amount">Your offer</label>
-    <div class="bid-row">
-      <input
-        id="haggle-amount"
-        class="bid"
-        type="number"
-        min={floorCents / 100}
-        max={askingCents / 100}
-        step="0.5"
-        value={bidPounds}
-        oninput={onTyped}
-        required
-      />
-    </div>
+  </div>
 
+  {#if status === 'sent'}
+    <p class="sent">Offer sent. We will email {email} if we accept or counter.</p>
+    {#if !signedInEmail}
+      <p class="fine">
+        <a href={authHref(page.url, 'signup', { redirectTo: '/account/offers', email })}>Create an account</a>
+        to track it.
+      </p>
+    {:else}
+      <p class="fine"><a href="/account">See it under Your offers</a></p>
+    {/if}
+  {:else}
     <HaggleMeter
       bind:offerCents={bidCents}
       {askingCents}
@@ -113,7 +123,7 @@
           <input id="haggle-email" type="email" bind:value={email} required placeholder="you@email.com" />
         </div>
       {:else}
-        <p class="asking">We’ll send updates to {signedInEmail}.</p>
+        <p class="note">Updates go to {signedInEmail}.</p>
       {/if}
 
       {#if atAsking}
@@ -136,7 +146,7 @@
       {/if}
 
       {#if status === 'error'}
-        <p class="error-text">Couldn’t send. Try again.</p>
+        <p class="error-text">Could not send. Try again.</p>
       {/if}
     </form>
   {/if}
@@ -144,33 +154,73 @@
 
 <style>
   .haggle {
-    position: relative;
     margin-top: 28px;
-    padding: 28px 22px 22px;
+    padding: 22px;
     background: var(--haggle-paper);
     color: var(--haggle-ink);
     border: 1px dashed var(--haggle-rule);
     border-radius: 12px;
   }
 
-  .ribbon {
-    position: absolute;
-    top: -11px;
-    left: 18px;
-    padding: 4px 12px;
-    background: var(--accent);
-    color: #fff;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: end;
   }
 
-  .asking {
-    font-size: 14px;
+  .col {
+    min-width: 0;
+  }
+
+  .proposed {
+    animation: slide-in var(--dur) var(--ease-out);
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+  }
+
+  .listed strong,
+  .proposed strong,
+  .bid {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(26px, 6vw, 36px);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--haggle-ink);
+    padding: 0;
+  }
+
+  .listed strong {
+    color: var(--text-secondary);
+  }
+
+  .bid:focus {
+    outline: none;
   }
 
   .bid-label {
@@ -181,41 +231,47 @@
     clip: rect(0 0 0 0);
   }
 
-  .bid {
-    display: block;
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(28px, 8vw, 42px);
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--haggle-ink);
-    padding: 0;
-    margin: 4px 0 8px;
-  }
-
-  .bid:focus {
-    outline: none;
-  }
-
   .throw {
     width: 100%;
   }
 
-  .sent .bid {
-    margin-bottom: 12px;
-  }
-
+  .note,
+  .sent,
   .fine {
-    margin-top: 10px;
     font-size: 14px;
     color: var(--text-secondary);
+    margin-bottom: 12px;
   }
 
   .fine a {
     color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
     text-decoration: underline;
+  }
+
+  @media (forced-colors: active) {
+    .haggle {
+      background: Canvas;
+      color: CanvasText;
+      border: 2px dashed CanvasText;
+    }
+
+    .listed strong,
+    .proposed strong,
+    .bid {
+      color: CanvasText;
+    }
+
+    .listed strong {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .proposed {
+      animation: none;
+    }
   }
 </style>

@@ -84,7 +84,7 @@
       {:else}
         <p class="stock out">Out of stock</p>
       {/if}
-      <p class="dispatch">Delivered by a logistics partner. We don’t ship from our own warehouse.</p>
+      <p class="dispatch">Courier delivery.</p>
 
       {#if inStock}
         <div class="qty">
@@ -130,14 +130,19 @@
     <div class="related-grid">
       {#each data.related as product}
         <a class="card related-card" href="/product/{product.id}">
-          {#if product.imageUrl}
-            <img src={product.imageUrl} alt={product.name} />
-          {:else}
-            <div class="related-placeholder"></div>
-          {/if}
+          <div class="related-media">
+            {#if product.imageUrl}
+              <img src={product.imageUrl} alt={product.name} />
+            {:else}
+              <div class="related-placeholder"></div>
+            {/if}
+          </div>
           <div class="related-body">
             <h3>{product.name}</h3>
             <p>{formatPrice(product.priceCents, product.currency)}</p>
+            {#if product.offerEnabled}
+              <p class="offer-line">or make an offer</p>
+            {/if}
           </div>
         </a>
       {/each}
@@ -183,6 +188,7 @@
 
   .thumb.active {
     border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
   }
 
   .thumb img {
@@ -333,14 +339,32 @@
   }
 
   .related-card {
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+
+  .related-media {
     overflow: hidden;
-    transition: transform 180ms ease, box-shadow 180ms ease;
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
   }
 
   .related-card:hover {
     color: inherit;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .related-card img {
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .related-card:hover img {
+    transform: scale(1.03);
+  }
+
+  .offer-line {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
   }
 
   .related-card img,
@@ -357,6 +381,24 @@
 
   .related-body h3 {
     font-size: 15px;
+  }
+
+  @media (forced-colors: active) {
+    .thumb.active {
+      outline: 2px solid Highlight;
+      outline-offset: 1px;
+      box-shadow: none;
+    }
+
+    .stock.in,
+    .stock.out,
+    .urgency {
+      color: CanvasText;
+    }
+
+    .buy-box {
+      border: 2px solid CanvasText;
+    }
   }
 
   @media (max-width: 720px) {

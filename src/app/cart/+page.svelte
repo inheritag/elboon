@@ -1,28 +1,23 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { formatPrice } from '../../domain/product';
+  import { authHref } from '../auth-href';
   import { cart, removeFromCart, setCartQuantity } from '../cart';
   import type { LayoutData } from '../$types';
 
   let { data }: { data: LayoutData } = $props();
 
   let totalCents = $derived($cart.reduce((sum, line) => sum + line.unitPriceCents * line.quantity, 0));
-  let showGate = $state(false);
 
   function proceed() {
     if (data.customer) {
       void goto('/checkout');
       return;
     }
-    showGate = true;
-  }
-
-  function onKey(event: KeyboardEvent) {
-    if (event.key === 'Escape') showGate = false;
+    void goto(authHref(page.url, 'login', { redirectTo: '/checkout' }), { noScroll: true, keepFocus: true });
   }
 </script>
-
-<svelte:window onkeydown={onKey} />
 
 <section class="container cart-page">
   <h1>Your cart</h1>
@@ -58,21 +53,6 @@
     <button class="btn btn-primary" type="button" onclick={proceed}>Proceed to checkout</button>
   {/if}
 </section>
-
-{#if showGate}
-  <div class="overlay">
-    <button class="backdrop" type="button" aria-label="Close checkout options" onclick={() => (showGate = false)}
-    ></button>
-    <div class="sheet" role="dialog" aria-labelledby="gate-title" aria-modal="true" tabindex="-1">
-      <h2 id="gate-title">How do you want to check out?</h2>
-      <p>Sign in to reuse your shipping details, or continue as guest.</p>
-      <a class="btn btn-primary" href="/account/login?redirectTo=/checkout">Sign in</a>
-      <a class="btn btn-secondary" href="/account/signup?redirectTo=/checkout">Create an account</a>
-      <a class="btn btn-secondary" href="/checkout">Continue as guest</a>
-      <button class="link-button" type="button" onclick={() => (showGate = false)}>Back to cart</button>
-    </div>
-  </div>
-{/if}
 
 <style>
   .cart-page {
@@ -158,53 +138,15 @@
     margin: 20px 0;
   }
 
-  .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
+  @media (forced-colors: active) {
+    .stepper {
+      border: 2px solid CanvasText;
+    }
 
-  .backdrop {
-    position: absolute;
-    inset: 0;
-    border: none;
-    background: rgba(17, 24, 39, 0.45);
-    cursor: pointer;
-  }
-
-  .sheet {
-    position: relative;
-    width: min(420px, 100%);
-    background: #fff;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: 24px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 90dvh;
-    overflow-y: auto;
-  }
-
-  .sheet h2 {
-    font-size: 22px;
-  }
-
-  .sheet p {
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-  }
-
-  .sheet .btn {
-    text-align: center;
-  }
-
-  .sheet .link-button {
-    margin-top: 4px;
+    .link-button {
+      color: LinkText;
+      text-decoration: underline;
+    }
   }
 
   @media (max-width: 640px) {

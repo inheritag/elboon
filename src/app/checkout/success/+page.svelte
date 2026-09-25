@@ -8,8 +8,7 @@
 <section class="container success">
   <h1>Order confirmed</h1>
   <p>
-    Payment received. A logistics partner will contact you to arrange delivery. We don’t ship from our own
-    warehouse.
+    Payment received. A courier will contact you about delivery.
   </p>
   <a class="btn btn-primary" href="/">Continue shopping</a>
 </section>
