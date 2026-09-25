@@ -3,6 +3,13 @@
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  let categoryChoice = $state('');
+  let primed = $state(false);
+  $effect.pre(() => {
+    if (primed) return;
+    categoryChoice = data.product.category;
+    primed = true;
+  });
 </script>
 
 <section class="container edit-product">
@@ -35,11 +42,15 @@
     <div class="field"><label for="name">Name</label><input id="name" name="name" value={data.product.name} required /></div>
     <div class="field">
       <label for="category">Category</label>
-      <select id="category" name="category" required>
+      <select id="category" name="category" required bind:value={categoryChoice}>
         {#each data.categories as category}
-          <option value={category.slug} selected={data.product.category === category.slug}>{category.label}</option>
+          <option value={category.slug}>{category.label}</option>
         {/each}
+        <option value="__new__">Add category…</option>
       </select>
+      {#if categoryChoice === '__new__'}
+        <input name="newCategory" required placeholder="New category name" />
+      {/if}
     </div>
     <div class="field">
       <label for="price">Price</label>

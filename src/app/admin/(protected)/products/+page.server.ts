@@ -10,20 +10,32 @@ export const load: PageServerLoad = async () => {
   return { products, categories };
 };
 
+async function resolveCategory(form: FormData): Promise<string | { error: string }> {
+  const selected = String(form.get('category') ?? '');
+  const store = getStore();
+  if (selected === '__new__') {
+    const label = String(form.get('newCategory') ?? '').trim();
+    if (!label) return { error: 'Enter a name for the new category' };
+    try {
+      return (await store.createCategory(label)).slug;
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : 'Could not add category' };
+    }
+  }
+  const known = new Set((await store.listCategories()).map((row) => row.slug));
+  if (!isCategorySlug(selected) || !known.has(selected)) {
+    return { error: 'Name, category and price are required' };
+  }
+  return selected;
+}
+
 async function productFromForm(form: FormData): Promise<CreateProductInput | { error: string }> {
   const name = form.get('name');
-  const category = form.get('category');
   const price = Number(form.get('price'));
-  const known = new Set((await getStore().listCategories()).map((row) => row.slug));
+  const category = await resolveCategory(form);
 
-  if (
-    typeof name !== 'string' ||
-    !name ||
-    typeof category !== 'string' ||
-    !isCategorySlug(category) ||
-    !known.has(category) ||
-    !price
-  ) {
+  if (typeof category === 'object') return category;
+  if (typeof name !== 'string' || !name || !price) {
     return { error: 'Name, category and price are required' };
   }
 
@@ -69,18 +81,6 @@ export const actions: Actions = {
     const id = form.get('id');
     if (typeof id !== 'string') return fail(400, { error: 'Missing product id' });
     await getStore().toggleProductActive(id);
-    return { success: true };
-  },
-
-  addCategory: async ({ request }) => {
-    const form = await request.formData();
-    const label = String(form.get('label') ?? '').trim();
-    if (!label) return fail(400, { error: 'Enter a category name' });
-    try {
-      await getStore().createCategory(label);
-    } catch (err) {
-      return fail(400, { error: err instanceof Error ? err.message : 'Could not add category' });
-    }
     return { success: true };
   }
 };

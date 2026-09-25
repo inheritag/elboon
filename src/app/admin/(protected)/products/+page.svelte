@@ -5,21 +5,18 @@
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  let categoryChoice = $state('__new__');
+  let primed = $state(false);
+  $effect.pre(() => {
+    if (primed) return;
+    categoryChoice = data.categories[0]?.slug ?? '__new__';
+    primed = true;
+  });
 </script>
 
 <section class="container products-admin">
   <h1>Products</h1>
   <p class="lede">Upload catalogue items, set stock, and mark which ones accept offers.</p>
-
-  <form method="POST" action="?/addCategory" use:enhance class="card new-product-form">
-    <h2>Add category</h2>
-    <div class="field">
-      <label for="label">Name</label>
-      <input id="label" name="label" required placeholder="e.g. kitchen" />
-    </div>
-    <p class="hint">Shows on the shop next to All, tech, accessories, and the rest.</p>
-    <button class="btn btn-secondary" type="submit">Add category</button>
-  </form>
 
   <form method="POST" action="?/create" enctype="multipart/form-data" use:enhance class="card new-product-form">
     <h2>Upload product</h2>
@@ -27,11 +24,15 @@
       <div class="field"><label for="name">Name</label><input id="name" name="name" required /></div>
       <div class="field">
         <label for="category">Category</label>
-        <select id="category" name="category" required>
+        <select id="category" name="category" required bind:value={categoryChoice}>
           {#each data.categories as category}
             <option value={category.slug}>{category.label}</option>
           {/each}
+          <option value="__new__">Add category…</option>
         </select>
+        {#if categoryChoice === '__new__'}
+          <input name="newCategory" required placeholder="New category name" />
+        {/if}
       </div>
       <div class="field"><label for="price">Price</label><input id="price" name="price" type="number" min="0.01" step="0.01" required /></div>
       <div class="field"><label for="stockQty">Stock qty</label><input id="stockQty" name="stockQty" type="number" min="0" value="0" /></div>

@@ -18,18 +18,16 @@ export const actions: Actions = {
   default: async ({ request, params }) => {
     const form = await request.formData();
     const name = form.get('name');
-    const category = form.get('category');
     const price = Number(form.get('price'));
-
-    const known = new Set((await getStore().listCategories()).map((row) => row.slug));
-    if (
-      typeof name !== 'string' ||
-      !name ||
-      !price ||
-      typeof category !== 'string' ||
-      !isCategorySlug(category) ||
-      !known.has(category)
-    ) {
+    const store = getStore();
+    let category = String(form.get('category') ?? '');
+    if (category === '__new__') {
+      const label = String(form.get('newCategory') ?? '').trim();
+      if (!label) return fail(400, { error: 'Enter a name for the new category' });
+      category = (await store.createCategory(label)).slug;
+    }
+    const known = new Set((await store.listCategories()).map((row) => row.slug));
+    if (typeof name !== 'string' || !name || !price || !isCategorySlug(category) || !known.has(category)) {
       return fail(400, { error: 'Name, category and price are required' });
     }
 
