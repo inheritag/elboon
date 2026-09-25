@@ -111,6 +111,14 @@ describe('LocalStore', () => {
     expect(products.map((product) => product.name)).toEqual(['Desk Lamp']);
   });
 
+  it('adds a shopper category and lists it', async () => {
+    const store = new LocalStore({ persistPath: null });
+    const created = await store.createCategory('Kitchen');
+    expect(created.slug).toBe('kitchen');
+    const listed = await store.listCategories();
+    expect(listed.some((category) => category.slug === 'kitchen')).toBe(true);
+  });
+
   it('attaches guest offers to a new account with the same email', async () => {
     const store = new LocalStore({ persistPath: null });
     const earbuds = (await store.listActiveProducts('tech')).find((row) => row.offer_enabled)!;

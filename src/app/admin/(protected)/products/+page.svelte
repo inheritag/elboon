@@ -1,6 +1,5 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { CATEGORIES } from '../../../../domain/catalog';
   import { formatPrice } from '../../../../domain/product';
   import { isLowStock } from '../../../../domain/stock';
   import type { ActionData, PageData } from './$types';
@@ -12,6 +11,16 @@
   <h1>Products</h1>
   <p class="lede">Upload catalogue items, set stock, and mark which ones accept offers.</p>
 
+  <form method="POST" action="?/addCategory" use:enhance class="card new-product-form">
+    <h2>Add category</h2>
+    <div class="field">
+      <label for="label">Name</label>
+      <input id="label" name="label" required placeholder="e.g. kitchen" />
+    </div>
+    <p class="hint">Shows on the shop next to All, tech, accessories, and the rest.</p>
+    <button class="btn btn-secondary" type="submit">Add category</button>
+  </form>
+
   <form method="POST" action="?/create" enctype="multipart/form-data" use:enhance class="card new-product-form">
     <h2>Upload product</h2>
     <div class="grid-2">
@@ -19,8 +28,8 @@
       <div class="field">
         <label for="category">Category</label>
         <select id="category" name="category" required>
-          {#each CATEGORIES as category}
-            <option value={category}>{category}</option>
+          {#each data.categories as category}
+            <option value={category.slug}>{category.label}</option>
           {/each}
         </select>
       </div>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { CATEGORIES } from '../domain/catalog';
   import { formatPrice } from '../domain/product';
   import type { PageData } from './$types';
 
@@ -16,8 +15,8 @@
 
 <nav class="categories container" aria-label="Categories">
   <a href="/" class:active={!data.category}>All</a>
-  {#each CATEGORIES as category}
-    <a href="/?category={category}" class:active={data.category === category}>{category}</a>
+  {#each data.categories as category}
+    <a href="/?category={category.slug}" class:active={data.category === category.slug}>{category.label}</a>
   {/each}
 </nav>
 

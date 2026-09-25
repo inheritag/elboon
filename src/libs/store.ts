@@ -1,3 +1,4 @@
+import type { CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { ProductRow } from '../domain/product';
@@ -73,6 +74,8 @@ export interface Store {
   deleteProduct(id: string): Promise<void>;
   toggleProductActive(id: string): Promise<void>;
   decrementProductStock(id: string, quantity: number): Promise<void>;
+  listCategories(): Promise<CategoryRecord[]>;
+  createCategory(label: string): Promise<CategoryRecord>;
 
   isOfferEnabledProduct(id: string): Promise<boolean>;
   createOffer(input: {

@@ -1,15 +1,17 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { isCategory } from '../../../../../domain/catalog';
+import { isCategorySlug } from '../../../../../domain/catalog';
 import { getStore } from '../../../../../libs/store';
 import { keptImageUrls, saveProductImages } from '../../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-  const product = await getStore().getProduct(params.id);
+  const store = getStore();
+  const product = await store.getProduct(params.id);
   if (!product) {
     error(404, 'Product not found');
   }
-  return { product };
+  const categories = await store.listCategories();
+  return { product, categories };
 };
 
 export const actions: Actions = {
@@ -19,7 +21,15 @@ export const actions: Actions = {
     const category = form.get('category');
     const price = Number(form.get('price'));
 
-    if (typeof name !== 'string' || !name || !price || typeof category !== 'string' || !isCategory(category)) {
+    const known = new Set((await getStore().listCategories()).map((row) => row.slug));
+    if (
+      typeof name !== 'string' ||
+      !name ||
+      !price ||
+      typeof category !== 'string' ||
+      !isCategorySlug(category) ||
+      !known.has(category)
+    ) {
       return fail(400, { error: 'Name, category and price are required' });
     }
 

@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { ProductRow } from '../domain/product';
@@ -59,6 +60,7 @@ interface Snapshot {
   orders: LocalOrder[];
   customers: LocalCustomer[];
   emails: DevEmail[];
+  categories: CategoryRecord[];
 }
 
 const SEED_PRODUCTS: LocalProduct[] = [
@@ -136,7 +138,19 @@ const SEED_PRODUCTS: LocalProduct[] = [
 ];
 
 function emptySnapshot(): Snapshot {
-  return { products: [], offers: [], orders: [], customers: [], emails: [] };
+  return { products: [], offers: [], orders: [], customers: [], emails: [], categories: [] };
+}
+
+function seedCategories(products: LocalProduct[], existing?: CategoryRecord[]): CategoryRecord[] {
+  const bySlug = new Map<string, CategoryRecord>();
+  for (const category of DEFAULT_CATEGORIES) bySlug.set(category.slug, category);
+  for (const category of existing ?? []) bySlug.set(category.slug, category);
+  for (const product of products) {
+    if (product.category && !bySlug.has(product.category)) {
+      bySlug.set(product.category, { slug: product.category, label: product.category });
+    }
+  }
+  return [...bySlug.values()];
 }
 
 function newestFirst(a: { created_at: string }, b: { created_at: string }): number {
@@ -159,6 +173,7 @@ export class LocalStore implements Store {
 
     const snapshot = emptySnapshot();
     if (seed) snapshot.products = SEED_PRODUCTS.map((product) => ({ ...product, image_urls: [...product.image_urls] }));
+    snapshot.categories = seedCategories(snapshot.products);
     this.data = snapshot;
     this.persist();
     return snapshot;
@@ -182,7 +197,8 @@ export class LocalStore implements Store {
         },
         logistics_status: order.logistics_status ?? 'awaiting_partner'
       })),
-      emails: raw.emails ?? []
+      emails: raw.emails ?? [],
+      categories: seedCategories(raw.products ?? [], raw.categories)
     };
   }
 
@@ -265,6 +281,21 @@ export class LocalStore implements Store {
     if (!product) return;
     product.active = !product.active;
     this.persist();
+  }
+
+  async listCategories(): Promise<CategoryRecord[]> {
+    return [...this.data.categories].sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  async createCategory(label: string): Promise<CategoryRecord> {
+    const slug = slugFromLabel(label);
+    if (!slug) throw new Error('Enter a category name');
+    const existing = this.data.categories.find((category) => category.slug === slug);
+    if (existing) return existing;
+    const category = { slug, label: label.trim() };
+    this.data.categories.push(category);
+    this.persist();
+    return category;
   }
 
   async decrementProductStock(id: string, quantity: number): Promise<void> {

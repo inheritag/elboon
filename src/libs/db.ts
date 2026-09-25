@@ -54,7 +54,19 @@ const SCHEMA_STATEMENTS = [
 )`,
   'CREATE INDEX IF NOT EXISTS offers_status_idx ON offers (status)',
   'CREATE INDEX IF NOT EXISTS offers_user_idx ON offers (user_id)',
-  'CREATE INDEX IF NOT EXISTS products_category_idx ON products (category) WHERE active = true'
+  'CREATE INDEX IF NOT EXISTS products_category_idx ON products (category) WHERE active = true',
+  `CREATE TABLE IF NOT EXISTS categories (
+  slug       text PRIMARY KEY,
+  label      text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+)`,
+  `INSERT INTO categories (slug, label) VALUES
+    ('tech', 'tech'),
+    ('accessories', 'accessories'),
+    ('fashion', 'fashion'),
+    ('home', 'home'),
+    ('beauty', 'beauty')
+  ON CONFLICT (slug) DO NOTHING`
 ];
 
 let sql: postgres.Sql | null = null;

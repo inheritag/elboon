@@ -1,20 +1,29 @@
 import { fail } from '@sveltejs/kit';
-import { isCategory } from '../../../../domain/catalog';
+import { isCategorySlug } from '../../../../domain/catalog';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
 import { saveProductImages } from '../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-  const products = await getStore().listAllProducts();
-  return { products };
+  const store = getStore();
+  const [products, categories] = await Promise.all([store.listAllProducts(), store.listCategories()]);
+  return { products, categories };
 };
 
 async function productFromForm(form: FormData): Promise<CreateProductInput | { error: string }> {
   const name = form.get('name');
   const category = form.get('category');
   const price = Number(form.get('price'));
+  const known = new Set((await getStore().listCategories()).map((row) => row.slug));
 
-  if (typeof name !== 'string' || !name || typeof category !== 'string' || !isCategory(category) || !price) {
+  if (
+    typeof name !== 'string' ||
+    !name ||
+    typeof category !== 'string' ||
+    !isCategorySlug(category) ||
+    !known.has(category) ||
+    !price
+  ) {
     return { error: 'Name, category and price are required' };
   }
 
@@ -60,6 +69,18 @@ export const actions: Actions = {
     const id = form.get('id');
     if (typeof id !== 'string') return fail(400, { error: 'Missing product id' });
     await getStore().toggleProductActive(id);
+    return { success: true };
+  },
+
+  addCategory: async ({ request }) => {
+    const form = await request.formData();
+    const label = String(form.get('label') ?? '').trim();
+    if (!label) return fail(400, { error: 'Enter a category name' });
+    try {
+      await getStore().createCategory(label);
+    } catch (err) {
+      return fail(400, { error: err instanceof Error ? err.message : 'Could not add category' });
+    }
     return { success: true };
   }
 };

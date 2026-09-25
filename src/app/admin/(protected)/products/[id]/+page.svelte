@@ -1,6 +1,5 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { CATEGORIES } from '../../../../../domain/catalog';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -37,8 +36,8 @@
     <div class="field">
       <label for="category">Category</label>
       <select id="category" name="category" required>
-        {#each CATEGORIES as category}
-          <option value={category} selected={data.product.category === category}>{category}</option>
+        {#each data.categories as category}
+          <option value={category.slug} selected={data.product.category === category.slug}>{category.label}</option>
         {/each}
       </select>
     </div>

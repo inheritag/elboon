@@ -5,11 +5,12 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ url }) => {
   const category = url.searchParams.get('category');
   try {
-    const rows = await getStore().listActiveProducts(category);
+    const store = getStore();
+    const [rows, categories] = await Promise.all([store.listActiveProducts(category), store.listCategories()]);
     const products = rows.map(productFromRow).map(toProductSummary);
-    return { products, category };
+    return { products, category, categories };
   } catch (err) {
     console.error('Failed to load catalog', err);
-    return { products: [], category };
+    return { products: [], category, categories: [] };
   }
 };

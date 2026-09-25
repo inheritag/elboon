@@ -1,3 +1,4 @@
+import { slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { ProductRow } from '../domain/product';
@@ -91,6 +92,23 @@ export class PostgresStore implements Store {
   async toggleProductActive(id: string): Promise<void> {
     const sql = await readyDb();
     await sql`UPDATE products SET active = NOT active WHERE id = ${id}`;
+  }
+
+  async listCategories(): Promise<CategoryRecord[]> {
+    const sql = await readyDb();
+    return sql<CategoryRecord[]>`SELECT slug, label FROM categories ORDER BY label ASC`;
+  }
+
+  async createCategory(label: string): Promise<CategoryRecord> {
+    const sql = await readyDb();
+    const slug = slugFromLabel(label);
+    if (!slug) throw new Error('Enter a category name');
+    const rows = await sql<CategoryRecord[]>`
+      INSERT INTO categories (slug, label) VALUES (${slug}, ${label.trim()})
+      ON CONFLICT (slug) DO UPDATE SET label = EXCLUDED.label
+      RETURNING slug, label
+    `;
+    return rows[0];
   }
 
   async decrementProductStock(id: string, quantity: number): Promise<void> {
