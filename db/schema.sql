@@ -55,6 +55,6 @@ CREATE TABLE orders (
   created_at         timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX offers_status_idx ON offers (status);
-CREATE INDEX offers_user_idx ON offers (user_id);
-CREATE INDEX products_category_idx ON products (category) WHERE active = true;
+CREATE INDEX IF NOT EXISTS offers_status_idx ON offers (status);
+CREATE INDEX IF NOT EXISTS offers_user_idx ON offers (user_id);
+CREATE INDEX IF NOT EXISTS products_category_idx ON products (category) WHERE active = true;

@@ -2,12 +2,12 @@ import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { ProductRow } from '../domain/product';
 import { decrementStock } from '../domain/stock';
-import { getDb, toJsonValue } from './db';
+import { readyDb, toJsonValue } from './db';
 import type { CreateProductInput, CustomerPublic, OfferListRow, OrderSummaryRow, PendingOrder, Store } from './store';
 
 export class PostgresStore implements Store {
   async listActiveProducts(category?: string | null): Promise<ProductRow[]> {
-    const sql = getDb();
+    const sql = await readyDb();
     if (category) {
       return sql<ProductRow[]>`
         SELECT * FROM products WHERE active = true AND category = ${category} ORDER BY created_at DESC
@@ -17,24 +17,24 @@ export class PostgresStore implements Store {
   }
 
   async getActiveProduct(id: string): Promise<ProductRow | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<ProductRow[]>`SELECT * FROM products WHERE id = ${id} AND active = true`;
     return rows[0] ?? null;
   }
 
   async getProduct(id: string): Promise<ProductRow | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<ProductRow[]>`SELECT * FROM products WHERE id = ${id}`;
     return rows[0] ?? null;
   }
 
   async listAllProducts(): Promise<ProductRow[]> {
-    const sql = getDb();
+    const sql = await readyDb();
     return sql<ProductRow[]>`SELECT * FROM products ORDER BY created_at DESC`;
   }
 
   async createProduct(input: CreateProductInput): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`
       INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls)
       VALUES (
@@ -52,7 +52,7 @@ export class PostgresStore implements Store {
   }
 
   async updateProduct(id: string, input: CreateProductInput): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     const imageUrls = input.imageUrls;
     if (imageUrls !== undefined) {
       await sql`
@@ -84,24 +84,24 @@ export class PostgresStore implements Store {
   }
 
   async deleteProduct(id: string): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`DELETE FROM products WHERE id = ${id}`;
   }
 
   async toggleProductActive(id: string): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`UPDATE products SET active = NOT active WHERE id = ${id}`;
   }
 
   async decrementProductStock(id: string, quantity: number): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<{ stock_qty: number }[]>`SELECT stock_qty FROM products WHERE id = ${id}`;
     const remaining = decrementStock(rows[0]?.stock_qty ?? 0, quantity);
     await sql`UPDATE products SET stock_qty = ${remaining} WHERE id = ${id}`;
   }
 
   async isOfferEnabledProduct(id: string): Promise<boolean> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<{ offer_enabled: boolean }[]>`
       SELECT offer_enabled FROM products WHERE id = ${id} AND active = true
     `;
@@ -114,7 +114,7 @@ export class PostgresStore implements Store {
     offerPriceCents: number;
     userId?: string | null;
   }): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`
       INSERT INTO offers (product_id, customer_email, offer_price_cents, user_id)
       VALUES (${input.productId}, ${input.customerEmail.toLowerCase()}, ${input.offerPriceCents}, ${input.userId ?? null})
@@ -122,7 +122,7 @@ export class PostgresStore implements Store {
   }
 
   async listPendingOffers(): Promise<OfferListRow[]> {
-    const sql = getDb();
+    const sql = await readyDb();
     return sql<OfferListRow[]>`
       SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
@@ -134,7 +134,7 @@ export class PostgresStore implements Store {
   }
 
   async getOfferWithProduct(id: string): Promise<OfferListRow | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<OfferListRow[]>`
       SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
@@ -146,7 +146,7 @@ export class PostgresStore implements Store {
   }
 
   async updateOffer(id: string, offer: { status: OfferStatus; counterPriceCents: number | null }): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`
       UPDATE offers SET status = ${offer.status}, counter_price_cents = ${offer.counterPriceCents}, updated_at = now()
       WHERE id = ${id}
@@ -154,7 +154,7 @@ export class PostgresStore implements Store {
   }
 
   async listOffersForUser(userId: string): Promise<OfferListRow[]> {
-    const sql = getDb();
+    const sql = await readyDb();
     return sql<OfferListRow[]>`
       SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
@@ -166,7 +166,7 @@ export class PostgresStore implements Store {
   }
 
   async createCustomer(input: { email: string; passwordHash: string; fullName?: string }): Promise<CustomerPublic> {
-    const sql = getDb();
+    const sql = await readyDb();
     const email = input.email.toLowerCase().trim();
     const rows = await sql<
       { id: string; email: string; full_name: string; phone: string; shipping_address: ShippingAddress | null }[]
@@ -186,7 +186,7 @@ export class PostgresStore implements Store {
   }
 
   async getCustomer(id: string): Promise<CustomerPublic | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<
       { id: string; email: string; full_name: string; phone: string; shipping_address: ShippingAddress | null }[]
     >`SELECT id, email, full_name, phone, shipping_address FROM customers WHERE id = ${id}`;
@@ -202,7 +202,7 @@ export class PostgresStore implements Store {
   }
 
   async getCustomerByEmail(email: string): Promise<(CustomerPublic & { passwordHash: string }) | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<
       {
         id: string;
@@ -226,7 +226,7 @@ export class PostgresStore implements Store {
   }
 
   async updateCustomerShipping(id: string, shipping: ShippingAddress): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`
       UPDATE customers SET
         full_name = ${shipping.fullName},
@@ -237,7 +237,7 @@ export class PostgresStore implements Store {
   }
 
   async attachOffersToUser(email: string, userId: string): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`
       UPDATE offers SET user_id = ${userId}
       WHERE customer_email = ${email.toLowerCase().trim()} AND user_id IS NULL
@@ -251,7 +251,7 @@ export class PostgresStore implements Store {
     items: OrderItem[];
     totalCents: number;
   }): Promise<string> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<{ id: string }[]>`
       INSERT INTO orders (
         customer_email, user_id, shipping_address, items, total_cents,
@@ -272,7 +272,7 @@ export class PostgresStore implements Store {
   }
 
   async getPendingOrder(orderId: string): Promise<PendingOrder | null> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<PendingOrder[]>`
       SELECT id, customer_email, items, total_cents FROM orders
       WHERE id = ${orderId} AND payment_status = 'pending'
@@ -281,17 +281,17 @@ export class PostgresStore implements Store {
   }
 
   async markOrderPaid(orderId: string): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`UPDATE orders SET payment_status = 'paid' WHERE id = ${orderId}`;
   }
 
   async markHandedToLogistics(orderId: string): Promise<void> {
-    const sql = getDb();
+    const sql = await readyDb();
     await sql`UPDATE orders SET logistics_status = 'handed_off' WHERE id = ${orderId}`;
   }
 
   async listOrders(): Promise<OrderSummaryRow[]> {
-    const sql = getDb();
+    const sql = await readyDb();
     const rows = await sql<
       {
         id: string;
