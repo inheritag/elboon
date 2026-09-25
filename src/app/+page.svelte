@@ -9,6 +9,9 @@
   let categoryLabel = $derived(
     data.category ? (data.categories.find((row) => row.slug === data.category)?.label ?? data.category) : null
   );
+  let showCategories = $derived(
+    data.categories.length > 0 && (data.products.length > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
+  );
 </script>
 
 <section class="hero" data-hero>
@@ -19,6 +22,7 @@
   </div>
 </section>
 
+{#if showCategories}
 <div class="category-bar">
   <nav class="categories container" aria-label="Categories">
     <a
@@ -35,6 +39,7 @@
     {/each}
   </nav>
 </div>
+{/if}
 
 <section class="grid container">
   {#if loadingCatalog}
@@ -159,17 +164,25 @@
     gap: 8px;
     padding: 10px 0;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    touch-action: pan-x;
   }
 
   .categories::-webkit-scrollbar {
     display: none;
   }
 
+  .categories::after {
+    content: '';
+    flex: 0 0 8px;
+  }
+
   .categories a {
     position: relative;
     isolation: isolate;
+    flex: 0 0 auto;
     padding: 8px 16px;
     border: 1px solid var(--border);
     border-radius: var(--chip-radius);
@@ -273,7 +286,7 @@
 
   .empty {
     grid-column: 1 / -1;
-    padding: 28px 0 12px;
+    padding: 28px 0 48px;
     color: var(--text-secondary);
     max-width: 42ch;
   }
@@ -305,6 +318,24 @@
   @media (min-width: 900px) {
     .hero h1 {
       white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: 28px 0 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 8.4vw, 40px);
+    }
+
+    .lede {
+      font-size: 16px;
+    }
+
+    .empty .btn {
+      width: 100%;
     }
   }
 
