@@ -1,0 +1,226 @@
+/* Design tokens carried over from the original coming-soon page (style.css)
+   so the storefront keeps the same visual identity. */
+:root {
+  --font-display: 'Outfit', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+
+  --bg: #f3f1ec;
+  --bg-subtle: #e5e1d8;
+  --border: #d2cdc2;
+  --text-primary: #14110e;
+  --text-secondary: #5a534a;
+  --text-muted: #8e877c;
+  --accent: #e31c25;
+  --accent-hover: #be151d;
+  --accent-light: #ffd9db;
+
+  --radius-sm: 0;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --card-radius: 8px;
+  --btn-radius: 0;
+  --btn-weight: 800;
+  --btn-size: 14px;
+  --btn-track: 0.08em;
+  --btn-transform: uppercase;
+  --btn-border: 2px solid transparent;
+  --btn-pad-y: 16px;
+  --btn-pad-x: 28px;
+
+  --shadow-sm: none;
+  --shadow-md: 4px 4px 0 var(--text-primary);
+
+  --haggle-paper: #fff1e8;
+  --haggle-ink: #14110e;
+  --haggle-rule: #ead7c8;
+  --haggle-gold: #b45309;
+  --haggle-green: #3f6212;
+
+  --max-width: 1120px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.btn {
+  display: inline-block;
+  padding: var(--btn-pad-y, 12px) var(--btn-pad-x, 20px);
+  border-radius: var(--btn-radius, var(--radius-sm));
+  border: var(--btn-border, 1px solid transparent);
+  font-weight: var(--btn-weight, 600);
+  letter-spacing: var(--btn-track, 0);
+  text-transform: var(--btn-transform, none);
+  cursor: pointer;
+  font-family: var(--btn-font, var(--font-body));
+  font-size: var(--btn-size, 15px);
+  box-shadow: var(--btn-shadow, none);
+}
+
+.btn,
+.nav-item {
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn:hover,
+.nav-item:hover {
+  transform: scale(1.05);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn:hover {
+  color: inherit;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--text-primary);
+  border-color: var(--border);
+  border-width: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--card-radius, var(--radius-md));
+  box-shadow: none;
+}
+
+.field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 15px;
+  background: #fff;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.fields-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+@media (max-width: 560px) {
+  .fields-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-low-stock {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.badge-haggle {
+  background: var(--haggle-paper);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-display);
+}
+
+.error-text {
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.product-card,
+.related-card {
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+
+
