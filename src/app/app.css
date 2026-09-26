@@ -4,20 +4,21 @@
   --font-display: 'Outfit', -apple-system, sans-serif;
   --font-body: 'Inter', -apple-system, sans-serif;
 
-  --bg: #f3f1ec;
-  --bg-subtle: #e5e1d8;
-  --border: #d2cdc2;
-  --text-primary: #14110e;
-  --text-secondary: #5a534a;
-  --text-muted: #8e877c;
+  --bg: #050505;
+  --bg-subtle: #111111;
+  --surface: #0c0c0c;
+  --border: #2a2a2a;
+  --text-primary: #f4f4f4;
+  --text-secondary: #a8a8a8;
+  --text-muted: #737373;
   --accent: #e31c25;
-  --accent-hover: #be151d;
-  --accent-light: #ffd9db;
+  --accent-hover: #ff2d36;
+  --accent-light: #2a080a;
 
   --radius-sm: 0;
-  --radius-md: 8px;
-  --radius-lg: 8px;
-  --card-radius: 8px;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --card-radius: 0;
   --btn-radius: 0;
   --btn-weight: 800;
   --btn-size: 14px;
@@ -28,22 +29,22 @@
   --btn-pad-x: 28px;
 
   --shadow-sm: none;
-  --shadow-md: 4px 4px 0 var(--text-primary);
+  --shadow-md: none;
 
-  --haggle-paper: #fff1e8;
-  --haggle-ink: #14110e;
-  --haggle-rule: #ead7c8;
-  --haggle-gold: #b45309;
-  --haggle-green: #3f6212;
+  --haggle-paper: #111111;
+  --haggle-ink: #f4f4f4;
+  --haggle-rule: #2a2a2a;
+  --haggle-gold: #e31c25;
+  --haggle-green: #f4f4f4;
 
   --max-width: 1120px;
   --header-h: 88px;
-  --chip-radius: 12px;
+  --chip-radius: 4px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 140ms;
   --dur: 220ms;
   --dur-slow: 260ms;
-  --shadow-hover: 0 8px 22px color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --shadow-hover: 0 18px 40px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 *, *::before, *::after {
@@ -133,9 +134,9 @@ a:hover {
 }
 
 .btn-secondary {
-  background: #fff;
+  background: transparent;
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--text-primary);
   border-width: 2px;
 }
 
@@ -145,8 +146,8 @@ a:hover {
 }
 
 .card {
-  background: #fff;
-  border: 2px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--card-radius, var(--radius-md));
   box-shadow: none;
 }
@@ -172,7 +173,8 @@ a:hover {
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
   font-size: 15px;
-  background: #fff;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
 }
 
 .field input:not([type='checkbox']):not([type='file']):not([type='radio']):focus,

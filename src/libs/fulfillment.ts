@@ -9,7 +9,7 @@ export async function fulfillPendingOrder(orderId: string): Promise<boolean> {
   await store.markOrderPaid(order.id);
 
   for (const item of order.items) {
-    await store.decrementProductStock(item.productId, item.quantity);
+    await store.decrementProductStock(item.productId, item.quantity, item.color);
   }
 
   await sendOrderConfirmationEmail({

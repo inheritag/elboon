@@ -54,7 +54,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--text-primary);
     border: 1px solid var(--border);
     transition: transform var(--dur) var(--ease-out);
   }

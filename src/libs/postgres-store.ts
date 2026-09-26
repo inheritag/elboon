@@ -1,7 +1,7 @@
 import { slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import type { ProductRow } from '../domain/product';
+import { parseColors, totalColorStock, type ProductRow } from '../domain/product';
 import { decrementStock } from '../domain/stock';
 import { readyDb, toJsonValue } from './db';
 import type { CreateProductInput, CustomerPublic, OfferListRow, OrderSummaryRow, PendingOrder, Store } from './store';
@@ -37,7 +37,7 @@ export class PostgresStore implements Store {
   async createProduct(input: CreateProductInput): Promise<void> {
     const sql = await readyDb();
     await sql`
-      INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls)
+      INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls, variants)
       VALUES (
         ${input.name},
         ${input.description},
@@ -47,7 +47,8 @@ export class PostgresStore implements Store {
         ${input.lowStockThreshold},
         ${input.offerEnabled},
         ${input.active ?? true},
-        ${input.imageUrls ?? []}
+        ${input.imageUrls ?? []},
+        ${sql.json(toJsonValue(input.colors ?? []))}
       )
     `;
   }
@@ -65,7 +66,8 @@ export class PostgresStore implements Store {
           stock_qty = ${input.stockQty},
           low_stock_threshold = ${input.lowStockThreshold},
           offer_enabled = ${input.offerEnabled},
-          image_urls = ${imageUrls}
+          image_urls = ${imageUrls},
+          variants = ${sql.json(toJsonValue(input.colors ?? []))}
         WHERE id = ${id}
       `;
       return;
@@ -79,7 +81,8 @@ export class PostgresStore implements Store {
         category = ${input.category},
         stock_qty = ${input.stockQty},
         low_stock_threshold = ${input.lowStockThreshold},
-        offer_enabled = ${input.offerEnabled}
+        offer_enabled = ${input.offerEnabled},
+        variants = ${sql.json(toJsonValue(input.colors ?? []))}
       WHERE id = ${id}
     `;
   }
@@ -111,10 +114,25 @@ export class PostgresStore implements Store {
     return rows[0];
   }
 
-  async decrementProductStock(id: string, quantity: number): Promise<void> {
+  async decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void> {
     const sql = await readyDb();
-    const rows = await sql<{ stock_qty: number }[]>`SELECT stock_qty FROM products WHERE id = ${id}`;
-    const remaining = decrementStock(rows[0]?.stock_qty ?? 0, quantity);
+    const rows = await sql<ProductRow[]>`SELECT * FROM products WHERE id = ${id}`;
+    const product = rows[0];
+    if (!product) return;
+    const colors = parseColors(product.variants);
+    if (color && colors.length > 0) {
+      const next = colors.map((item) =>
+        item.name === color ? { ...item, stockQty: decrementStock(item.stockQty, quantity) } : item
+      );
+      await sql`
+        UPDATE products SET
+          variants = ${sql.json(toJsonValue(next))},
+          stock_qty = ${totalColorStock(next)}
+        WHERE id = ${id}
+      `;
+      return;
+    }
+    const remaining = decrementStock(product.stock_qty, quantity);
     await sql`UPDATE products SET stock_qty = ${remaining} WHERE id = ${id}`;
   }
 

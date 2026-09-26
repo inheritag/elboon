@@ -12,7 +12,8 @@ function item(id: string, category: string): ProductSummary {
     imageUrl: null,
     lowStock: false,
     remainingQty: null,
-    offerEnabled: false
+    offerEnabled: false,
+    colors: []
   };
 }
 

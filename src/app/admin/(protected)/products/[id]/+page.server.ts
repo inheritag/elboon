@@ -1,6 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../../domain/catalog';
 import { getStore } from '../../../../../libs/store';
+import { totalColorStock } from '../../../../../domain/product';
+import { colorsFromForm } from '../../../../../libs/product-colors';
 import { keptImageUrls, saveProductImages } from '../../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -32,8 +34,10 @@ export const actions: Actions = {
     }
 
     let uploaded: string[];
+    let colors;
     try {
       uploaded = await saveProductImages(form);
+      colors = await colorsFromForm(form);
     } catch (err) {
       return fail(400, { error: err instanceof Error ? err.message : 'Could not save images' });
     }
@@ -43,10 +47,11 @@ export const actions: Actions = {
       description: String(form.get('description') ?? ''),
       priceCents: Math.round(price * 100),
       category,
-      stockQty: Number(form.get('stockQty') ?? 0),
+      stockQty: colors.length > 0 ? totalColorStock(colors) : Number(form.get('stockQty') ?? 0),
       lowStockThreshold: Number(form.get('lowStockThreshold') ?? 3),
       offerEnabled: form.get('offerEnabled') === 'on',
-      imageUrls: [...keptImageUrls(form), ...uploaded]
+      imageUrls: [...keptImageUrls(form), ...uploaded],
+      colors
     });
 
     redirect(303, '/admin/products');

@@ -5,6 +5,7 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   unitPriceCents: number;
+  color?: string | null;
 }
 
 export interface ShippingAddress {

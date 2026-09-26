@@ -1,5 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { parseColors } from '../../../../../domain/product';
+  import ColorFields from '../../../../ColorFields.svelte';
   import NumberStepper from '../../../../NumberStepper.svelte';
   import OfferToggle from '../../../../OfferToggle.svelte';
   import PhotoDropzone from '../../../../PhotoDropzone.svelte';
@@ -31,6 +33,7 @@
       <p class="hint">Uncheck a photo to remove it. Drop more below.</p>
       <PhotoDropzone existing={data.product.image_urls} />
     </div>
+    <ColorFields initial={parseColors(data.product.variants)} />
 
     <div class="field"><label for="name">Name</label><input id="name" name="name" value={data.product.name} required /></div>
     <div class="field">

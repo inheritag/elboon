@@ -2,6 +2,7 @@
   import { enhance } from '$app/forms';
   import { formatPrice } from '../../../../domain/product';
   import { isLowStock } from '../../../../domain/stock';
+  import ColorFields from '../../../ColorFields.svelte';
   import NumberStepper from '../../../NumberStepper.svelte';
   import OfferToggle from '../../../OfferToggle.svelte';
   import PhotoDropzone from '../../../PhotoDropzone.svelte';
@@ -67,6 +68,7 @@
       <p class="field-label">Photos</p>
       <PhotoDropzone />
     </div>
+    <ColorFields />
     <OfferToggle />
     <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="2"></textarea></div>
     <button class="btn btn-primary" type="submit">Add product</button>

@@ -40,7 +40,7 @@
       body: JSON.stringify({
         customerEmail: email,
         shippingAddress: { fullName, phone, line1, line2: null, city, postcode, country },
-        items: $cart.map((line) => ({ productId: line.productId, quantity: line.quantity }))
+        items: $cart.map((line) => ({ productId: line.productId, quantity: line.quantity, color: line.color }))
       })
     });
 
@@ -68,7 +68,7 @@
     <ul class="lines">
       {#each $cart as line}
         <li>
-          <span>{line.name} &times; {line.quantity}</span>
+          <span>{line.name}{line.color ? ` · ${line.color}` : ''} &times; {line.quantity}</span>
           <span>{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
         </li>
       {/each}

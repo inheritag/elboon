@@ -41,7 +41,7 @@
     align-items: stretch;
     border: 1px solid var(--border);
     border-radius: var(--card-radius);
-    background: #fff;
+    background: var(--bg-subtle);
     overflow: hidden;
   }
 

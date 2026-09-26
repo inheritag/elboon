@@ -151,7 +151,7 @@
     padding: 28px 48px 20px 22px;
     border: 2px solid var(--border);
     border-radius: var(--card-radius);
-    background: #fff;
+    background: var(--surface);
     color: var(--text-primary);
     box-shadow: none;
   }

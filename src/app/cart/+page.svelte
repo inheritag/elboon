@@ -36,15 +36,15 @@
           {/if}
           <div class="meta">
             <a href="/product/{line.productId}">{line.name}</a>
-            <p>{formatPrice(line.unitPriceCents, 'GBP')} each</p>
+            <p>{formatPrice(line.unitPriceCents, 'GBP')} each{line.color ? ` · ${line.color}` : ''}</p>
           </div>
           <div class="stepper" role="group" aria-label="Quantity for {line.name}">
-            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity - 1)} aria-label="Decrease">-</button>
+            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity - 1, line.color)} aria-label="Decrease">-</button>
             <span class="qty">{line.quantity}</span>
-            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1)} aria-label="Increase">+</button>
+            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1, line.color)} aria-label="Increase">+</button>
           </div>
           <span class="line-total">{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
-          <button class="link-button" onclick={() => removeFromCart(line.productId)}>Remove</button>
+          <button class="link-button" onclick={() => removeFromCart(line.productId, line.color)}>Remove</button>
         </li>
       {/each}
     </ul>

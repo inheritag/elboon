@@ -1,9 +1,11 @@
 <script lang="ts">
   let {
     name = 'images',
+    keepName = 'keep',
     existing = []
   }: {
     name?: string;
+    keepName?: string;
     existing?: string[];
   } = $props();
 
@@ -52,7 +54,7 @@
         <li>
           <img src={url} alt="" />
           <label>
-            <input type="checkbox" name="keep" value={url} checked />
+            <input type="checkbox" name={keepName} value={url} checked />
             Keep
           </label>
         </li>
@@ -116,7 +118,7 @@
   .drop.dragging,
   .drop:hover {
     border-color: var(--text-primary);
-    background: #fff;
+    background: var(--bg-subtle);
   }
 
   .drop input {

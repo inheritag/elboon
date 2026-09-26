@@ -67,7 +67,7 @@
     margin-left: -11px;
     margin-top: -11px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--bg-subtle);
     border: 3px solid var(--accent);
     box-shadow: var(--shadow-sm);
     pointer-events: none;
@@ -94,7 +94,7 @@
     height: 22px;
     margin-top: -4px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--bg-subtle);
     border: 3px solid var(--accent);
     box-shadow: var(--shadow-sm);
   }
@@ -109,7 +109,7 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--bg-subtle);
     border: 3px solid var(--accent);
     box-shadow: var(--shadow-sm);
   }

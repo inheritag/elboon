@@ -7,6 +7,7 @@ export interface CartLine {
   unitPriceCents: number;
   quantity: number;
   imageUrl?: string | null;
+  color?: string | null;
 }
 
 const STORAGE_KEY = 'elboon_cart';
@@ -18,6 +19,10 @@ function loadFromStorage(): CartLine[] {
   if (!raw) return [];
 
   return JSON.parse(raw) as CartLine[];
+}
+
+function sameLine(line: CartLine, productId: string, color?: string | null): boolean {
+  return line.productId === productId && (line.color ?? null) === (color ?? null);
 }
 
 export const cart = writable<CartLine[]>(loadFromStorage());
@@ -43,12 +48,12 @@ export function addToCart(
   origin?: { x: number; y: number }
 ): void {
   cart.update((lines) => {
-    const existing = lines.find((l) => l.productId === line.productId);
+    const existing = lines.find((item) => sameLine(item, line.productId, line.color));
     if (existing) {
-      return lines.map((l) =>
-        l.productId === line.productId
-          ? { ...l, quantity: l.quantity + quantity, imageUrl: line.imageUrl ?? l.imageUrl }
-          : l
+      return lines.map((item) =>
+        sameLine(item, line.productId, line.color)
+          ? { ...item, quantity: item.quantity + quantity, imageUrl: line.imageUrl ?? item.imageUrl }
+          : item
       );
     }
     return [...lines, { ...line, quantity }];
@@ -65,18 +70,18 @@ export function originFromEvent(event: Event): { x: number; y: number } {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
-export function setCartQuantity(productId: string, quantity: number): void {
+export function setCartQuantity(productId: string, quantity: number, color?: string | null): void {
   if (quantity < 1) {
-    removeFromCart(productId);
+    removeFromCart(productId, color);
     return;
   }
   cart.update((lines) =>
-    lines.map((line) => (line.productId === productId ? { ...line, quantity } : line))
+    lines.map((line) => (sameLine(line, productId, color) ? { ...line, quantity } : line))
   );
 }
 
-export function removeFromCart(productId: string): void {
-  cart.update((lines) => lines.filter((l) => l.productId !== productId));
+export function removeFromCart(productId: string, color?: string | null): void {
+  cart.update((lines) => lines.filter((line) => !sameLine(line, productId, color)));
 }
 
 export function clearCart(): void {

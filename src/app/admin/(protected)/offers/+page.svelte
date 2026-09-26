@@ -168,7 +168,7 @@
     min-width: 0;
     padding: 8px 10px;
     border: 1px solid var(--border);
-    background: #fff;
+    background: var(--bg-subtle);
   }
 
   .muted {

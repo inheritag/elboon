@@ -8,7 +8,7 @@ import type { RequestHandler } from './$types';
 interface CreateOrderBody {
   customerEmail?: string;
   shippingAddress: ShippingAddress;
-  items: { productId: string; quantity: number }[];
+  items: { productId: string; quantity: number; color?: string | null }[];
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {

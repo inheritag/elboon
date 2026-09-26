@@ -4,7 +4,7 @@
   import { scale } from 'svelte/transition';
   import './app.css';
   import AuthSheet from './AuthSheet.svelte';
-  import FrozenBanner from './FrozenBanner.svelte';
+  import ComingSoonBanner from './ComingSoonBanner.svelte';
   import { authHref, authModeFrom } from './auth-href';
   import { cart, cartBump, cartFly } from './cart';
   import Icon from './Icon.svelte';
@@ -114,7 +114,7 @@
       </nav>
     </div>
     {#if !page.url.pathname.startsWith('/admin')}
-      <FrozenBanner />
+      <ComingSoonBanner />
     {/if}
   </header>
 
@@ -228,7 +228,7 @@
     padding: 0 12px 0 38px;
     border: 1px solid var(--border);
     border-radius: var(--card-radius);
-    background: #fff;
+    background: var(--bg-subtle);
     color: var(--text-primary);
     font-family: var(--font-body);
     font-size: 15px;

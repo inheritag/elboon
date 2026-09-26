@@ -1,7 +1,7 @@
 import type { CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import type { ProductRow } from '../domain/product';
+import type { ProductColor, ProductRow } from '../domain/product';
 import { config } from './config';
 import { LocalStore } from './local-store';
 import { PostgresStore } from './postgres-store';
@@ -16,6 +16,7 @@ export interface CreateProductInput {
   offerEnabled: boolean;
   active?: boolean;
   imageUrls?: string[];
+  colors?: ProductColor[];
 }
 
 export interface DevEmail {
@@ -73,7 +74,7 @@ export interface Store {
   updateProduct(id: string, input: CreateProductInput): Promise<void>;
   deleteProduct(id: string): Promise<void>;
   toggleProductActive(id: string): Promise<void>;
-  decrementProductStock(id: string, quantity: number): Promise<void>;
+  decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void>;
   listCategories(): Promise<CategoryRecord[]>;
   createCategory(label: string): Promise<CategoryRecord>;
 

@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import type { ProductRow } from '../domain/product';
+import { parseColors, totalColorStock, type ProductRow } from '../domain/product';
 import { decrementStock } from '../domain/stock';
 import type {
   CreateProductInput,
@@ -77,6 +77,10 @@ const SEED_PRODUCTS: LocalProduct[] = [
     low_stock_threshold: 3,
     offer_enabled: true,
     active: true,
+    variants: [
+      { name: 'Black', hex: '#111111', imageUrls: ['/products/earbuds.jpg', '/products/earbuds-side.jpg'], stockQty: 7 },
+      { name: 'White', hex: '#f4f4f4', imageUrls: ['/products/earbuds-out.jpg'], stockQty: 5 }
+    ],
     created_at: '2026-01-05T00:00:00.000Z'
   },
   {
@@ -249,6 +253,7 @@ export class LocalStore implements Store {
       low_stock_threshold: input.lowStockThreshold,
       offer_enabled: input.offerEnabled,
       active: input.active ?? true,
+      variants: input.colors ?? [],
       created_at: new Date().toISOString()
     });
     this.persist();
@@ -268,6 +273,7 @@ export class LocalStore implements Store {
     if (input.imageUrls !== undefined) {
       product.image_urls = input.imageUrls;
     }
+    product.variants = input.colors ?? [];
     this.persist();
   }
 
@@ -298,11 +304,18 @@ export class LocalStore implements Store {
     return category;
   }
 
-  async decrementProductStock(id: string, quantity: number): Promise<void> {
+  async decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void> {
     const product = this.data.products.find((row) => row.id === id);
-    const currentStock = product?.stock_qty ?? 0;
-    const remaining = decrementStock(currentStock, quantity);
-    if (product) product.stock_qty = remaining;
+    if (!product) return;
+    const colors = parseColors(product.variants);
+    if (color && colors.length > 0) {
+      product.variants = colors.map((item) =>
+        item.name === color ? { ...item, stockQty: decrementStock(item.stockQty, quantity) } : item
+      );
+      product.stock_qty = totalColorStock(parseColors(product.variants));
+    } else {
+      product.stock_qty = decrementStock(product.stock_qty, quantity);
+    }
     this.persist();
   }
 

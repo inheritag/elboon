@@ -1,6 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../domain/catalog';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
+import { colorsFromForm } from '../../../../libs/product-colors';
+import { totalColorStock } from '../../../../domain/product';
 import { saveProductImages } from '../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -40,23 +42,28 @@ async function productFromForm(form: FormData): Promise<CreateProductInput | { e
   }
 
   let imageUrls: string[] | undefined;
+  let colors;
   try {
     const uploaded = await saveProductImages(form);
     if (uploaded.length > 0) imageUrls = uploaded;
+    colors = await colorsFromForm(form);
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Could not save images' };
   }
+
+  const stockQty = colors.length > 0 ? totalColorStock(colors) : Number(form.get('stockQty') ?? 0);
 
   return {
     name,
     description: String(form.get('description') ?? ''),
     priceCents: Math.round(price * 100),
     category,
-    stockQty: Number(form.get('stockQty') ?? 0),
+    stockQty,
     lowStockThreshold: Number(form.get('lowStockThreshold') ?? 3),
     offerEnabled: form.get('offerEnabled') === 'on',
     active: form.get('active') === 'on',
-    imageUrls
+    imageUrls,
+    colors
   };
 }
 

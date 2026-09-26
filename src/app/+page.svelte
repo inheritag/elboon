@@ -65,6 +65,13 @@
         <div class="product-card-body">
           <h3>{product.name}</h3>
           <p class="price">{formatPrice(product.priceCents, product.currency)}</p>
+          {#if product.colors.length > 0}
+            <p class="dots" aria-label="Colours">
+              {#each product.colors as color}
+                <span class="dot" style="background:{color.hex}" title={color.name}></span>
+              {/each}
+            </p>
+          {/if}
           {#if product.offerEnabled}
             <p class="offer-line">or make an offer</p>
           {/if}
@@ -95,8 +102,8 @@
 <style>
   .hero {
     padding: clamp(32px, 6vw, 72px) 0 clamp(20px, 4vw, 36px);
-    background: var(--text-primary);
-    color: var(--bg);
+    background: #000;
+    color: var(--text-primary);
   }
 
   .eyebrow {
@@ -116,12 +123,12 @@
     font-weight: 800;
     letter-spacing: -0.05em;
     line-height: 1.08;
-    color: var(--bg);
+    color: var(--text-primary);
   }
 
   .hero h1 em {
     font-style: normal;
-    color: var(--bg);
+    color: var(--text-primary);
     position: relative;
     display: inline-block;
   }
@@ -145,7 +152,7 @@
 
   .lede {
     margin-top: 14px;
-    color: color-mix(in srgb, var(--bg) 75%, transparent);
+    color: var(--text-secondary);
     font-size: 17px;
     max-width: 40ch;
   }
@@ -186,7 +193,7 @@
     padding: 8px 16px;
     border: 1px solid var(--border);
     border-radius: var(--chip-radius);
-    background: #fff;
+    background: var(--bg-subtle);
     white-space: nowrap;
     text-transform: capitalize;
     overflow: hidden;
@@ -275,6 +282,19 @@
     margin-top: 4px;
     font-size: 13px;
     color: var(--text-secondary);
+  }
+
+  .dots {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 25%, transparent);
   }
 
   .tags {

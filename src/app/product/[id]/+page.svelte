@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { formatPrice } from '../../../domain/product';
+  import { formatPrice, stockFor } from '../../../domain/product';
   import { addToCart, originFromEvent } from '../../cart';
   import HagglePanel from '../../HagglePanel.svelte';
   import type { PageData } from './$types';
@@ -10,19 +10,35 @@
   let selectedImage = $state(0);
   let quantity = $state(1);
   let added = $state(false);
+  let selectedColor = $state<string | null>(null);
+  let colorPrimed = $state(false);
+  $effect.pre(() => {
+    if (colorPrimed) return;
+    selectedColor = data.product.colors.find((color) => color.stockQty > 0)?.name ?? data.product.colors[0]?.name ?? null;
+    colorPrimed = true;
+  });
 
-  let inStock = $derived(data.product.stockQty > 0);
-  let lowStock = $derived(data.product.stockQty <= data.product.lowStockThreshold);
-  let maxQty = $derived(Math.max(1, data.product.stockQty));
-  let images = $derived(data.product.imageUrls);
+  let selected = $derived(data.product.colors.find((color) => color.name === selectedColor) ?? null);
+  let images = $derived(selected && selected.imageUrls.length > 0 ? selected.imageUrls : data.product.imageUrls);
+  let stockQty = $derived(stockFor(data.product, selectedColor));
+  let inStock = $derived(stockQty > 0);
+  let lowStock = $derived(stockQty > 0 && stockQty <= data.product.lowStockThreshold);
+  let maxQty = $derived(Math.max(1, stockQty));
 
   function line() {
     return {
       productId: data.product.id,
-      name: data.product.name,
+      name: selectedColor ? `${data.product.name} · ${selectedColor}` : data.product.name,
       unitPriceCents: data.product.priceCents,
-      imageUrl: data.product.imageUrls[0] ?? null
+      imageUrl: images[0] ?? null,
+      color: selectedColor
     };
+  }
+
+  function pickColor(name: string) {
+    selectedColor = name;
+    selectedImage = 0;
+    quantity = 1;
   }
 
   function qty(): number {
@@ -74,10 +90,30 @@
     <h1>{data.product.name}</h1>
     <p class="price">{formatPrice(data.product.priceCents, data.product.currency)}</p>
 
+    {#if data.product.colors.length > 0}
+      <div class="colours">
+        <p class="colour-label">Colour: <strong>{selectedColor ?? 'Choose'}</strong></p>
+        <div class="swatches" role="listbox" aria-label="Colour">
+          {#each data.product.colors as color}
+            <button
+              type="button"
+              class="swatch"
+              class:active={selectedColor === color.name}
+              class:gone={color.stockQty <= 0}
+              style="--swatch:{color.hex}"
+              aria-label={color.name}
+              aria-pressed={selectedColor === color.name}
+              onclick={() => pickColor(color.name)}
+            ></button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
     <div class="buy-box">
       {#if inStock}
         {#if lowStock}
-          <p class="stock urgency">Only {data.product.stockQty} left</p>
+          <p class="stock urgency">Only {stockQty} left</p>
         {:else}
           <p class="stock in">In stock</p>
         {/if}
@@ -114,6 +150,8 @@
         askingCents={data.product.priceCents}
         currency={data.product.currency}
         signedInEmail={data.customer?.email ?? null}
+        color={selectedColor}
+        imageUrl={images[0] ?? null}
       />
     {/if}
 
@@ -182,7 +220,7 @@
     border: 2px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
-    background: #fff;
+    background: var(--bg-subtle);
     cursor: pointer;
   }
 
@@ -212,6 +250,40 @@
     font-weight: 800;
     color: var(--text-primary);
     margin: 8px 0 16px;
+  }
+
+  .colours {
+    margin: 0 0 18px;
+  }
+
+  .colour-label {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--swatch);
+    border: 1px solid color-mix(in srgb, var(--text-primary) 35%, transparent);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .swatch.active {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .swatch.gone {
+    opacity: 0.35;
   }
 
   .buy-box {

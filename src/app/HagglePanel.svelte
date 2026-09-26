@@ -12,13 +12,17 @@
     productName,
     askingCents,
     currency = 'GBP',
-    signedInEmail = null
+    signedInEmail = null,
+    color = null,
+    imageUrl = null
   }: {
     productId: string;
     productName: string;
     askingCents: number;
     currency?: string;
     signedInEmail?: string | null;
+    color?: string | null;
+    imageUrl?: string | null;
   } = $props();
 
   let floorCents = $derived(haggleFloorCents(askingCents));
@@ -132,7 +136,13 @@
           type="button"
           onclick={(event) =>
             addToCart(
-              { productId, name: productName, unitPriceCents: askingCents },
+              {
+                productId,
+                name: color ? `${productName} · ${color}` : productName,
+                unitPriceCents: askingCents,
+                color,
+                imageUrl
+              },
               1,
               originFromEvent(event)
             )}
