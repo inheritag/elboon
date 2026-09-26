@@ -72,3 +72,10 @@ INSERT INTO categories (slug, label) VALUES
   ('home', 'home'),
   ('beauty', 'beauty')
 ON CONFLICT (slug) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS product_images (
+  id         text PRIMARY KEY,
+  mime       text NOT NULL,
+  bytes      bytea NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
