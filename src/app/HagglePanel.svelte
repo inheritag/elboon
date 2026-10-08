@@ -166,12 +166,13 @@
 
 <style>
   .haggle {
-    margin-top: 32px;
-    padding: 24px;
-    background: var(--haggle-paper);
+    margin-top: 28px;
+    padding: 20px 0 0;
+    background: #fff;
     color: var(--haggle-ink);
-    border: 1.5px dashed var(--haggle-rule);
-    border-radius: var(--radius-md);
+    border: none;
+    border-top: 1px solid var(--haggle-rule);
+    border-radius: 0;
   }
 
   .prices {

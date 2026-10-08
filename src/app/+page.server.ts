@@ -20,6 +20,15 @@ function matchesQuery(row: ProductRow, query: string): boolean {
 
 const emptyNav: { top: CategoryRecord[]; levels: CategoryNavLevel[] } = { top: [], levels: [] };
 
+function coverImage(rows: ProductRow[], slug: string | null, categories: CategoryRecord[]): string | null {
+  const row = rows.find((item) => {
+    if (!item.image_urls[0]) return false;
+    if (!slug) return true;
+    return inCategoryTree(item.category, slug, categories);
+  });
+  return row?.image_urls[0] ?? null;
+}
+
 export const load: PageServerLoad = async ({ url }) => {
   const category = url.searchParams.get('category');
   const q = url.searchParams.get('q')?.trim() ?? '';
@@ -38,6 +47,14 @@ export const load: PageServerLoad = async ({ url }) => {
       .map(productFromRow)
       .map((product) => toProductSummary(product, totalAvailable(product, held)));
     const window = paginate(matched, requestedPage);
+    const nav = categoryNav(category, categories);
+    const heroImage = coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories);
+    const heroProduct = rows.find((row) => row.image_urls[0] === heroImage);
+    const tiles = categoryNav(null, categories).top.map((item) => ({
+      slug: item.slug,
+      label: item.label,
+      imageUrl: coverImage(rows, item.slug, categories)
+    }));
     return {
       products: window.items,
       total: window.total,
@@ -45,10 +62,12 @@ export const load: PageServerLoad = async ({ url }) => {
       pages: window.pages,
       category,
       categories,
-      nav: categoryNav(category, categories),
+      nav,
       trail: categoryTrail(category, categories),
       categoryLabel: category ? categoryPath(category, categories) : null,
-      q
+      q,
+      hero: heroImage && heroProduct ? { imageUrl: heroImage, href: `/product/${heroProduct.id}` } : null,
+      tiles
     };
   } catch (err) {
     console.error('Failed to load catalog', err);
@@ -62,7 +81,9 @@ export const load: PageServerLoad = async ({ url }) => {
       nav: emptyNav,
       trail: [],
       categoryLabel: category,
-      q
+      q,
+      hero: null,
+      tiles: []
     };
   }
 };

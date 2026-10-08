@@ -162,7 +162,7 @@
 
   .chip {
     border: 1.5px solid var(--border);
-    border-radius: 999px;
+    border-radius: 0;
     background: var(--surface);
     color: var(--text-primary);
     padding: 8px 14px;
@@ -173,9 +173,9 @@
   }
 
   .chip.on {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    color: var(--accent);
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #fff;
   }
 
   .custom {
@@ -231,7 +231,7 @@
     width: 100%;
     padding: 10px 12px;
     border: 1.5px solid var(--border);
-    border-radius: 10px;
+    border-radius: 0;
     background: var(--surface);
     color: var(--text-primary);
     font: inherit;

@@ -30,8 +30,8 @@
 <style>
   .hero {
     padding: clamp(48px, 10vw, 96px) 0;
-    background: var(--ink);
-    color: var(--on-ink);
+    background: #fff;
+    color: var(--text-primary);
     min-height: 50vh;
   }
 
@@ -39,7 +39,7 @@
     display: inline-block;
     margin-bottom: 14px;
     padding: 5px 12px;
-    background: var(--accent);
+    background: var(--ink);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -51,13 +51,13 @@
     font-size: clamp(28px, 6vw, 56px);
     font-weight: 800;
     letter-spacing: -0.04em;
-    color: var(--on-ink);
+    color: var(--text-primary);
     max-width: 16ch;
   }
 
   .lede {
     margin-top: 14px;
-    color: var(--on-ink-muted);
+    color: var(--text-secondary);
     font-size: 17px;
     max-width: 40ch;
   }

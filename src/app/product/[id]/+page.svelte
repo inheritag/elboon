@@ -222,7 +222,7 @@
     <h2>You might also like</h2>
     <div class="related-grid">
       {#each data.related as product}
-        <a class="card related-card" href="/product/{product.id}">
+        <a class="related-card" href="/product/{product.id}">
           <div class="related-media">
             {#if product.imageUrl}
               <img src={product.imageUrl} alt={product.name} />
@@ -236,9 +236,6 @@
           <div class="related-body">
             <h3>{product.name}</h3>
             <p>{formatPrice(product.priceCents, product.currency)}</p>
-            {#if product.offerEnabled}
-              <span class="offer-stamp">Offer</span>
-            {/if}
           </div>
         </a>
       {/each}
@@ -260,7 +257,7 @@
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: var(--radius-lg);
+    border-radius: 0;
     background: var(--bg-subtle);
   }
 
@@ -276,15 +273,15 @@
     height: 56px;
     padding: 0;
     border: 2px solid var(--border);
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
     background: var(--bg-subtle);
     cursor: pointer;
   }
 
   .thumb.active {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--accent);
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
   }
 
   .thumb img {
@@ -295,17 +292,17 @@
   }
 
   .category {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
-    text-transform: capitalize;
-    color: var(--accent);
-    margin-bottom: 6px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
   }
 
   .price {
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 22px;
+    font-weight: 700;
     color: var(--text-primary);
     margin: 8px 0 16px;
   }
@@ -337,7 +334,7 @@
   }
 
   .swatch.active {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
   }
 
@@ -356,8 +353,8 @@
     min-width: 44px;
     padding: 8px 14px;
     border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-subtle);
+    border-radius: 0;
+    background: #fff;
     color: var(--text-primary);
     font: inherit;
     font-size: 13px;
@@ -366,17 +363,17 @@
   }
 
   .size-pick.active {
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+    color: var(--text-primary);
+    font-weight: 700;
   }
 
   .buy-box {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 20px 22px 22px;
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
-    margin-top: 8px;
+    border: none;
+    padding: 4px 0 0;
+    background: none;
+    margin-top: 4px;
   }
 
   .stock {
@@ -405,8 +402,8 @@
   .qty {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    justify-content: flex-start;
+    gap: 16px;
     margin-bottom: 12px;
   }
 
@@ -419,7 +416,7 @@
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 0;
     overflow: hidden;
   }
 
@@ -498,12 +495,12 @@
   .related-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-    gap: 20px;
+    gap: 12px;
     margin-top: 20px;
   }
 
   .related-card {
-    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+    color: inherit;
   }
 
   .related-media {
@@ -513,32 +510,20 @@
 
   .related-card:hover {
     color: inherit;
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-hover);
-  }
-
-  .related-card img {
-    transition: transform var(--dur) var(--ease-out);
-  }
-
-  .related-card:hover img {
-    transform: scale(1.03);
   }
 
   .offer-stamp {
     position: absolute;
     top: 8px;
-    right: 8px;
+    left: 8px;
     z-index: 1;
-    transform: rotate(8deg);
     background: var(--accent);
     color: #fff;
     font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 4px 8px;
-    border-radius: 4px 10px 4px 10px;
+    padding: 4px 7px;
   }
 
   .related-card img,
@@ -550,7 +535,7 @@
   }
 
   .related-body {
-    padding: 16px 16px 18px;
+    padding: 10px 0 0;
   }
 
   .related-body h3 {
@@ -562,9 +547,8 @@
   }
 
   .related-body p {
-    font-family: var(--font-display);
     font-weight: 700;
-    font-size: 15px;
+    font-size: 14px;
     margin-top: 4px;
     letter-spacing: -0.02em;
   }

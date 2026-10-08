@@ -10,6 +10,9 @@
   let showCategories = $derived(
     data.categories.length > 0 && (data.total > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
   );
+  let showCampaign = $derived(!data.category && !data.q && !loadingCatalog && Boolean(data.hero));
+  let showLooks = $derived(showCampaign && data.tiles.length > 0);
+  let showTextNav = $derived(showCategories && (!showCampaign || data.tiles.length === 0));
 
   function catalogHref(opts: { category?: string | null; q?: string; page?: number } = {}): string {
     const category = opts.category === undefined ? data.category : opts.category;
@@ -24,15 +27,37 @@
   }
 </script>
 
-<section class="hero" data-hero>
-  <div class="container">
-    <p class="eyebrow">Offers accepted on selected items</p>
-    <h1>Shop everything. <em>Haggle when it counts.</em></h1>
-    <p class="lede">Pay as a guest. Courier delivery.</p>
-  </div>
-</section>
+{#if showCampaign && data.hero}
+  <a class="campaign" data-hero href={data.hero.href}>
+    <img src={data.hero.imageUrl} alt="" />
+    <div class="campaign-copy">
+      <p>Offers on selected items</p>
+      <h1>Shop everything. Haggle when it counts.</h1>
+    </div>
+  </a>
+{:else if !data.category && !data.q && !loadingCatalog}
+  <section class="hero-plain" data-hero>
+    <div class="container">
+      <p>Offers on selected items</p>
+      <h1>Shop everything. Haggle when it counts.</h1>
+    </div>
+  </section>
+{/if}
 
-{#if showCategories}
+{#if showLooks}
+  <nav class="looks container" aria-label="Categories">
+    {#each data.tiles as tile}
+      <a href={catalogHref({ category: tile.slug, page: 1 })} class:plain={!tile.imageUrl}>
+        {#if tile.imageUrl}
+          <img src={tile.imageUrl} alt="" />
+        {/if}
+        <span>{tile.label}</span>
+      </a>
+    {/each}
+  </nav>
+{/if}
+
+{#if showTextNav}
 <div class="category-bar">
   <nav class="categories container" aria-label="Categories">
     <a
@@ -68,7 +93,7 @@
 {/if}
 
 <section class="grid container">
-  {#if data.total > 0 && !loadingCatalog}
+  {#if data.total > 0 && !loadingCatalog && !showCampaign}
     <p class="count">
       {data.total}
       {data.total === 1 ? 'item' : 'items'}{#if data.pages > 1}
@@ -77,7 +102,7 @@
   {/if}
   {#if loadingCatalog}
     {#each Array(6) as _}
-      <div class="card product-card skel" aria-hidden="true">
+      <div class="product-card skel" aria-hidden="true">
         <div class="image-placeholder"></div>
         <div class="product-card-body">
           <div class="skel-line"></div>
@@ -87,7 +112,7 @@
     {/each}
   {:else}
     {#each data.products as product}
-      <a class="card product-card" href="/product/{product.id}">
+      <a class="product-card" href="/product/{product.id}">
         <div class="thumb">
           {#if product.imageUrl}
             <img src={product.imageUrl} alt={product.name} />
@@ -147,44 +172,118 @@
 </section>
 
 <style>
-  .hero {
-    padding: clamp(48px, 8vw, 96px) 0 clamp(52px, 7vw, 84px);
-    background: var(--ink);
-    color: var(--on-ink);
-  }
-
-  .eyebrow {
-    display: inline-block;
-    margin-bottom: 14px;
-    padding: 5px 12px;
-    background: var(--accent);
+  .campaign {
+    position: relative;
+    display: block;
     color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    background: #111;
+  }
+
+  .campaign:hover {
+    color: #fff;
+  }
+
+  .campaign img {
+    width: 100%;
+    height: clamp(300px, 34vw, 440px);
+    object-fit: cover;
+    object-position: center 42%;
+  }
+
+  .campaign-copy {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 40px) clamp(24px, 4vw, 40px);
+    background: linear-gradient(transparent, rgb(0 0 0 / 62%));
+  }
+
+  .campaign-copy p,
+  .hero-plain p {
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    border-radius: 999px;
   }
 
-  .hero h1 {
-    font-size: clamp(26px, 7vw, 64px);
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    line-height: 1.08;
-    color: var(--on-ink);
+  .campaign h1,
+  .hero-plain h1 {
+    max-width: 14ch;
+    font-size: clamp(36px, 5.4vw, 68px);
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    color: #fff;
   }
 
-  .hero h1 em {
-    font-style: italic;
-    font-weight: 560;
-    color: var(--accent);
+  .hero-plain {
+    padding: clamp(48px, 8vw, 88px) 0 clamp(28px, 4vw, 40px);
   }
 
-  .lede {
-    margin-top: 16px;
-    color: var(--on-ink-muted);
-    font-size: 18px;
-    max-width: 42ch;
+  .hero-plain p {
+    color: var(--text-secondary);
+  }
+
+  .hero-plain h1 {
+    color: var(--text-primary);
+  }
+
+  .looks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .looks a {
+    position: relative;
+    display: block;
+    color: #fff;
+    background: #111;
+  }
+
+  .looks a:hover {
+    color: #fff;
+  }
+
+  .looks img,
+  .looks a.plain {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .looks a.plain {
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+  }
+
+  .looks a.plain:hover {
+    color: var(--text-primary);
+  }
+
+  .looks span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 36px 12px 12px;
+    background: linear-gradient(transparent, rgb(0 0 0 / 62%));
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .looks a.plain span {
+    background: none;
+    color: var(--text-primary);
   }
 
   .category-bar {
@@ -221,50 +320,34 @@
   }
 
   .categories a {
-    position: relative;
-    isolation: isolate;
     flex: 0 0 auto;
-    padding: 9px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--chip-radius);
-    background: var(--surface);
+    padding: 14px 0;
+    margin-right: 22px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
     white-space: nowrap;
     text-transform: capitalize;
-    overflow: hidden;
-    transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
-  }
-
-  .categories a::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 200ms var(--ease-out);
-    z-index: -1;
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .categories a:hover {
     color: inherit;
-    border-color: color-mix(in srgb, var(--border) 50%, var(--text-primary));
   }
 
   .categories a.active,
   .categories a.active:hover {
-    color: #fff;
-    border-color: var(--accent);
-  }
-
-  .categories a.active::before {
-    transform: scaleX(1);
+    color: var(--text-primary);
+    border-bottom-color: var(--ink);
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-    gap: clamp(18px, 2.6vw, 28px);
-    padding: 28px 0 72px;
+    gap: 28px 12px;
+    padding: 20px 0 72px;
   }
 
   .count {
@@ -285,8 +368,9 @@
   }
 
   .pager a {
-    color: var(--accent);
+    color: var(--text-primary);
     text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .pager .dead {
@@ -296,15 +380,10 @@
   .product-card {
     position: relative;
     color: inherit;
-    transition:
-      transform var(--dur) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out);
   }
 
   .product-card:hover {
     color: inherit;
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-hover);
   }
 
   .thumb {
@@ -318,21 +397,16 @@
     aspect-ratio: 1;
     object-fit: cover;
     background: var(--bg-subtle);
-    transition: transform var(--dur) var(--ease-out);
-  }
-
-  .product-card:hover img {
-    transform: scale(1.03);
   }
 
   .product-card-body {
-    padding: 16px 18px 18px;
+    padding: 10px 0 0;
   }
 
   .product-card-body h3 {
     font-family: var(--font-body);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: -0.01em;
     line-height: 1.35;
     display: -webkit-box;
@@ -343,29 +417,24 @@
   }
 
   .price {
-    font-family: var(--font-display);
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-primary);
     margin: 4px 0 0;
-    letter-spacing: -0.02em;
   }
 
   .offer-stamp {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    left: 8px;
     z-index: 1;
-    transform: rotate(8deg);
     background: var(--accent);
     color: #fff;
     font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 4px 8px;
-    border-radius: 4px 10px 4px 10px;
-    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+    padding: 4px 7px;
   }
 
   .dots {
@@ -419,17 +488,26 @@
     width: 40%;
   }
 
+  @media (min-width: 901px) {
+    .looks img,
+    .looks a.plain {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .looks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 720px) {
-    .hero {
-      padding: 28px 0 24px;
+    .campaign img {
+      height: 420px;
     }
 
-    .hero h1 {
-      font-size: clamp(28px, 8.4vw, 40px);
-    }
-
-    .lede {
-      font-size: 16px;
+    .looks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .empty .btn {
@@ -443,7 +521,7 @@
     }
 
     .product-card-body {
-      padding: 12px;
+      padding: 8px 0 0;
     }
 
     .product-card-body h3 {
@@ -456,19 +534,15 @@
   }
 
   @media (forced-colors: active) {
-    .hero h1,
-    .lede {
+    .campaign h1,
+    .campaign-copy p,
+    .hero-plain h1,
+    .hero-plain p {
       color: CanvasText;
     }
 
-    .eyebrow {
-      background: Canvas;
-      color: CanvasText;
+    .campaign {
       border: 1px solid CanvasText;
-    }
-
-    .hero h1 em {
-      color: CanvasText;
     }
 
     .offer-stamp {
@@ -483,14 +557,11 @@
       border-bottom-color: CanvasText;
     }
 
-    .categories a::before {
-      display: none;
-    }
-
     .categories a {
       background: Canvas;
       color: CanvasText;
-      border: 1px solid CanvasText;
+      border: none;
+      border-bottom: 2px solid transparent;
     }
 
     .categories a.active,
@@ -505,10 +576,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .product-card:hover {
-      transform: none;
-    }
-
-    .product-card:hover img {
       transform: none;
     }
   }

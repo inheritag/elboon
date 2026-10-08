@@ -47,7 +47,7 @@
     position: relative;
     height: 14px;
     border-radius: 999px;
-    background: #ead8c0;
+    background: #e6e6e6;
     border: 1px solid var(--haggle-rule);
   }
 

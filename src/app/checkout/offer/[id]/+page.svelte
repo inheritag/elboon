@@ -105,11 +105,13 @@
 
   .ticket {
     background: var(--haggle-paper);
-    border: 1px dashed var(--haggle-rule);
-    border-radius: 12px;
-    padding: 28px 24px 22px;
+    border: none;
+    border-top: 1px solid var(--haggle-rule);
+    border-bottom: 1px solid var(--haggle-rule);
+    border-radius: 0;
+    padding: 28px 0 22px;
     margin-bottom: 24px;
-    text-align: center;
+    text-align: left;
   }
 
   .ribbon {

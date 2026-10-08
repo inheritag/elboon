@@ -40,7 +40,7 @@
     display: flex;
     align-items: stretch;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 0;
     background: var(--bg-subtle);
     overflow: hidden;
   }

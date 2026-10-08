@@ -1,48 +1,47 @@
-/* Two tones: warm ink for the frame, stone for the shop floor.
-   Cards stay light. No full-page black, no flat white. */
+/* White page, black type, one red. The photograph is the decoration. */
 :root {
   color-scheme: light;
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Nunito Sans', -apple-system, sans-serif;
+  --font-display: 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
 
-  --ink: #241c18;
-  --ink-soft: #322823;
-  --on-ink: #f6f1eb;
-  --on-ink-muted: #cfc3b8;
+  --ink: #111111;
+  --ink-soft: #f2f2f2;
+  --on-ink: #ffffff;
+  --on-ink-muted: #767676;
 
-  --bg: #efe6dc;
-  --bg-subtle: #e4d8cc;
-  --surface: #fffaf6;
-  --border: #e0d2c6;
-  --text-primary: #241c18;
-  --text-secondary: #6a5e56;
-  --text-muted: #8f8178;
-  --accent: #e36b4f;
-  --accent-hover: #cf573d;
-  --accent-light: #fdece7;
-  --on-accent: #fffdfb;
+  --bg: #ffffff;
+  --bg-subtle: #f2f2f2;
+  --surface: #ffffff;
+  --border: #e5e5e5;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-muted: #8a8a8a;
+  --accent: #d0121a;
+  --accent-hover: #a80e15;
+  --accent-light: #fff;
+  --on-accent: #ffffff;
 
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 26px;
-  --card-radius: 20px;
-  --btn-radius: 999px;
-  --btn-weight: 800;
-  --btn-size: 15px;
-  --btn-track: 0;
-  --btn-transform: none;
-  --btn-border: 1.5px solid transparent;
-  --btn-pad-y: 13px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --card-radius: 0;
+  --btn-radius: 0;
+  --btn-weight: 700;
+  --btn-size: 14px;
+  --btn-track: 0.04em;
+  --btn-transform: uppercase;
+  --btn-border: 1px solid transparent;
+  --btn-pad-y: 14px;
   --btn-pad-x: 22px;
 
-  --shadow-sm: 0 1px 2px rgb(42 36 32 / 4%), 0 10px 28px rgb(42 36 32 / 5%);
-  --shadow-md: 0 18px 44px rgb(42 36 32 / 10%);
+  --shadow-sm: none;
+  --shadow-md: none;
 
-  --haggle-paper: #fff6ee;
-  --haggle-ink: #2a2420;
-  --haggle-rule: #ecd9c8;
-  --haggle-gold: #e36b4f;
-  --haggle-green: #217a4a;
+  --haggle-paper: #ffffff;
+  --haggle-ink: #111111;
+  --haggle-rule: #e5e5e5;
+  --haggle-gold: #d0121a;
+  --haggle-green: #111111;
 
   --space-xs: 8px;
   --space-sm: 14px;
@@ -50,14 +49,14 @@
   --space-lg: 36px;
   --space-xl: 56px;
 
-  --max-width: 1120px;
-  --header-h: 88px;
+  --max-width: 1360px;
+  --header-h: 108px;
   --chip-radius: 999px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 140ms;
   --dur: 220ms;
   --dur-slow: 260ms;
-  --shadow-hover: 0 16px 34px color-mix(in srgb, var(--accent) 18%, transparent);
+  --shadow-hover: none;
 }
 
 *, *::before, *::after {
@@ -90,10 +89,10 @@ img {
 }
 
 h1, h2, h3 {
-  font-family: var(--font-display);
-  font-weight: 560;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
 a {
@@ -102,13 +101,15 @@ a {
 }
 
 a:hover {
-  color: var(--accent);
+  color: inherit;
 }
 
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 24px);
+  /* A page that sets `padding: 20px 0` on the same element must not wipe the side inset. */
+  padding-left: clamp(16px, 4vw, 24px) !important;
+  padding-right: clamp(16px, 4vw, 24px) !important;
 }
 
 .btn {
@@ -144,26 +145,27 @@ a:hover {
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: var(--on-accent);
-  border-color: var(--accent);
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 22%, transparent);
+  background: var(--ink);
+  color: var(--on-ink);
+  border-color: var(--ink);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
-  color: var(--on-accent);
+  background: #333;
+  border-color: #333;
+  color: var(--on-ink);
 }
 
 .btn-secondary {
   background: var(--surface);
   color: var(--text-primary);
-  border-color: var(--border);
-  border-width: 1.5px;
+  border-color: var(--ink);
+  border-width: 1px;
 }
 
 .btn-secondary:hover {
-  border-color: var(--text-secondary);
+  background: var(--bg-subtle);
   color: var(--text-primary);
 }
 
@@ -174,9 +176,9 @@ a:hover {
 
 .card {
   background: var(--surface);
-  border: 1px solid color-mix(in srgb, var(--border) 85%, white);
-  border-radius: var(--card-radius, var(--radius-md));
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .field {
@@ -215,7 +217,7 @@ a:hover {
 .btn:focus-visible,
 .nav-item:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -288,32 +290,32 @@ input[type='number'] {
 
 .badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 0;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 600;
 }
 
 .badge-low-stock {
-  background: var(--accent-light);
+  background: none;
   color: var(--accent);
-  border: 1px solid var(--accent);
+  border: none;
 }
 
 .badge-haggle {
-  background: var(--haggle-paper);
+  background: none;
   color: var(--accent);
-  border: 1.5px dashed var(--accent);
+  border: none;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  font-family: var(--font-body);
 }
 
 .optional-tag {
   display: inline-flex;
   align-items: center;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--surface);
   color: var(--text-secondary);
   border: 1px solid var(--border);
@@ -328,12 +330,12 @@ input[type='number'] {
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  border-radius: 999px;
-  border: 1.5px dashed color-mix(in srgb, var(--accent) 50%, var(--border));
+  border-radius: 0;
+  border: 1px dashed var(--text-muted);
   background: var(--surface);
-  color: var(--accent);
+  color: var(--text-primary);
   font: inherit;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   transition:
@@ -342,10 +344,10 @@ input[type='number'] {
 }
 
 .quiet-add:hover {
-  background: var(--accent-light);
+  background: var(--bg-subtle);
   border-style: solid;
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 .error-text {
@@ -356,10 +358,10 @@ input[type='number'] {
 
 @media (prefers-contrast: more) {
   :root {
-    --border: #14110e;
-    --text-secondary: #14110e;
-    --text-muted: #3d3832;
-    --bg-subtle: #d9d4c8;
+    --border: #111111;
+    --text-secondary: #111111;
+    --text-muted: #333333;
+    --bg-subtle: #e8e8e8;
   }
 
   .btn-primary,

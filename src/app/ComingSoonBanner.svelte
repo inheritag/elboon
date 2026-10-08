@@ -7,9 +7,8 @@
 <style>
   .soon {
     position: relative;
-    background: transparent;
-    color: var(--on-ink-muted);
-    border-top: 1px solid color-mix(in srgb, var(--on-ink) 12%, transparent);
+    background: var(--ink);
+    color: #fff;
     text-align: center;
     overflow: hidden;
   }
@@ -17,18 +16,18 @@
   p {
     position: relative;
     margin: 0;
-    padding: 14px 16px;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
   .date {
     display: inline-block;
-    margin-left: 8px;
-    color: var(--accent);
-    letter-spacing: 0.08em;
+    margin-left: 10px;
+    color: #fff;
+    letter-spacing: 0.16em;
   }
 
   @media (forced-colors: active) {

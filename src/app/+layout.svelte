@@ -92,6 +92,9 @@
 
 <div class="shell">
   <header class="site-header" class:compact={leftHero} bind:this={headerEl}>
+    {#if !page.url.pathname.startsWith('/admin')}
+      <ComingSoonBanner />
+    {/if}
     <div class="container header-inner">
       <a href="/" class="logo"><span class="logo-mark">e.</span> elboon</a>
       <form class="search" action="/" method="get" role="search">
@@ -124,9 +127,6 @@
         </a>
       </nav>
     </div>
-    {#if !page.url.pathname.startsWith('/admin')}
-      <ComingSoonBanner />
-    {/if}
   </header>
 
   {#if $cartFly && flyTo}
@@ -177,14 +177,13 @@
     position: sticky;
     top: 0;
     z-index: 30;
-    color: var(--on-ink);
-    background: var(--ink);
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--dur) var(--ease-out);
+    color: var(--text-primary);
+    background: #fff;
+    border-bottom: 1px solid var(--border);
   }
 
   .site-header.compact {
-    border-bottom-color: color-mix(in srgb, var(--on-ink) 14%, transparent);
+    border-bottom-color: var(--border);
   }
 
   .header-inner {
@@ -192,7 +191,7 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 16px;
-    height: 88px;
+    height: 64px;
   }
 
   .site-header a {
@@ -200,11 +199,12 @@
   }
 
   .logo {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 28px;
-    letter-spacing: -0.03em;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.05em;
     color: inherit;
+    text-transform: lowercase;
   }
 
   .logo:hover {
@@ -212,7 +212,7 @@
   }
 
   .logo-mark {
-    color: var(--accent);
+    color: inherit;
   }
 
   .search {
@@ -227,29 +227,29 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--on-ink-muted);
+    color: var(--text-primary);
     pointer-events: none;
   }
 
   .search input {
     width: 100%;
-    height: 42px;
+    height: 40px;
     padding: 0 12px 0 38px;
-    border: 1.5px solid color-mix(in srgb, var(--on-ink) 18%, transparent);
-    border-radius: 999px;
-    background: var(--ink-soft);
-    color: var(--on-ink);
+    border: none;
+    border-radius: 0;
+    background: var(--bg-subtle);
+    color: var(--text-primary);
     font-family: var(--font-body);
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .search input::placeholder {
-    color: var(--on-ink-muted);
+    color: var(--text-muted);
   }
 
   .search input:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: 1px solid var(--ink);
+    outline-offset: 0;
   }
 
   nav {
@@ -262,18 +262,20 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    border: 1.5px solid color-mix(in srgb, var(--on-ink) 22%, transparent);
-    border-radius: 999px;
-    padding: 8px 14px;
-    background: transparent;
-    color: var(--on-ink);
+    border: none;
+    border-radius: 0;
+    padding: 8px 2px;
+    background: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 14px;
     font: inherit;
     cursor: pointer;
   }
 
   .nav-item:hover {
-    border-color: var(--accent);
     color: inherit;
+    opacity: 0.55;
   }
 
   .nav-logout {
@@ -291,12 +293,12 @@
     min-width: 1.4em;
     justify-content: center;
     padding: 1px 6px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--on-accent);
-    font-size: 12px;
+    border-radius: 0;
+    background: var(--ink);
+    color: var(--on-ink);
+    font-size: 11px;
     font-weight: 700;
-    border: 1px solid var(--accent);
+    border: none;
   }
 
   @media (forced-colors: active) {
@@ -355,10 +357,11 @@
   }
 
   .site-footer {
-    background: var(--ink);
-    color: var(--on-ink-muted);
-    font-size: 14px;
-    font-weight: 600;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
     margin-top: var(--space-xl);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -377,11 +380,13 @@
   }
 
   .site-footer a {
-    color: var(--on-ink-muted);
+    color: var(--text-primary);
   }
 
   .site-footer a:hover {
-    color: var(--on-ink);
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   @media (max-width: 720px) {

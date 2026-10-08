@@ -275,7 +275,7 @@
   }
 
   input[type='color']:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--ink);
     outline-offset: 3px;
   }
 
@@ -291,7 +291,7 @@
   }
 
   .remove:hover {
-    color: var(--accent);
+    color: var(--ink);
   }
 
   .quiet-add {
