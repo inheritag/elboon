@@ -62,25 +62,29 @@
   </article>
 
   <article class="card block">
-    <h2><a href="/admin/products">Low stock</a> ({data.lowStock.length})</h2>
-    {#each data.lowStock.slice(0, 8) as product}
+    <h2><a href="/admin/stock">Low stock</a> ({data.lowStock.length})</h2>
+    {#each data.lowStock.slice(0, 8) as line}
       <p>
-        <a href="/admin/products/{product.id}">{product.name}</a>: {product.stock_qty} left
+        <a href="/admin/stock?q={encodeURIComponent(line.productName)}"
+          >{line.productName}{#if line.color}
+            · {line.color}{/if}{#if line.size}
+            · {line.size}{/if}</a
+        >: {line.available} free
       </p>
     {:else}
       <p class="muted">Stock looks fine.</p>
     {/each}
     {#if data.lowStock.length > 8}
-      <p><a href="/admin/products">+{data.lowStock.length - 8} more on Products</a></p>
+      <p><a href="/admin/stock">+{data.lowStock.length - 8} more on Stock</a></p>
     {/if}
   </article>
 </section>
 
 <style>
   .desk {
-    padding: 24px 0 48px;
+    padding: 32px 0 64px;
     display: grid;
-    gap: 16px;
+    gap: 24px;
     max-width: 720px;
   }
 
@@ -89,7 +93,7 @@
   }
 
   .block {
-    padding: 20px;
+    padding: 24px 26px;
   }
 
   h2 {
@@ -132,7 +136,7 @@
     justify-content: space-between;
     gap: 16px;
     font-size: 14px;
-    padding: 3px 0;
+    padding: 10px 0;
     border-bottom: 1px solid var(--border);
   }
 

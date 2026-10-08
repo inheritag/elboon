@@ -9,7 +9,7 @@
 <section class="container pay">
   <h1>Payment</h1>
   <p>
-    Card details are collected by our payment provider, not on elboon. Amount due:
+    Amount due:
     <strong>{formatPrice(data.order.total_cents, 'GBP')}</strong>
   </p>
 
@@ -30,7 +30,9 @@
       <button class="btn btn-secondary" type="submit">Cancel</button>
     </form>
   </div>
-  <p class="fine">In development this completes the order without charging a real card.</p>
+  {#if data.devMode}
+    <p class="fine">Dev: no real charge.</p>
+  {/if}
 </section>
 
 <style>

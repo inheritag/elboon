@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calendarDay, deskFigures, listedInventory, soldPerDay } from './desk';
+import { variantKey } from './inventory';
 import type { ProductRow } from './product';
 
 function product(overrides: Partial<ProductRow> & Pick<ProductRow, 'id' | 'name' | 'price_cents' | 'stock_qty'>): ProductRow {
@@ -44,6 +45,27 @@ describe('listedInventory', () => {
       worthCents: 0,
       currency: 'GBP'
     });
+  });
+
+  it('values remaining sellable units after unpaid checkout holds', () => {
+    const held = new Map([[variantKey('c', 'Black'), 1]]);
+    const figures = listedInventory(
+      [
+        product({
+          id: 'c',
+          name: 'Earbuds',
+          price_cents: 5000,
+          stock_qty: 99,
+          variants: [
+            { name: 'Black', hex: '#111111', imageUrls: [], stockQty: 2 },
+            { name: 'White', hex: '#f4f4f4', imageUrls: [], stockQty: 1 }
+          ]
+        })
+      ],
+      held
+    );
+    expect(figures.unitCount).toBe(2);
+    expect(figures.worthCents).toBe(2 * 5000);
   });
 });
 

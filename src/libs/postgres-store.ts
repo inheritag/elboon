@@ -1,10 +1,20 @@
-import { slugFromLabel, type CategoryRecord } from '../domain/catalog';
+import { canNestUnder, slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import { parseColors, totalColorStock, type ProductRow } from '../domain/product';
-import { decrementStock } from '../domain/stock';
+import type { HeldUnit } from '../domain/inventory';
+import { applySale, applySet, productFromRow, type ProductRow } from '../domain/product';
 import { readyDb, toJsonValue } from './db';
 import type { CreateProductInput, CustomerPublic, OfferListRow, OrderSummaryRow, PendingOrder, Store } from './store';
+
+interface CategoryRow {
+  slug: string;
+  label: string;
+  parent_slug: string | null;
+}
+
+function asCategory(row: CategoryRow): CategoryRecord {
+  return { slug: row.slug, label: row.label, parentSlug: row.parent_slug ?? null };
+}
 
 export class PostgresStore implements Store {
   async listActiveProducts(category?: string | null): Promise<ProductRow[]> {
@@ -37,7 +47,7 @@ export class PostgresStore implements Store {
   async createProduct(input: CreateProductInput): Promise<void> {
     const sql = await readyDb();
     await sql`
-      INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls, variants)
+      INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls, variants, sizes, sku)
       VALUES (
         ${input.name},
         ${input.description},
@@ -48,7 +58,9 @@ export class PostgresStore implements Store {
         ${input.offerEnabled},
         ${input.active ?? true},
         ${input.imageUrls ?? []},
-        ${sql.json(toJsonValue(input.colors ?? []))}
+        ${sql.json(toJsonValue(input.colors ?? []))},
+        ${sql.json(toJsonValue(input.sizes ?? []))},
+        ${input.sku ?? null}
       )
     `;
   }
@@ -67,7 +79,9 @@ export class PostgresStore implements Store {
           low_stock_threshold = ${input.lowStockThreshold},
           offer_enabled = ${input.offerEnabled},
           image_urls = ${imageUrls},
-          variants = ${sql.json(toJsonValue(input.colors ?? []))}
+          variants = ${sql.json(toJsonValue(input.colors ?? []))},
+          sizes = ${sql.json(toJsonValue(input.sizes ?? []))},
+          sku = ${input.sku ?? null}
         WHERE id = ${id}
       `;
       return;
@@ -82,7 +96,9 @@ export class PostgresStore implements Store {
         stock_qty = ${input.stockQty},
         low_stock_threshold = ${input.lowStockThreshold},
         offer_enabled = ${input.offerEnabled},
-        variants = ${sql.json(toJsonValue(input.colors ?? []))}
+        variants = ${sql.json(toJsonValue(input.colors ?? []))},
+        sizes = ${sql.json(toJsonValue(input.sizes ?? []))},
+        sku = ${input.sku ?? null}
       WHERE id = ${id}
     `;
   }
@@ -99,41 +115,74 @@ export class PostgresStore implements Store {
 
   async listCategories(): Promise<CategoryRecord[]> {
     const sql = await readyDb();
-    return sql<CategoryRecord[]>`SELECT slug, label FROM categories ORDER BY label ASC`;
+    const rows = await sql<CategoryRow[]>`SELECT slug, label, parent_slug FROM categories ORDER BY label ASC`;
+    return rows.map(asCategory);
   }
 
-  async createCategory(label: string): Promise<CategoryRecord> {
+  async createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord> {
     const sql = await readyDb();
     const slug = slugFromLabel(label);
     if (!slug) throw new Error('Enter a category name');
-    const rows = await sql<CategoryRecord[]>`
-      INSERT INTO categories (slug, label) VALUES (${slug}, ${label.trim()})
+    const parent = parentSlug || null;
+    if (parent) {
+      const known = await this.listCategories();
+      if (!canNestUnder(null, parent, known)) throw new Error('Choose a parent the new category can sit under');
+    }
+    const rows = await sql<CategoryRow[]>`
+      INSERT INTO categories (slug, label, parent_slug) VALUES (${slug}, ${label.trim()}, ${parent})
       ON CONFLICT (slug) DO UPDATE SET label = EXCLUDED.label
-      RETURNING slug, label
+      RETURNING slug, label, parent_slug
     `;
-    return rows[0];
+    return asCategory(rows[0]);
   }
 
-  async decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void> {
+  async setProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<boolean> {
+    const sql = await readyDb();
+    const rows = await sql<ProductRow[]>`SELECT * FROM products WHERE id = ${id}`;
+    const product = rows[0];
+    if (!product) return false;
+    const next = applySet(productFromRow(product), quantity, color, size);
+    if (!next) return false;
+    await sql`
+      UPDATE products SET
+        variants = ${sql.json(toJsonValue(next.colors))},
+        sizes = ${sql.json(toJsonValue(next.sizes))},
+        stock_qty = ${next.stockQty}
+      WHERE id = ${id}
+    `;
+    return true;
+  }
+
+  async listHeldUnits(): Promise<HeldUnit[]> {
+    const sql = await readyDb();
+    const rows = await sql<{ items: OrderItem[]; created_at: Date | string }[]>`
+      SELECT items, created_at FROM orders WHERE payment_status = 'pending'
+    `;
+    return rows.flatMap((row) => {
+      const createdAt = row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at);
+      return (row.items ?? []).map((item) => ({
+        productId: item.productId,
+        color: item.color ?? null,
+        size: item.size ?? null,
+        quantity: item.quantity,
+        createdAt
+      }));
+    });
+  }
+
+  async decrementProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<void> {
     const sql = await readyDb();
     const rows = await sql<ProductRow[]>`SELECT * FROM products WHERE id = ${id}`;
     const product = rows[0];
     if (!product) return;
-    const colors = parseColors(product.variants);
-    if (color && colors.length > 0) {
-      const next = colors.map((item) =>
-        item.name === color ? { ...item, stockQty: decrementStock(item.stockQty, quantity) } : item
-      );
-      await sql`
-        UPDATE products SET
-          variants = ${sql.json(toJsonValue(next))},
-          stock_qty = ${totalColorStock(next)}
-        WHERE id = ${id}
-      `;
-      return;
-    }
-    const remaining = decrementStock(product.stock_qty, quantity);
-    await sql`UPDATE products SET stock_qty = ${remaining} WHERE id = ${id}`;
+    const next = applySale(productFromRow(product), quantity, color, size);
+    await sql`
+      UPDATE products SET
+        variants = ${sql.json(toJsonValue(next.colors))},
+        sizes = ${sql.json(toJsonValue(next.sizes))},
+        stock_qty = ${next.stockQty}
+      WHERE id = ${id}
+    `;
   }
 
   async isOfferEnabledProduct(id: string): Promise<boolean> {

@@ -14,6 +14,7 @@
     currency = 'GBP',
     signedInEmail = null,
     color = null,
+    size = null,
     imageUrl = null
   }: {
     productId: string;
@@ -22,6 +23,7 @@
     currency?: string;
     signedInEmail?: string | null;
     color?: string | null;
+    size?: string | null;
     imageUrl?: string | null;
   } = $props();
 
@@ -102,14 +104,13 @@
   </div>
 
   {#if status === 'sent'}
-    <p class="sent">Offer sent. We will email {email} if we accept or counter.</p>
+    <p class="sent">Offer sent. We will email {email}.</p>
     {#if !signedInEmail}
       <p class="fine">
         <a href={authHref(page.url, 'signup', { redirectTo: '/account/offers', email })}>Create an account</a>
-        to track it.
       </p>
     {:else}
-      <p class="fine"><a href="/account">See it under Your offers</a></p>
+      <p class="fine"><a href="/account">Your offers</a></p>
     {/if}
   {:else}
     <HaggleMeter
@@ -138,9 +139,10 @@
             addToCart(
               {
                 productId,
-                name: color ? `${productName} · ${color}` : productName,
+                name: productName,
                 unitPriceCents: askingCents,
                 color,
+                size,
                 imageUrl
               },
               1,
@@ -164,12 +166,12 @@
 
 <style>
   .haggle {
-    margin-top: 28px;
-    padding: 22px;
+    margin-top: 32px;
+    padding: 24px;
     background: var(--haggle-paper);
     color: var(--haggle-ink);
-    border: 1px dashed var(--haggle-rule);
-    border-radius: 12px;
+    border: 1.5px dashed var(--haggle-rule);
+    border-radius: var(--radius-md);
   }
 
   .prices {

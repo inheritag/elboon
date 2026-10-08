@@ -8,6 +8,7 @@ export interface CartLine {
   quantity: number;
   imageUrl?: string | null;
   color?: string | null;
+  size?: string | null;
 }
 
 const STORAGE_KEY = 'elboon_cart';
@@ -21,8 +22,12 @@ function loadFromStorage(): CartLine[] {
   return JSON.parse(raw) as CartLine[];
 }
 
-function sameLine(line: CartLine, productId: string, color?: string | null): boolean {
-  return line.productId === productId && (line.color ?? null) === (color ?? null);
+function sameLine(line: CartLine, productId: string, color?: string | null, size?: string | null): boolean {
+  return (
+    line.productId === productId &&
+    (line.color ?? null) === (color ?? null) &&
+    (line.size ?? null) === (size ?? null)
+  );
 }
 
 export const cart = writable<CartLine[]>(loadFromStorage());
@@ -48,10 +53,10 @@ export function addToCart(
   origin?: { x: number; y: number }
 ): void {
   cart.update((lines) => {
-    const existing = lines.find((item) => sameLine(item, line.productId, line.color));
+    const existing = lines.find((item) => sameLine(item, line.productId, line.color, line.size));
     if (existing) {
       return lines.map((item) =>
-        sameLine(item, line.productId, line.color)
+        sameLine(item, line.productId, line.color, line.size)
           ? { ...item, quantity: item.quantity + quantity, imageUrl: line.imageUrl ?? item.imageUrl }
           : item
       );
@@ -70,18 +75,18 @@ export function originFromEvent(event: Event): { x: number; y: number } {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
-export function setCartQuantity(productId: string, quantity: number, color?: string | null): void {
+export function setCartQuantity(productId: string, quantity: number, color?: string | null, size?: string | null): void {
   if (quantity < 1) {
-    removeFromCart(productId, color);
+    removeFromCart(productId, color, size);
     return;
   }
   cart.update((lines) =>
-    lines.map((line) => (sameLine(line, productId, color) ? { ...line, quantity } : line))
+    lines.map((line) => (sameLine(line, productId, color, size) ? { ...line, quantity } : line))
   );
 }
 
-export function removeFromCart(productId: string, color?: string | null): void {
-  cart.update((lines) => lines.filter((line) => !sameLine(line, productId, color)));
+export function removeFromCart(productId: string, color?: string | null, size?: string | null): void {
+  cart.update((lines) => lines.filter((line) => !sameLine(line, productId, color, size)));
 }
 
 export function clearCart(): void {

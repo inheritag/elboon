@@ -7,20 +7,44 @@
 
   let { data }: { data: PageData } = $props();
 
+  function firstColor(): string | null {
+    return data.product.colors.find((color) => colorFree(color.name) > 0)?.name ?? data.product.colors[0]?.name ?? null;
+  }
+
+  function firstSize(color: string | null): string | null {
+    return (
+      data.product.sizes.find((size) => freeFor(color, size.name) > 0)?.name ?? data.product.sizes[0]?.name ?? null
+    );
+  }
+
   let selectedImage = $state(0);
   let quantity = $state(1);
   let added = $state(false);
-  let selectedColor = $state<string | null>(null);
-  let colorPrimed = $state(false);
-  $effect.pre(() => {
-    if (colorPrimed) return;
-    selectedColor = data.product.colors.find((color) => color.stockQty > 0)?.name ?? data.product.colors[0]?.name ?? null;
-    colorPrimed = true;
-  });
+  let selectedColor = $state<string | null>(firstColor());
+  let selectedSize = $state<string | null>(firstSize(firstColor()));
+
+  function heldQty(color: string | null, size: string | null): number {
+    return (
+      data.holds.find(
+        (hold) => (hold.color ?? null) === (color ?? null) && (hold.size ?? null) === (size ?? null)
+      )?.held ?? 0
+    );
+  }
+
+  function freeFor(color: string | null, size: string | null): number {
+    return Math.max(0, stockFor(data.product, color, size) - heldQty(color, size));
+  }
+
+  function colorFree(name: string): number {
+    if (data.product.sizes.length > 0) {
+      return data.product.sizes.reduce((sum, size) => sum + freeFor(name, size.name), 0);
+    }
+    return freeFor(name, null);
+  }
 
   let selected = $derived(data.product.colors.find((color) => color.name === selectedColor) ?? null);
   let images = $derived(selected && selected.imageUrls.length > 0 ? selected.imageUrls : data.product.imageUrls);
-  let stockQty = $derived(stockFor(data.product, selectedColor));
+  let stockQty = $derived(freeFor(selectedColor, selectedSize));
   let inStock = $derived(stockQty > 0);
   let lowStock = $derived(stockQty > 0 && stockQty <= data.product.lowStockThreshold);
   let maxQty = $derived(Math.max(1, stockQty));
@@ -28,17 +52,29 @@
   function line() {
     return {
       productId: data.product.id,
-      name: selectedColor ? `${data.product.name} · ${selectedColor}` : data.product.name,
+      name: data.product.name,
       unitPriceCents: data.product.priceCents,
       imageUrl: images[0] ?? null,
-      color: selectedColor
+      color: selectedColor,
+      size: selectedSize
     };
+  }
+
+  function pickSize(name: string) {
+    selectedSize = name;
+    quantity = 1;
   }
 
   function pickColor(name: string) {
     selectedColor = name;
     selectedImage = 0;
     quantity = 1;
+    if (data.product.sizes.length > 0) {
+      const current = selectedSize;
+      if (!current || freeFor(name, current) <= 0) {
+        selectedSize = firstSize(name);
+      }
+    }
   }
 
   function qty(): number {
@@ -86,7 +122,7 @@
   </div>
 
   <div class="info">
-    <p class="category"><a href="/?category={data.product.category}">{data.product.category}</a></p>
+    <p class="category"><a href="/?category={data.product.category}">{data.categoryLabel}</a></p>
     <h1>{data.product.name}</h1>
     <p class="price">{formatPrice(data.product.priceCents, data.product.currency)}</p>
 
@@ -99,12 +135,30 @@
               type="button"
               class="swatch"
               class:active={selectedColor === color.name}
-              class:gone={color.stockQty <= 0}
+              class:gone={colorFree(color.name) <= 0}
               style="--swatch:{color.hex}"
               aria-label={color.name}
               aria-pressed={selectedColor === color.name}
               onclick={() => pickColor(color.name)}
             ></button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if data.product.sizes.length > 0}
+      <div class="sizes">
+        <p class="colour-label">Size: <strong>{selectedSize ?? 'Choose'}</strong></p>
+        <div class="size-picks" role="listbox" aria-label="Size">
+          {#each data.product.sizes as size}
+            <button
+              type="button"
+              class="size-pick"
+              class:active={selectedSize === size.name}
+              class:gone={freeFor(selectedColor, size.name) <= 0}
+              aria-pressed={selectedSize === size.name}
+              onclick={() => pickSize(size.name)}>{size.name}</button
+            >
           {/each}
         </div>
       </div>
@@ -151,6 +205,7 @@
         currency={data.product.currency}
         signedInEmail={data.customer?.email ?? null}
         color={selectedColor}
+        size={selectedSize}
         imageUrl={images[0] ?? null}
       />
     {/if}
@@ -174,12 +229,15 @@
             {:else}
               <div class="related-placeholder"></div>
             {/if}
+            {#if product.offerEnabled}
+              <span class="offer-stamp">Offer</span>
+            {/if}
           </div>
           <div class="related-body">
             <h3>{product.name}</h3>
             <p>{formatPrice(product.priceCents, product.currency)}</p>
             {#if product.offerEnabled}
-              <p class="offer-line">or make an offer</p>
+              <span class="offer-stamp">Offer</span>
             {/if}
           </div>
         </a>
@@ -192,8 +250,8 @@
   .product-detail {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: clamp(20px, 4vw, 40px);
-    padding: clamp(20px, 4vw, 32px) 0;
+    gap: clamp(28px, 5vw, 56px);
+    padding: clamp(28px, 5vw, 48px) 0;
     align-items: start;
   }
 
@@ -208,8 +266,8 @@
 
   .thumbs {
     display: flex;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 10px;
+    margin-top: 14px;
     flex-wrap: wrap;
   }
 
@@ -252,8 +310,9 @@
     margin: 8px 0 16px;
   }
 
-  .colours {
-    margin: 0 0 18px;
+  .colours,
+  .sizes {
+    margin: 0 0 22px;
   }
 
   .colour-label {
@@ -264,12 +323,12 @@
   .swatches {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
   }
 
   .swatch {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--swatch);
     border: 1px solid color-mix(in srgb, var(--text-primary) 35%, transparent);
@@ -282,15 +341,42 @@
     outline-offset: 2px;
   }
 
-  .swatch.gone {
+  .swatch.gone,
+  .size-pick.gone {
     opacity: 0.35;
+  }
+
+  .size-picks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .size-pick {
+    min-width: 44px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .size-pick.active {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .buy-box {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 16px 18px 18px;
+    padding: 20px 22px 22px;
+    background: var(--surface);
     box-shadow: var(--shadow-sm);
+    margin-top: 8px;
   }
 
   .stock {
@@ -333,7 +419,7 @@
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: 999px;
     overflow: hidden;
   }
 
@@ -349,7 +435,7 @@
   }
 
   .step:hover:not(:disabled) {
-    background: #eee;
+    background: var(--border);
   }
 
   .step:disabled {
@@ -387,7 +473,9 @@
   }
 
   .about {
-    margin-top: 28px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
   }
 
   .about h2 {
@@ -400,14 +488,18 @@
   }
 
   .related {
-    padding: 8px 0 48px;
+    padding: 16px 0 72px;
+  }
+
+  .related h2 {
+    margin-bottom: 4px;
   }
 
   .related-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-    gap: 16px;
-    margin-top: 12px;
+    gap: 20px;
+    margin-top: 20px;
   }
 
   .related-card {
@@ -415,8 +507,8 @@
   }
 
   .related-media {
+    position: relative;
     overflow: hidden;
-    border-radius: var(--card-radius) var(--card-radius) 0 0;
   }
 
   .related-card:hover {
@@ -433,10 +525,20 @@
     transform: scale(1.03);
   }
 
-  .offer-line {
-    margin-top: 4px;
-    font-size: 13px;
-    color: var(--text-secondary);
+  .offer-stamp {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    transform: rotate(8deg);
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 4px 10px 4px 10px;
   }
 
   .related-card img,
@@ -448,11 +550,23 @@
   }
 
   .related-body {
-    padding: 12px 14px 16px;
+    padding: 16px 16px 18px;
   }
 
   .related-body h3 {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+  }
+
+  .related-body p {
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 15px;
+    margin-top: 4px;
+    letter-spacing: -0.02em;
   }
 
   @media (forced-colors: active) {
@@ -460,6 +574,11 @@
       outline: 2px solid Highlight;
       outline-offset: 1px;
       box-shadow: none;
+    }
+
+    .size-pick.active {
+      border: 2px solid Highlight;
+      font-weight: 800;
     }
 
     .stock.in,
@@ -470,6 +589,12 @@
 
     .buy-box {
       border: 2px solid CanvasText;
+    }
+
+    .offer-stamp {
+      background: Canvas;
+      color: CanvasText;
+      border: 1px solid CanvasText;
     }
   }
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, onNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { scale } from 'svelte/transition';
   import './app.css';
@@ -71,6 +71,17 @@
   );
   let accountLabel = $derived(data.customer || data.admin ? 'Account' : 'Sign in');
   let showAuth = $derived(!data.customer && authModeFrom(page.url) !== null);
+
+  onNavigate((navigation) => {
+    if (typeof document === 'undefined' || !document.startViewTransition) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 
   function openSheet(event: MouseEvent, href: string) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
@@ -166,16 +177,14 @@
     position: sticky;
     top: 0;
     z-index: 30;
-    color: var(--text-primary);
-    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    color: var(--on-ink);
+    background: var(--ink);
     border-bottom: 1px solid transparent;
-    backdrop-filter: blur(14px);
-    transition: border-color var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+    transition: border-color var(--dur) var(--ease-out);
   }
 
   .site-header.compact {
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    border-bottom-color: var(--border);
+    border-bottom-color: color-mix(in srgb, var(--on-ink) 14%, transparent);
   }
 
   .header-inner {
@@ -218,7 +227,7 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-secondary);
+    color: var(--on-ink-muted);
     pointer-events: none;
   }
 
@@ -226,12 +235,16 @@
     width: 100%;
     height: 42px;
     padding: 0 12px 0 38px;
-    border: 1px solid var(--border);
-    border-radius: var(--card-radius);
-    background: var(--bg-subtle);
-    color: var(--text-primary);
+    border: 1.5px solid color-mix(in srgb, var(--on-ink) 18%, transparent);
+    border-radius: 999px;
+    background: var(--ink-soft);
+    color: var(--on-ink);
     font-family: var(--font-body);
     font-size: 15px;
+  }
+
+  .search input::placeholder {
+    color: var(--on-ink-muted);
   }
 
   .search input:focus {
@@ -249,12 +262,18 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    border: 2px solid currentColor;
-    padding: 8px 12px;
-    background: none;
-    color: inherit;
+    border: 1.5px solid color-mix(in srgb, var(--on-ink) 22%, transparent);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--on-ink);
     font: inherit;
     cursor: pointer;
+  }
+
+  .nav-item:hover {
+    border-color: var(--accent);
+    color: inherit;
   }
 
   .nav-logout {
@@ -272,9 +291,9 @@
     min-width: 1.4em;
     justify-content: center;
     padding: 1px 6px;
-    border-radius: 0;
+    border-radius: 999px;
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     font-size: 12px;
     font-weight: 700;
     border: 1px solid var(--accent);
@@ -336,11 +355,11 @@
   }
 
   .site-footer {
-    border-top: 1px solid var(--border);
-    color: var(--text-secondary);
+    background: var(--ink);
+    color: var(--on-ink-muted);
     font-size: 14px;
-    font-weight: 500;
-    margin-top: 24px;
+    font-weight: 600;
+    margin-top: var(--space-xl);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
@@ -349,7 +368,7 @@
     justify-content: flex-end;
     align-items: center;
     gap: 16px;
-    min-height: 64px;
+    min-height: 76px;
     flex-wrap: wrap;
   }
 
@@ -358,11 +377,11 @@
   }
 
   .site-footer a {
-    color: var(--text-secondary);
+    color: var(--on-ink-muted);
   }
 
   .site-footer a:hover {
-    color: var(--text-primary);
+    color: var(--on-ink);
   }
 
   @media (max-width: 720px) {

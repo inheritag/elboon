@@ -1,16 +1,23 @@
 import { fail } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../domain/catalog';
 import { listedInventory } from '../../../../domain/desk';
+import { heldMap, stockView } from '../../../../domain/inventory';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
-import { colorsFromForm } from '../../../../libs/product-colors';
-import { totalColorStock } from '../../../../domain/product';
+import { colorsFromForm, sizesFromForm } from '../../../../libs/product-colors';
+import { parseSku, productFromRow, totalUnits } from '../../../../domain/product';
 import { saveProductImages } from '../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
   const store = getStore();
-  const [products, categories] = await Promise.all([store.listAllProducts(), store.listCategories()]);
-  return { products, categories, listed: listedInventory(products) };
+  const [products, categories, holds] = await Promise.all([
+    store.listAllProducts(),
+    store.listCategories(),
+    store.listHeldUnits()
+  ]);
+  const held = heldMap(holds);
+  const stock = Object.fromEntries(products.map((row) => [row.id, stockView(productFromRow(row), held)]));
+  return { products, categories, listed: listedInventory(products, held), stock };
 };
 
 async function resolveCategory(form: FormData): Promise<string | { error: string }> {
@@ -18,9 +25,10 @@ async function resolveCategory(form: FormData): Promise<string | { error: string
   const store = getStore();
   if (selected === '__new__') {
     const label = String(form.get('newCategory') ?? '').trim();
+    const parent = String(form.get('newCategoryParent') ?? '').trim() || null;
     if (!label) return { error: 'Enter a name for the new category' };
     try {
-      return (await store.createCategory(label)).slug;
+      return (await store.createCategory(label, parent)).slug;
     } catch (err) {
       return { error: err instanceof Error ? err.message : 'Could not add category' };
     }
@@ -44,15 +52,19 @@ async function productFromForm(form: FormData): Promise<CreateProductInput | { e
 
   let imageUrls: string[] | undefined;
   let colors;
+  let sizes;
   try {
     const uploaded = await saveProductImages(form);
     if (uploaded.length > 0) imageUrls = uploaded;
     colors = await colorsFromForm(form);
+    sizes = sizesFromForm(form);
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Could not save images' };
   }
 
-  const stockQty = colors.length > 0 ? totalColorStock(colors) : Number(form.get('stockQty') ?? 0);
+  if (colors.length > 0) sizes = sizes.map((size) => ({ ...size, stockQty: 0 }));
+  const stockQty = totalUnits({ colors, sizes, stockQty: Number(form.get('stockQty') ?? 0) });
+  const sku = colors.length > 0 || sizes.length > 0 ? null : parseSku(form.get('sku'));
 
   return {
     name,
@@ -64,7 +76,9 @@ async function productFromForm(form: FormData): Promise<CreateProductInput | { e
     offerEnabled: form.get('offerEnabled') === 'on',
     active: form.get('active') === 'on',
     imageUrls,
-    colors
+    sku,
+    colors,
+    sizes
   };
 }
 

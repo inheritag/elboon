@@ -19,7 +19,6 @@
 
   <section class="block">
     <h2>Offers</h2>
-    <p class="lede">Accepted and countered offers can be checked out at the agreed price.</p>
     {#each data.offers as offer}
       <OfferCard {offer} />
     {:else}
@@ -38,7 +37,7 @@
         <p>{data.profile.shippingAddress.postcode}, {data.profile.shippingAddress.country}</p>
       </div>
     {:else}
-      <p class="muted">No saved address yet. It is stored the next time you check out.</p>
+      <p class="muted">None yet.</p>
     {/if}
   </section>
 </section>
@@ -75,7 +74,6 @@
     margin-bottom: 6px;
   }
 
-  .lede,
   .muted {
     color: var(--text-secondary);
     margin-bottom: 12px;

@@ -1,50 +1,63 @@
-/* Design tokens carried over from the original coming-soon page (style.css)
-   so the storefront keeps the same visual identity. */
+/* Two tones: warm ink for the frame, stone for the shop floor.
+   Cards stay light. No full-page black, no flat white. */
 :root {
-  --font-display: 'Outfit', -apple-system, sans-serif;
-  --font-body: 'Inter', -apple-system, sans-serif;
+  color-scheme: light;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito Sans', -apple-system, sans-serif;
 
-  --bg: #050505;
-  --bg-subtle: #111111;
-  --surface: #0c0c0c;
-  --border: #2a2a2a;
-  --text-primary: #f4f4f4;
-  --text-secondary: #a8a8a8;
-  --text-muted: #737373;
-  --accent: #e31c25;
-  --accent-hover: #ff2d36;
-  --accent-light: #2a080a;
+  --ink: #241c18;
+  --ink-soft: #322823;
+  --on-ink: #f6f1eb;
+  --on-ink-muted: #cfc3b8;
 
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --card-radius: 0;
-  --btn-radius: 0;
+  --bg: #efe6dc;
+  --bg-subtle: #e4d8cc;
+  --surface: #fffaf6;
+  --border: #e0d2c6;
+  --text-primary: #241c18;
+  --text-secondary: #6a5e56;
+  --text-muted: #8f8178;
+  --accent: #e36b4f;
+  --accent-hover: #cf573d;
+  --accent-light: #fdece7;
+  --on-accent: #fffdfb;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --card-radius: 20px;
+  --btn-radius: 999px;
   --btn-weight: 800;
-  --btn-size: 14px;
-  --btn-track: 0.08em;
-  --btn-transform: uppercase;
-  --btn-border: 2px solid transparent;
-  --btn-pad-y: 16px;
-  --btn-pad-x: 28px;
+  --btn-size: 15px;
+  --btn-track: 0;
+  --btn-transform: none;
+  --btn-border: 1.5px solid transparent;
+  --btn-pad-y: 13px;
+  --btn-pad-x: 22px;
 
-  --shadow-sm: none;
-  --shadow-md: none;
+  --shadow-sm: 0 1px 2px rgb(42 36 32 / 4%), 0 10px 28px rgb(42 36 32 / 5%);
+  --shadow-md: 0 18px 44px rgb(42 36 32 / 10%);
 
-  --haggle-paper: #111111;
-  --haggle-ink: #f4f4f4;
-  --haggle-rule: #2a2a2a;
-  --haggle-gold: #e31c25;
-  --haggle-green: #f4f4f4;
+  --haggle-paper: #fff6ee;
+  --haggle-ink: #2a2420;
+  --haggle-rule: #ecd9c8;
+  --haggle-gold: #e36b4f;
+  --haggle-green: #217a4a;
+
+  --space-xs: 8px;
+  --space-sm: 14px;
+  --space-md: 22px;
+  --space-lg: 36px;
+  --space-xl: 56px;
 
   --max-width: 1120px;
   --header-h: 88px;
-  --chip-radius: 4px;
+  --chip-radius: 999px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 140ms;
   --dur: 220ms;
   --dur-slow: 260ms;
-  --shadow-hover: 0 18px 40px color-mix(in srgb, var(--accent) 18%, transparent);
+  --shadow-hover: 0 16px 34px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 *, *::before, *::after {
@@ -66,6 +79,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, white);
+  color: var(--text-primary);
+}
+
 img {
   max-width: 100%;
   display: block;
@@ -73,6 +91,8 @@ img {
 
 h1, h2, h3 {
   font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
@@ -125,19 +145,26 @@ a:hover {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
+  color: var(--on-accent);
 }
 
 .btn-secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--text-primary);
-  border-color: var(--text-primary);
-  border-width: 2px;
+  border-color: var(--border);
+  border-width: 1.5px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .btn:disabled {
@@ -147,37 +174,42 @@ a:hover {
 
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--border) 85%, white);
   border-radius: var(--card-radius, var(--radius-md));
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .field {
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .field label {
   display: block;
   font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.field input:not([type='checkbox']):not([type='file']):not([type='radio']),
+.field input:not(:where([type='checkbox'], [type='file'], [type='radio'], [type='color'])),
 .field select,
 .field textarea {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
   font-size: 15px;
-  background: var(--bg-subtle);
+  background: var(--surface);
   color: var(--text-primary);
 }
 
-.field input:not([type='checkbox']):not([type='file']):not([type='radio']):focus,
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.field input:not(:where([type='checkbox'], [type='file'], [type='radio'], [type='color'])):focus,
 .field select:focus,
 .field textarea:focus,
 .btn:focus-visible,
@@ -190,7 +222,7 @@ a:focus-visible {
 .fields-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 16px;
+  gap: 0 20px;
 }
 
 @media (max-width: 560px) {
@@ -257,7 +289,7 @@ input[type='number'] {
 .badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 0;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -271,10 +303,49 @@ input[type='number'] {
 .badge-haggle {
   background: var(--haggle-paper);
   color: var(--accent);
-  border: 1px dashed var(--accent);
+  border: 1.5px dashed var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-family: var(--font-display);
+}
+
+.optional-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quiet-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.quiet-add:hover {
+  background: var(--accent-light);
+  border-style: solid;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .error-text {
@@ -309,6 +380,10 @@ input[type='number'] {
   :root {
     --bg: Canvas;
     --bg-subtle: Canvas;
+    --ink: Canvas;
+    --ink-soft: Canvas;
+    --on-ink: CanvasText;
+    --on-ink-muted: CanvasText;
     --border: CanvasText;
     --text-primary: CanvasText;
     --text-secondary: CanvasText;
@@ -412,6 +487,33 @@ input[type='number'] {
 .related-card {
   border-radius: var(--card-radius);
   overflow: hidden;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(root) {
+  animation: 140ms var(--ease-out) both vt-out;
+}
+
+::view-transition-new(root) {
+  animation: 180ms var(--ease-out) both vt-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
 
 

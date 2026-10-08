@@ -7,10 +7,9 @@
 <style>
   .soon {
     position: relative;
-    background: #000;
-    color: var(--text-primary);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--accent);
+    background: transparent;
+    color: var(--on-ink-muted);
+    border-top: 1px solid color-mix(in srgb, var(--on-ink) 12%, transparent);
     text-align: center;
     overflow: hidden;
   }
@@ -18,10 +17,10 @@
   p {
     position: relative;
     margin: 0;
-    padding: 12px 16px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -29,24 +28,7 @@
     display: inline-block;
     margin-left: 8px;
     color: var(--accent);
-    letter-spacing: 0.12em;
-    animation: pulse-red 2.8s var(--ease-out) infinite;
-  }
-
-  @keyframes pulse-red {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.55;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .date {
-      animation: none;
-    }
+    letter-spacing: 0.08em;
   }
 
   @media (forced-colors: active) {

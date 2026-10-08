@@ -35,7 +35,7 @@
       <div class="knob" style="left: {fill}%"></div>
     {/if}
   </div>
-  <p class="callout"><strong>{read.label}</strong> · {read.percentOfAsk}% of listed. {read.hint}</p>
+  <p class="callout"><strong>{read.label}</strong> · {read.percentOfAsk}% of listed</p>
 </div>
 
 <style>

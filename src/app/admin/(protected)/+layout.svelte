@@ -6,6 +6,7 @@
   const links = [
     { href: '/admin', label: 'To do' },
     { href: '/admin/products', label: 'Products' },
+    { href: '/admin/stock', label: 'Stock' },
     { href: '/admin/offers', label: 'Offers' },
     { href: '/admin/orders', label: 'Orders' }
   ];
@@ -30,8 +31,8 @@
 <style>
   .admin-nav {
     display: flex;
-    gap: 8px;
-    padding: 16px 0;
+    gap: 10px;
+    padding: 20px 0 18px;
     border-bottom: 1px solid var(--border);
     font-weight: 600;
     flex-wrap: wrap;
@@ -39,13 +40,13 @@
   }
 
   .admin-nav a {
-    padding: 6px 12px;
+    padding: 8px 14px;
+    border-radius: 999px;
   }
 
   .admin-nav a.current {
     background: var(--accent-light);
     color: var(--accent);
-    box-shadow: inset 0 -2px 0 var(--accent);
   }
 
   @media (forced-colors: active) {

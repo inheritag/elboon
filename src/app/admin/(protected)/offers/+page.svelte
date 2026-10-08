@@ -15,7 +15,6 @@
 
 <section class="container offers-admin">
   <h1>Offers to answer</h1>
-  <p class="lede">Accept emails a checkout link. Counter emails your price. Ignore is silent.</p>
 
   {#each data.offers as offer}
     {@const read = readHaggle(offer.offer_price_cents, offer.product_price_cents)}
@@ -73,14 +72,9 @@
     max-width: 720px;
   }
 
-  .lede {
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-  }
-
   .ticket {
-    padding: 20px;
-    margin-bottom: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
   }
 
   .tone {

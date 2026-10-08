@@ -57,7 +57,7 @@
     {#if data.askingCents > data.priceCents}
       <p class="was">Listed was {formatPrice(data.askingCents, 'GBP')}</p>
     {/if}
-    <p class="guest">Shipping next, then card payment with our provider.</p>
+
   </div>
 
   <form onsubmit={submit} class="card">
@@ -141,12 +141,6 @@
     text-decoration: line-through;
     color: var(--text-muted);
     margin-top: 6px;
-  }
-
-  .guest {
-    color: var(--text-secondary);
-    margin-top: 12px;
-    font-size: 14px;
   }
 
   form {

@@ -73,7 +73,7 @@ describe('LocalStore', () => {
     });
     expect((await store.getPendingOrder(orderId))?.id).toBe(orderId);
     await store.markOrderPaid(orderId);
-    await store.decrementProductStock(shorts.id, 2);
+    await store.decrementProductStock(shorts.id, 2, null, 'M');
 
     const updated = await store.getActiveProduct(shorts.id);
     expect(updated?.stock_qty).toBe(startingStock - 2);
@@ -117,6 +117,30 @@ describe('LocalStore', () => {
     expect(created.slug).toBe('kitchen');
     const listed = await store.listCategories();
     expect(listed.some((category) => category.slug === 'kitchen')).toBe(true);
+  });
+
+  it('sets stock on a size line without touching the others', async () => {
+    const store = new LocalStore({ persistPath: null });
+    const shorts = (await store.listActiveProducts('fashion'))[0];
+    expect(await store.setProductStock(shorts.id, 11, null, 'M')).toBe(true);
+    const updated = await store.getActiveProduct(shorts.id);
+    const sizes = (updated?.sizes as { name: string; stockQty: number }[]) ?? [];
+    expect(sizes.find((size) => size.name === 'M')?.stockQty).toBe(11);
+    expect(sizes.find((size) => size.name === 'S')?.stockQty).toBe(4);
+  });
+
+  it('nests a sub-category under a parent when it does not already exist', async () => {
+    const store = new LocalStore({ persistPath: null });
+    const phones = await store.createCategory('phones', 'tech');
+    expect(phones.parentSlug).toBe('tech');
+    const samsung = await store.createCategory('samsung', 'phones');
+    expect(samsung.parentSlug).toBe('phones');
+    const accessories = await store.createCategory('phone accessories', 'phones');
+    expect(accessories.slug).toBe('phone-accessories');
+    expect(accessories.parentSlug).toBe('phones');
+    const again = await store.createCategory('Phones', 'fashion');
+    expect(again.slug).toBe('phones');
+    expect(again.parentSlug).toBe('tech');
   });
 
   it('attaches guest offers to a new account with the same email', async () => {

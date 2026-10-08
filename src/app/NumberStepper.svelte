@@ -40,7 +40,7 @@
     display: flex;
     align-items: stretch;
     border: 1px solid var(--border);
-    border-radius: var(--card-radius);
+    border-radius: 999px;
     background: var(--bg-subtle);
     overflow: hidden;
   }

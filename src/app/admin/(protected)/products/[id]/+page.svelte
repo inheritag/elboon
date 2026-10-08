@@ -1,10 +1,11 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { parseColors } from '../../../../../domain/product';
-  import ColorFields from '../../../../ColorFields.svelte';
+  import { parseColors, parseSizes } from '../../../../../domain/product';
+  import CategoryFields from '../../../../CategoryFields.svelte';
   import NumberStepper from '../../../../NumberStepper.svelte';
   import OfferToggle from '../../../../OfferToggle.svelte';
   import PhotoDropzone from '../../../../PhotoDropzone.svelte';
+  import VariantFields from '../../../../VariantFields.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -13,12 +14,16 @@
   let price = $state(0);
   let stockQty = $state(0);
   let lowStockThreshold = $state(3);
+  let sizeNames = $state<string[]>([]);
+  let colorCount = $state(0);
+  let hasVariants = $derived(sizeNames.length > 0 || colorCount > 0);
   $effect.pre(() => {
     if (primed) return;
     categoryChoice = data.product.category;
     price = Number((data.product.price_cents / 100).toFixed(2));
     stockQty = data.product.stock_qty;
     lowStockThreshold = data.product.low_stock_threshold;
+    sizeNames = parseSizes(data.product.sizes).map((size) => size.name);
     primed = true;
   });
 </script>
@@ -28,34 +33,35 @@
   <h1>Edit {data.product.name}</h1>
 
   <form method="POST" enctype="multipart/form-data" use:enhance class="card">
-    <div class="field">
-      <p class="field-label">Photos</p>
-      <p class="hint">Uncheck a photo to remove it. Drop more below.</p>
-      <PhotoDropzone existing={data.product.image_urls} />
-    </div>
-    <ColorFields initial={parseColors(data.product.variants)} />
-
     <div class="field"><label for="name">Name</label><input id="name" name="name" value={data.product.name} required /></div>
-    <div class="field">
-      <label for="category">Category</label>
-      <select id="category" name="category" required bind:value={categoryChoice}>
-        {#each data.categories as category}
-          <option value={category.slug}>{category.label}</option>
-        {/each}
-        <option value="__new__">Add category…</option>
-      </select>
-      {#if categoryChoice === '__new__'}
-        <input name="newCategory" required placeholder="New category name" />
-      {/if}
-    </div>
+    <CategoryFields categories={data.categories} bind:value={categoryChoice} />
     <div class="field">
       <label for="price">Price</label>
       <NumberStepper id="price" name="price" min={0.01} step={0.01} required bind:value={price} />
     </div>
     <div class="field">
-      <label for="stockQty">Stock qty</label>
-      <NumberStepper id="stockQty" name="stockQty" min={0} step={1} bind:value={stockQty} />
+      <p class="field-label">Photos</p>
+      <PhotoDropzone existing={data.product.image_urls} />
     </div>
+    <VariantFields
+      initialSizes={parseSizes(data.product.sizes)}
+      initialColors={parseColors(data.product.variants)}
+      bind:sizeNames
+      bind:colorCount
+    />
+    {#if hasVariants}
+      <input type="hidden" name="stockQty" value="0" />
+    {:else}
+      <p class="fallback">One version of this product. Set the SKU and stock here.</p>
+      <div class="field">
+        <label for="sku">SKU <span class="optional-tag">Optional</span></label>
+        <input id="sku" name="sku" value={data.product.sku ?? ''} />
+      </div>
+      <div class="field">
+        <label for="stockQty">Stock qty</label>
+        <NumberStepper id="stockQty" name="stockQty" min={0} step={1} bind:value={stockQty} />
+      </div>
+    {/if}
     <div class="field">
       <label for="lowStockThreshold">Low-stock threshold</label>
       <NumberStepper
@@ -78,8 +84,8 @@
 
 <style>
   .edit-product {
-    padding: 24px 0 48px;
-    max-width: 560px;
+    padding: 32px 0 64px;
+    max-width: 800px;
   }
 
   .back {
@@ -92,18 +98,22 @@
   }
 
   form {
-    padding: 20px;
+    padding: 28px;
   }
 
   .field-label {
     font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 6px;
+    font-weight: 800;
+    margin-bottom: 8px;
   }
 
-  .hint {
-    font-size: 13px;
+  .fallback {
+    margin: 0 0 14px;
     color: var(--text-secondary);
-    margin: 0 0 10px;
+  }
+
+  .optional-tag {
+    margin-left: 6px;
+    vertical-align: 1px;
   }
 </style>

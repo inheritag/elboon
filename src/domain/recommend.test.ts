@@ -13,7 +13,8 @@ function item(id: string, category: string): ProductSummary {
     lowStock: false,
     remainingQty: null,
     offerEnabled: false,
-    colors: []
+    colors: [],
+    sizes: []
   };
 }
 
@@ -27,5 +28,16 @@ describe('recommendProducts', () => {
     ];
     const ranked = recommendProducts({ id: 'earbuds', category: 'tech' }, catalog);
     expect(ranked.map((row) => row.id)).toEqual(['speaker', 'cable']);
+  });
+
+  it('treats nested categories as the same top-level branch', () => {
+    const catalog = [item('s20', 'phones'), item('speaker', 'tech'), item('cable', 'accessories')];
+    const categories = [
+      { slug: 'tech', label: 'tech', parentSlug: null },
+      { slug: 'phones', label: 'phones', parentSlug: 'tech' },
+      { slug: 'accessories', label: 'accessories', parentSlug: null }
+    ];
+    const ranked = recommendProducts({ id: 's10', category: 'phones' }, catalog, 4, categories);
+    expect(ranked.map((row) => row.id)).toEqual(['s20', 'speaker', 'cable']);
   });
 });

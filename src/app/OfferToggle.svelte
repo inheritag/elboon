@@ -14,7 +14,7 @@
   <span class="switch" class:on aria-hidden="true"></span>
   <span class="copy">
     <span class="title">Accept offers</span>
-    <span class="hint">{on ? 'On. Buyers can propose a price' : 'Off. Listed price only'}</span>
+    <span class="hint">{on ? 'On' : 'Off'}</span>
   </span>
 </label>
 

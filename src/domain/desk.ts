@@ -1,3 +1,4 @@
+import { totalAvailable } from './inventory';
 import { productFromRow, type ProductRow } from './product';
 
 export const SHOP_TIME_ZONE = 'Europe/London';
@@ -57,8 +58,8 @@ function dayLabel(yyyyMmDd: string, today: string): string {
   );
 }
 
-/** Active listings only: how many, remaining units, and stock × listed price. */
-export function listedInventory(products: ProductRow[]): {
+/** Active listings only: how many, remaining sellable units, and those units × listed price. */
+export function listedInventory(products: ProductRow[], held: Map<string, number> = new Map()): {
   listingCount: number;
   unitCount: number;
   worthCents: number;
@@ -67,8 +68,8 @@ export function listedInventory(products: ProductRow[]): {
   const listed = products.filter((product) => product.active).map(productFromRow);
   return {
     listingCount: listed.length,
-    unitCount: listed.reduce((sum, product) => sum + product.stockQty, 0),
-    worthCents: listed.reduce((sum, product) => sum + product.stockQty * product.priceCents, 0),
+    unitCount: listed.reduce((sum, product) => sum + totalAvailable(product, held), 0),
+    worthCents: listed.reduce((sum, product) => sum + totalAvailable(product, held) * product.priceCents, 0),
     currency: listed[0]?.currency ?? 'GBP'
   };
 }
@@ -107,9 +108,10 @@ export function soldPerDay(
 export function deskFigures(
   products: ProductRow[],
   orders: OrderSaleRow[],
-  now = new Date()
+  now = new Date(),
+  held: Map<string, number> = new Map()
 ): DeskFigures {
-  const listed = listedInventory(products);
+  const listed = listedInventory(products, held);
   const sold = soldPerDay(orders, { now });
   return { ...listed, ...sold };
 }

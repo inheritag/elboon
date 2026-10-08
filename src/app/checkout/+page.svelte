@@ -40,7 +40,12 @@
       body: JSON.stringify({
         customerEmail: email,
         shippingAddress: { fullName, phone, line1, line2: null, city, postcode, country },
-        items: $cart.map((line) => ({ productId: line.productId, quantity: line.quantity, color: line.color }))
+        items: $cart.map((line) => ({
+          productId: line.productId,
+          quantity: line.quantity,
+          color: line.color,
+          size: line.size
+        }))
       })
     });
 
@@ -62,13 +67,15 @@
     <p>Your cart is empty. <a href="/">Browse products</a></p>
   {:else}
     {#if data.signedIn}
-      <p class="choice">Signed in as {data.email}. Shipping is filled from your last order.</p>
+      <p class="choice">Signed in as {data.email}.</p>
     {/if}
 
     <ul class="lines">
       {#each $cart as line}
         <li>
-          <span>{line.name}{line.color ? ` · ${line.color}` : ''} &times; {line.quantity}</span>
+          <span
+            >{line.name}{line.color ? ` · ${line.color}` : ''}{line.size ? ` · ${line.size}` : ''} &times; {line.quantity}</span
+          >
           <span>{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
         </li>
       {/each}
@@ -77,7 +84,6 @@
 
     <form onsubmit={submit} class="card">
       <h2>Shipping</h2>
-      <p class="hint">Card payment happens on the next step, with our payment provider.</p>
       {#if !data.signedIn}
         <div class="field">
           <label for="email">Email</label>
@@ -133,28 +139,31 @@
 
   .lines {
     list-style: none;
-    margin-bottom: 8px;
+    margin: 24px 0 8px;
   }
 
   .lines li {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    gap: 16px;
+    padding: 16px 2px;
     border-bottom: 1px solid var(--border);
+  }
+
+  .lines li:first-child {
+    border-top: 1px solid var(--border);
   }
 
   .total {
     font-weight: 700;
-    margin: 12px 0 20px;
+    margin: 18px 0 28px;
   }
 
   form {
-    padding: 20px;
+    padding: 28px;
   }
 
-  .hint {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
+  form h2 {
+    margin-bottom: 18px;
   }
 </style>

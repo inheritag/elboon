@@ -10,7 +10,6 @@ export interface HaggleRead {
   percentOfAsk: number;
   tone: HaggleTone;
   label: string;
-  hint: string;
 }
 
 export function readHaggle(offerCents: number, askingCents: number): HaggleRead {
@@ -19,48 +18,18 @@ export function readHaggle(offerCents: number, askingCents: number): HaggleRead 
   const percentOfAsk = Math.round(ratio * 100);
 
   if (ratio >= 0.97) {
-    return {
-      ratio,
-      percentOfAsk,
-      tone: 'asking',
-      label: 'Listed price',
-      hint: 'Same as buying it outright.'
-    };
+    return { ratio, percentOfAsk, tone: 'asking', label: 'Listed price' };
   }
   if (ratio >= 0.85) {
-    return {
-      ratio,
-      percentOfAsk,
-      tone: 'close',
-      label: 'Close',
-      hint: 'Near the listed price.'
-    };
+    return { ratio, percentOfAsk, tone: 'close', label: 'Close' };
   }
   if (ratio >= 0.7) {
-    return {
-      ratio,
-      percentOfAsk,
-      tone: 'serious',
-      label: 'Fair',
-      hint: 'In a reasonable range.'
-    };
+    return { ratio, percentOfAsk, tone: 'serious', label: 'Fair' };
   }
   if (ratio >= 0.5) {
-    return {
-      ratio,
-      percentOfAsk,
-      tone: 'cheeky',
-      label: 'Low',
-      hint: 'Well under asking. They may counter.'
-    };
+    return { ratio, percentOfAsk, tone: 'cheeky', label: 'Low' };
   }
-  return {
-    ratio,
-    percentOfAsk,
-    tone: 'lowball',
-    label: 'Very low',
-    hint: 'Likely to be ignored.'
-  };
+  return { ratio, percentOfAsk, tone: 'lowball', label: 'Very low' };
 }
 
 /** Floor for the offer slider: 30% of ask, at least £1. */

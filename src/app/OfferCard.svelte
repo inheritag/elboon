@@ -48,8 +48,8 @@
 
 <style>
   .row {
-    padding: 16px 20px;
-    margin: 12px 0;
+    padding: 20px 22px;
+    margin: 16px 0;
   }
 
   h2 {

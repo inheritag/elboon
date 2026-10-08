@@ -82,7 +82,6 @@
       onchange={(event) => take((event.currentTarget as HTMLInputElement).files ?? [])}
     />
     <span class="drop-title">Drop photos here</span>
-    <span class="drop-hint">or click to choose. JPG, PNG, or WebP, under 5MB.</span>
   </label>
 
   {#if previews.length > 0}
@@ -131,11 +130,6 @@
 
   .drop-title {
     font-weight: 700;
-  }
-
-  .drop-hint {
-    font-size: 13px;
-    color: var(--text-secondary);
   }
 
   .thumbs {

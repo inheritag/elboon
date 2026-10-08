@@ -6,9 +6,7 @@
   let { data }: { data: PageData } = $props();
 
   let loadingCatalog = $derived(navigating?.to?.url.pathname === '/');
-  let categoryLabel = $derived(
-    data.category ? (data.categories.find((row) => row.slug === data.category)?.label ?? data.category) : null
-  );
+  let categoryLabel = $derived(data.categoryLabel ?? data.category);
   let showCategories = $derived(
     data.categories.length > 0 && (data.total > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
   );
@@ -42,14 +40,30 @@
       class:active={!data.category}
       aria-current={!data.category ? 'page' : undefined}>All</a
     >
-    {#each data.categories as category}
+    {#each data.nav.top as category}
       <a
         href={catalogHref({ category: category.slug, page: 1 })}
-        class:active={data.category === category.slug}
+        class:active={data.trail.includes(category.slug)}
         aria-current={data.category === category.slug ? 'page' : undefined}>{category.label}</a
       >
     {/each}
   </nav>
+  {#each data.nav.levels as level}
+    <nav class="categories container sub" aria-label={level.allLabel}>
+      <a
+        href={catalogHref({ category: level.parentSlug, page: 1 })}
+        class:active={data.category === level.parentSlug}
+        aria-current={data.category === level.parentSlug ? 'page' : undefined}>{level.allLabel}</a
+      >
+      {#each level.items as category}
+        <a
+          href={catalogHref({ category: category.slug, page: 1 })}
+          class:active={data.trail.includes(category.slug)}
+          aria-current={data.category === category.slug ? 'page' : undefined}>{category.label}</a
+        >
+      {/each}
+    </nav>
+  {/each}
 </div>
 {/if}
 
@@ -80,6 +94,9 @@
           {:else}
             <div class="image-placeholder"></div>
           {/if}
+          {#if product.offerEnabled}
+            <span class="offer-stamp">Offer</span>
+          {/if}
         </div>
         <div class="product-card-body">
           <h3>{product.name}</h3>
@@ -90,9 +107,6 @@
                 <span class="dot" style="background:{color.hex}" title={color.name}></span>
               {/each}
             </p>
-          {/if}
-          {#if product.offerEnabled}
-            <p class="offer-line">or make an offer</p>
           {/if}
           <div class="tags">
             {#if product.remainingQty !== null}
@@ -134,9 +148,9 @@
 
 <style>
   .hero {
-    padding: clamp(32px, 6vw, 72px) 0 clamp(20px, 4vw, 36px);
-    background: #000;
-    color: var(--text-primary);
+    padding: clamp(48px, 8vw, 96px) 0 clamp(52px, 7vw, 84px);
+    background: var(--ink);
+    color: var(--on-ink);
   }
 
   .eyebrow {
@@ -149,6 +163,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    border-radius: 999px;
   }
 
   .hero h1 {
@@ -156,38 +171,20 @@
     font-weight: 800;
     letter-spacing: -0.05em;
     line-height: 1.08;
-    color: var(--text-primary);
+    color: var(--on-ink);
   }
 
   .hero h1 em {
-    font-style: normal;
-    color: var(--text-primary);
-    position: relative;
-    display: inline-block;
-  }
-
-  .hero h1 em::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 0;
-    bottom: 0.04em;
-    height: 0.12em;
-    background: var(--accent);
-    animation: underline-draw var(--dur-slow) var(--ease-out) 80ms forwards;
-  }
-
-  @keyframes underline-draw {
-    to {
-      width: 100%;
-    }
+    font-style: italic;
+    font-weight: 560;
+    color: var(--accent);
   }
 
   .lede {
-    margin-top: 14px;
-    color: var(--text-secondary);
-    font-size: 17px;
-    max-width: 40ch;
+    margin-top: 16px;
+    color: var(--on-ink-muted);
+    font-size: 18px;
+    max-width: 42ch;
   }
 
   .category-bar {
@@ -201,13 +198,17 @@
 
   .categories {
     display: flex;
-    gap: 8px;
-    padding: 10px 0;
+    gap: 10px;
+    padding: 16px 0 14px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     touch-action: pan-x;
+  }
+
+  .categories.sub {
+    padding-top: 0;
   }
 
   .categories::-webkit-scrollbar {
@@ -223,10 +224,10 @@
     position: relative;
     isolation: isolate;
     flex: 0 0 auto;
-    padding: 8px 16px;
-    border: 1px solid var(--border);
+    padding: 9px 16px;
+    border: 1.5px solid var(--border);
     border-radius: var(--chip-radius);
-    background: var(--bg-subtle);
+    background: var(--surface);
     white-space: nowrap;
     text-transform: capitalize;
     overflow: hidden;
@@ -262,8 +263,8 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-    gap: clamp(12px, 3vw, 20px);
-    padding: 16px 0 48px;
+    gap: clamp(18px, 2.6vw, 28px);
+    padding: 28px 0 72px;
   }
 
   .count {
@@ -307,8 +308,8 @@
   }
 
   .thumb {
+    position: relative;
     overflow: hidden;
-    border-radius: var(--card-radius) var(--card-radius) 0 0;
   }
 
   .product-card img,
@@ -325,11 +326,15 @@
   }
 
   .product-card-body {
-    padding: 16px;
+    padding: 16px 18px 18px;
   }
 
   .product-card-body h3 {
-    font-size: 17px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -338,14 +343,29 @@
   }
 
   .price {
-    color: var(--text-secondary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
     margin: 4px 0 0;
+    letter-spacing: -0.02em;
   }
 
-  .offer-line {
-    margin-top: 4px;
-    font-size: 13px;
-    color: var(--text-secondary);
+  .offer-stamp {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    transform: rotate(8deg);
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 4px 10px 4px 10px;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 40%, transparent);
   }
 
   .dots {
@@ -399,12 +419,6 @@
     width: 40%;
   }
 
-  @media (min-width: 900px) {
-    .hero h1 {
-      white-space: nowrap;
-    }
-  }
-
   @media (max-width: 720px) {
     .hero {
       padding: 28px 0 24px;
@@ -433,7 +447,7 @@
     }
 
     .product-card-body h3 {
-      font-size: 15px;
+      font-size: 13px;
     }
 
     .empty {
@@ -453,8 +467,15 @@
       border: 1px solid CanvasText;
     }
 
-    .hero h1 em::after {
-      background: CanvasText;
+    .hero h1 em {
+      color: CanvasText;
+    }
+
+    .offer-stamp {
+      background: Canvas;
+      color: CanvasText;
+      border: 1px solid CanvasText;
+      box-shadow: none;
     }
 
     .category-bar {
@@ -483,11 +504,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero h1 em::after {
-      width: 100%;
-      animation: none;
-    }
-
     .product-card:hover {
       transform: none;
     }

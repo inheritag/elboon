@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } from '../domain/catalog';
+import { canNestUnder, DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import { parseColors, totalColorStock, type ProductRow } from '../domain/product';
-import { decrementStock } from '../domain/stock';
+import type { HeldUnit } from '../domain/inventory';
+import { applySale, applySet, productFromRow, type ProductRow } from '../domain/product';
 import type {
   CreateProductInput,
   CustomerPublic,
@@ -137,6 +137,12 @@ const SEED_PRODUCTS: LocalProduct[] = [
     low_stock_threshold: 3,
     offer_enabled: false,
     active: true,
+    sizes: [
+      { name: 'S', stockQty: 4 },
+      { name: 'M', stockQty: 6 },
+      { name: 'L', stockQty: 6 },
+      { name: 'XL', stockQty: 4 }
+    ],
     created_at: '2026-01-01T00:00:00.000Z'
   }
 ];
@@ -148,10 +154,12 @@ function emptySnapshot(): Snapshot {
 function seedCategories(products: LocalProduct[], existing?: CategoryRecord[]): CategoryRecord[] {
   const bySlug = new Map<string, CategoryRecord>();
   for (const category of DEFAULT_CATEGORIES) bySlug.set(category.slug, category);
-  for (const category of existing ?? []) bySlug.set(category.slug, category);
+  for (const category of existing ?? []) {
+    bySlug.set(category.slug, { ...category, parentSlug: category.parentSlug ?? null });
+  }
   for (const product of products) {
     if (product.category && !bySlug.has(product.category)) {
-      bySlug.set(product.category, { slug: product.category, label: product.category });
+      bySlug.set(product.category, { slug: product.category, label: product.category, parentSlug: null });
     }
   }
   return [...bySlug.values()];
@@ -254,6 +262,8 @@ export class LocalStore implements Store {
       offer_enabled: input.offerEnabled,
       active: input.active ?? true,
       variants: input.colors ?? [],
+      sizes: input.sizes ?? [],
+      sku: input.sku ?? null,
       created_at: new Date().toISOString()
     });
     this.persist();
@@ -274,6 +284,8 @@ export class LocalStore implements Store {
       product.image_urls = input.imageUrls;
     }
     product.variants = input.colors ?? [];
+    product.sizes = input.sizes ?? [];
+    product.sku = input.sku ?? null;
     this.persist();
   }
 
@@ -293,30 +305,55 @@ export class LocalStore implements Store {
     return [...this.data.categories].sort((a, b) => a.label.localeCompare(b.label));
   }
 
-  async createCategory(label: string): Promise<CategoryRecord> {
+  async createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord> {
     const slug = slugFromLabel(label);
     if (!slug) throw new Error('Enter a category name');
     const existing = this.data.categories.find((category) => category.slug === slug);
-    if (existing) return existing;
-    const category = { slug, label: label.trim() };
+    if (existing) return { ...existing, parentSlug: existing.parentSlug ?? null };
+    const parent = parentSlug || null;
+    if (parent && !canNestUnder(null, parent, this.data.categories)) {
+      throw new Error('Choose a parent the new category can sit under');
+    }
+    const category = { slug, label: label.trim(), parentSlug: parent };
     this.data.categories.push(category);
     this.persist();
     return category;
   }
 
-  async decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void> {
+  async decrementProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<void> {
     const product = this.data.products.find((row) => row.id === id);
     if (!product) return;
-    const colors = parseColors(product.variants);
-    if (color && colors.length > 0) {
-      product.variants = colors.map((item) =>
-        item.name === color ? { ...item, stockQty: decrementStock(item.stockQty, quantity) } : item
-      );
-      product.stock_qty = totalColorStock(parseColors(product.variants));
-    } else {
-      product.stock_qty = decrementStock(product.stock_qty, quantity);
-    }
+    const next = applySale(productFromRow(product), quantity, color, size);
+    product.variants = next.colors;
+    product.sizes = next.sizes;
+    product.stock_qty = next.stockQty;
     this.persist();
+  }
+
+  async setProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<boolean> {
+    const product = this.data.products.find((row) => row.id === id);
+    if (!product) return false;
+    const next = applySet(productFromRow(product), quantity, color, size);
+    if (!next) return false;
+    product.variants = next.colors;
+    product.sizes = next.sizes;
+    product.stock_qty = next.stockQty;
+    this.persist();
+    return true;
+  }
+
+  async listHeldUnits(): Promise<HeldUnit[]> {
+    return this.data.orders
+      .filter((order) => order.payment_status === 'pending')
+      .flatMap((order) =>
+        order.items.map((item) => ({
+          productId: item.productId,
+          color: item.color ?? null,
+          size: item.size ?? null,
+          quantity: item.quantity,
+          createdAt: order.created_at
+        }))
+      );
   }
 
   async isOfferEnabledProduct(id: string): Promise<boolean> {

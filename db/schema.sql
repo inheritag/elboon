@@ -60,9 +60,10 @@ CREATE INDEX IF NOT EXISTS offers_user_idx ON offers (user_id);
 CREATE INDEX IF NOT EXISTS products_category_idx ON products (category) WHERE active = true;
 
 CREATE TABLE IF NOT EXISTS categories (
-  slug       text PRIMARY KEY,
-  label      text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
+  slug        text PRIMARY KEY,
+  label       text NOT NULL,
+  parent_slug text REFERENCES categories (slug) ON DELETE SET NULL,
+  created_at  timestamptz NOT NULL DEFAULT now()
 );
 
 INSERT INTO categories (slug, label) VALUES
@@ -74,6 +75,9 @@ INSERT INTO categories (slug, label) VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 ALTER TABLE products ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS sku text;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_slug text REFERENCES categories (slug) ON DELETE SET NULL;
 
 CREATE TABLE IF NOT EXISTS product_images (
   id         text PRIMARY KEY,

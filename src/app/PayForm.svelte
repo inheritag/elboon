@@ -52,7 +52,6 @@
 
 <form onsubmit={submit} class="card pay-form">
   <h2>Delivery</h2>
-  <p class="hint">We pass the address to a courier for this order.</p>
 
   {#if collectEmail}
     <div class="field">
@@ -66,7 +65,7 @@
   </div>
   <div class="field">
     <label for="phone">Phone</label>
-    <input id="phone" type="tel" bind:value={phone} required placeholder="For the delivery partner" />
+    <input id="phone" type="tel" bind:value={phone} required />
   </div>
   <div class="field">
     <label for="line1">Address</label>
@@ -86,7 +85,6 @@
   </div>
 
   <h2>Card</h2>
-  <p class="hint">Visa and Mastercard only. We never store the full card number.</p>
   {#if devHint}
     <p class="hint">Test Visa: 4242 4242 4242 4242 · any future expiry · any CVC</p>
   {/if}

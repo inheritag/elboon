@@ -68,6 +68,9 @@ const SCHEMA_STATEMENTS = [
     ('beauty', 'beauty')
   ON CONFLICT (slug) DO NOTHING`,
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb`,
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes jsonb NOT NULL DEFAULT '[]'::jsonb`,
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS sku text`,
+  `ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_slug text REFERENCES categories (slug) ON DELETE SET NULL`,
   `CREATE TABLE IF NOT EXISTS product_images (
   id         text PRIMARY KEY,
   mime       text NOT NULL,

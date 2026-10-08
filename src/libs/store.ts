@@ -1,7 +1,8 @@
 import type { CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
-import type { ProductColor, ProductRow } from '../domain/product';
+import type { HeldUnit } from '../domain/inventory';
+import type { ProductColor, ProductRow, ProductSize } from '../domain/product';
 import { config } from './config';
 import { LocalStore } from './local-store';
 import { PostgresStore } from './postgres-store';
@@ -16,7 +17,9 @@ export interface CreateProductInput {
   offerEnabled: boolean;
   active?: boolean;
   imageUrls?: string[];
+  sku?: string | null;
   colors?: ProductColor[];
+  sizes?: ProductSize[];
 }
 
 export interface DevEmail {
@@ -74,9 +77,11 @@ export interface Store {
   updateProduct(id: string, input: CreateProductInput): Promise<void>;
   deleteProduct(id: string): Promise<void>;
   toggleProductActive(id: string): Promise<void>;
-  decrementProductStock(id: string, quantity: number, color?: string | null): Promise<void>;
+  decrementProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<void>;
+  setProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<boolean>;
+  listHeldUnits(): Promise<HeldUnit[]>;
   listCategories(): Promise<CategoryRecord[]>;
-  createCategory(label: string): Promise<CategoryRecord>;
+  createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord>;
 
   isOfferEnabledProduct(id: string): Promise<boolean>;
   createOffer(input: {

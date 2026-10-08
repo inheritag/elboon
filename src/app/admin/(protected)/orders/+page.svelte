@@ -16,7 +16,6 @@
   <h1>Orders</h1>
 
   <h2>To send ({toSend.length})</h2>
-  <p class="lede">Paid. Copy the address and items, then mark as handed to the logistics partner.</p>
   {#each toSend as order}
     <article class="card ticket">
       <p class="when">{new Date(order.created_at).toLocaleString('en-GB')} · {formatPrice(order.total_cents, 'GBP')}</p>
@@ -54,7 +53,6 @@
 
   {#if unpaid.length > 0}
     <h2>Not paid ({unpaid.length})</h2>
-    <p class="lede">Checkout started, payment not finished. Do not ship these.</p>
     {#each unpaid as order}
       <p class="muted">
         {new Date(order.created_at).toLocaleString('en-GB')} · {order.customer_email} ·
@@ -72,17 +70,12 @@
 
   h2 {
     font-size: 18px;
-    margin: 28px 0 8px;
-  }
-
-  .lede {
-    color: var(--text-secondary);
-    margin-bottom: 12px;
+    margin: 40px 0 16px;
   }
 
   .ticket {
-    padding: 16px 20px;
-    margin-bottom: 12px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
   }
 
   .when {

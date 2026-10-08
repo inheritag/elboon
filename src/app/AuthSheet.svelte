@@ -84,7 +84,6 @@
   </button>
   {#if mode === 'signup'}
     <h2 id="auth-title">Create an account</h2>
-    <p>Saves shipping details and offers. You can still pay as a guest.</p>
     <form method="POST" action="/account/signup" use:enhance={handle}>
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div class="field">
@@ -112,7 +111,6 @@
     </p>
   {:else}
     <h2 id="auth-title">Sign in</h2>
-    <p>Saves shipping details and your offers.</p>
     <form method="POST" action="/account/login" use:enhance={handle}>
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div class="field">
@@ -149,11 +147,11 @@
     overflow-y: auto;
     margin: auto;
     padding: 28px 48px 20px 22px;
-    border: 2px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--card-radius);
     background: var(--surface);
     color: var(--text-primary);
-    box-shadow: none;
+    box-shadow: var(--shadow-md);
   }
 
   .close {

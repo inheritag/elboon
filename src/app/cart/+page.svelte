@@ -36,15 +36,19 @@
           {/if}
           <div class="meta">
             <a href="/product/{line.productId}">{line.name}</a>
-            <p>{formatPrice(line.unitPriceCents, 'GBP')} each{line.color ? ` · ${line.color}` : ''}</p>
+            <p>
+              {formatPrice(line.unitPriceCents, 'GBP')} each{line.color ? ` · ${line.color}` : ''}{line.size
+                ? ` · ${line.size}`
+                : ''}
+            </p>
           </div>
           <div class="stepper" role="group" aria-label="Quantity for {line.name}">
-            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity - 1, line.color)} aria-label="Decrease">-</button>
+            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity - 1, line.color, line.size)} aria-label="Decrease">-</button>
             <span class="qty">{line.quantity}</span>
-            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1, line.color)} aria-label="Increase">+</button>
+            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1, line.color, line.size)} aria-label="Increase">+</button>
           </div>
           <span class="line-total">{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
-          <button class="link-button" onclick={() => removeFromCart(line.productId, line.color)}>Remove</button>
+          <button class="link-button" onclick={() => removeFromCart(line.productId, line.color, line.size)}>Remove</button>
         </li>
       {/each}
     </ul>
@@ -67,16 +71,22 @@
 
   .lines {
     list-style: none;
-    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 28px 0 8px;
   }
 
   .lines li {
     display: grid;
     grid-template-columns: 64px 1fr auto auto auto;
     align-items: center;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
   }
 
   .thumb {
