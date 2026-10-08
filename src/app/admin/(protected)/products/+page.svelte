@@ -14,6 +14,14 @@
   let price = $state<number | ''>('');
   let stockQty = $state(0);
   let lowStockThreshold = $state(3);
+  let find = $state('');
+  let visible = $derived(
+    data.products.filter((product) => {
+      const needle = find.trim().toLowerCase();
+      if (!needle) return true;
+      return `${product.name} ${product.category}`.toLowerCase().includes(needle);
+    })
+  );
   $effect.pre(() => {
     if (primed) return;
     categoryChoice = data.categories[0]?.slug ?? '__new__';
@@ -23,7 +31,16 @@
 
 <section class="container products-admin">
   <h1>Products</h1>
-  <p class="lede">Upload catalogue items, set stock, and mark which ones accept offers.</p>
+  {#if data.listed.listingCount === 0}
+    <p class="lede">Nothing listed yet. Upload catalogue items, set stock, and mark which ones accept offers.</p>
+  {:else}
+    <p class="lede">
+      {data.listed.listingCount}
+      {data.listed.listingCount === 1 ? 'item' : 'items'} listed · worth
+      {formatPrice(data.listed.worthCents, data.listed.currency)} · {data.listed.unitCount}
+      {data.listed.unitCount === 1 ? 'unit' : 'units'} at listed prices.
+    </p>
+  {/if}
 
   <form method="POST" action="?/create" enctype="multipart/form-data" use:enhance class="card new-product-form">
     <h2>Upload product</h2>
@@ -78,12 +95,19 @@
   </form>
 
   <div class="table-scroll">
+  <div class="find-row field">
+    <label class="sr-only" for="find">Find in catalogue</label>
+    <input id="find" type="search" placeholder="Find in catalogue" bind:value={find} />
+    {#if find.trim()}
+      <p class="find-count">{visible.length} of {data.products.length}</p>
+    {/if}
+  </div>
   <table class="product-table">
     <thead>
       <tr><th></th><th>Name</th><th>Price</th><th>Stock</th><th>Offers</th><th>Listed</th><th></th></tr>
     </thead>
     <tbody>
-      {#each data.products as product}
+      {#each visible as product}
         <tr>
           <td>
             {#if product.image_urls[0]}
@@ -132,6 +156,23 @@
   .lede {
     color: var(--text-secondary);
     margin-bottom: 8px;
+  }
+
+  .find-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .find-row input {
+    max-width: 280px;
+  }
+
+  .find-count {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
   }
 
   .new-product-form {

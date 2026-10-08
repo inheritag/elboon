@@ -10,8 +10,20 @@
     data.category ? (data.categories.find((row) => row.slug === data.category)?.label ?? data.category) : null
   );
   let showCategories = $derived(
-    data.categories.length > 0 && (data.products.length > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
+    data.categories.length > 0 && (data.total > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
   );
+
+  function catalogHref(opts: { category?: string | null; q?: string; page?: number } = {}): string {
+    const category = opts.category === undefined ? data.category : opts.category;
+    const q = opts.q === undefined ? data.q : opts.q;
+    const page = opts.page ?? 1;
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (q) params.set('q', q);
+    if (page > 1) params.set('page', String(page));
+    const query = params.toString();
+    return query ? `/?${query}` : '/';
+  }
 </script>
 
 <section class="hero" data-hero>
@@ -26,13 +38,13 @@
 <div class="category-bar">
   <nav class="categories container" aria-label="Categories">
     <a
-      href={data.q ? `/?q=${encodeURIComponent(data.q)}` : '/'}
+      href={catalogHref({ category: null, page: 1 })}
       class:active={!data.category}
       aria-current={!data.category ? 'page' : undefined}>All</a
     >
     {#each data.categories as category}
       <a
-        href="/?category={category.slug}{data.q ? `&q=${encodeURIComponent(data.q)}` : ''}"
+        href={catalogHref({ category: category.slug, page: 1 })}
         class:active={data.category === category.slug}
         aria-current={data.category === category.slug ? 'page' : undefined}>{category.label}</a
       >
@@ -42,6 +54,13 @@
 {/if}
 
 <section class="grid container">
+  {#if data.total > 0 && !loadingCatalog}
+    <p class="count">
+      {data.total}
+      {data.total === 1 ? 'item' : 'items'}{#if data.pages > 1}
+        · page {data.page} of {data.pages}{/if}
+    </p>
+  {/if}
   {#if loadingCatalog}
     {#each Array(6) as _}
       <div class="card product-card skel" aria-hidden="true">
@@ -96,6 +115,20 @@
         {/if}
       </div>
     {/each}
+    {#if data.pages > 1}
+      <nav class="pager" aria-label="Catalogue pages">
+        {#if data.page > 1}
+          <a href={catalogHref({ page: data.page - 1 })}>Previous</a>
+        {:else}
+          <span class="dead">Previous</span>
+        {/if}
+        {#if data.page < data.pages}
+          <a href={catalogHref({ page: data.page + 1 })}>Next</a>
+        {:else}
+          <span class="dead">Next</span>
+        {/if}
+      </nav>
+    {/if}
   {/if}
 </section>
 
@@ -233,6 +266,32 @@
     padding: 16px 0 48px;
   }
 
+  .count {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .pager {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .pager a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .pager .dead {
+    color: var(--text-muted);
+  }
+
   .product-card {
     position: relative;
     color: inherit;
@@ -271,6 +330,11 @@
 
   .product-card-body h3 {
     font-size: 17px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .price {

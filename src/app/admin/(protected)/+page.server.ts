@@ -1,3 +1,4 @@
+import { deskFigures } from '../../../domain/desk';
 import { isLowStock } from '../../../domain/stock';
 import { getStore } from '../../../libs/store';
 import type { PageServerLoad } from './$types';
@@ -11,6 +12,7 @@ export const load: PageServerLoad = async () => {
   ]);
 
   return {
+    figures: deskFigures(products, orders),
     pendingOffers: offers,
     awaitingHandoff: orders.filter(
       (order) => order.payment_status === 'paid' && order.logistics_status === 'awaiting_partner'

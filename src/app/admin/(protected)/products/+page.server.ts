@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../domain/catalog';
+import { listedInventory } from '../../../../domain/desk';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
 import { colorsFromForm } from '../../../../libs/product-colors';
 import { totalColorStock } from '../../../../domain/product';
@@ -9,7 +10,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
   const store = getStore();
   const [products, categories] = await Promise.all([store.listAllProducts(), store.listCategories()]);
-  return { products, categories };
+  return { products, categories, listed: listedInventory(products) };
 };
 
 async function resolveCategory(form: FormData): Promise<string | { error: string }> {
