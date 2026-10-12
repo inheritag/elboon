@@ -12,8 +12,6 @@
     data.categories.length > 0 && (data.total > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
   );
   let showCampaign = $derived(!data.category && !data.q && data.page === 1 && !loadingCatalog && Boolean(data.hero));
-  let showLooks = $derived(showCampaign && data.tiles.length > 0);
-  let showTextNav = $derived(showCategories && (!showCampaign || data.tiles.length === 0));
   let sectionTitle = $derived(data.q ? 'Search' : data.category ? (categoryLabel ?? data.category) : 'Everything');
 
   function catalogHref(opts: { category?: string | null; q?: string; page?: number; sort?: string } = {}): string {
@@ -105,23 +103,7 @@
   </section>
 {/if}
 
-{#if showLooks}
-  <div class="looks-wrap container">
-    <h2 class="band-label">Categories</h2>
-    <nav class="looks" aria-label="Categories">
-      {#each data.tiles as tile}
-        <a href={catalogHref({ category: tile.slug, page: 1 })} class:plain={!tile.imageUrl}>
-          {#if tile.imageUrl}
-            <img src={tile.imageUrl} alt="" />
-          {/if}
-          <span>{tile.label}</span>
-        </a>
-      {/each}
-    </nav>
-  </div>
-{/if}
-
-{#if showTextNav}
+{#if showCategories}
 <div class="category-bar">
   <nav class="categories container" aria-label="Categories">
     <a
@@ -305,11 +287,6 @@
     color: var(--text-primary);
   }
 
-  .looks-wrap {
-    padding-top: 28px;
-  }
-
-  .band-label,
   .section-head h2 {
     font-size: 12px;
     font-weight: 700;
@@ -318,82 +295,24 @@
     line-height: 1.2;
   }
 
-  .band-label {
-    margin-bottom: 12px;
-  }
-
-  .looks {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px;
-  }
-
-  .looks a {
-    position: relative;
-    display: block;
-    color: #fff;
-    background: #111;
-  }
-
-  .looks a:hover {
-    color: #fff;
-  }
-
-  .looks img,
-  .looks a.plain {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-  }
-
-  .looks a.plain {
-    background: var(--bg-subtle);
-    color: var(--text-primary);
-  }
-
-  .looks a.plain:hover {
-    color: var(--text-primary);
-  }
-
-  .looks span {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 36px 12px 12px;
-    background: linear-gradient(transparent, rgb(0 0 0 / 62%));
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .looks a.plain span {
-    background: none;
-    color: var(--text-primary);
-  }
-
   .category-bar {
     position: sticky;
     top: var(--header-h);
     z-index: 20;
-    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(12px);
   }
 
   .categories {
     display: flex;
-    gap: 10px;
-    padding: 16px 0 14px;
+    gap: 0;
+    padding: 4px 0 2px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     touch-action: pan-x;
+    scroll-snap-type: x proximity;
   }
 
   .categories.sub {
@@ -411,16 +330,18 @@
 
   .categories a {
     flex: 0 0 auto;
-    padding: 14px 0;
-    margin-right: 22px;
+    scroll-snap-align: start;
+    padding: 12px 0 10px;
+    margin-right: 28px;
     border: none;
     border-bottom: 2px solid transparent;
     border-radius: 0;
     background: none;
     white-space: nowrap;
-    text-transform: capitalize;
-    font-size: 14px;
-    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .categories a:hover {
@@ -639,10 +560,9 @@
     width: 40%;
   }
 
-  @media (min-width: 901px) {
-    .looks img,
-    .looks a.plain {
-      aspect-ratio: 4 / 5;
+  @media (max-width: 1100px) {
+    .categories {
+      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
     }
   }
 
@@ -683,17 +603,7 @@
     }
   }
 
-  @media (max-width: 900px) {
-    .looks {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
   @media (max-width: 720px) {
-    .looks {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .empty .btn {
       width: 100%;
     }

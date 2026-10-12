@@ -52,11 +52,6 @@ export const load: PageServerLoad = async ({ url }) => {
     const nav = categoryNav(category, categories);
     const heroImage = !category && !q ? (coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories)) : null;
     const heroProduct = heroImage ? rows.find((row) => row.image_urls[0] === heroImage) : undefined;
-    const tiles = categoryNav(null, categories).top.map((item) => ({
-      slug: item.slug,
-      label: item.label,
-      imageUrl: coverImage(rows, item.slug, categories)
-    }));
     const browsingAll = !category && !q;
     const homeListings = browsingAll
       ? grouped.filter((item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id))
@@ -76,8 +71,7 @@ export const load: PageServerLoad = async ({ url }) => {
       trail: categoryTrail(category, categories),
       categoryLabel: category ? categoryPath(category, categories) : null,
       q,
-      hero: heroImage && heroProduct ? { imageUrl: heroImage, href: `/product/${heroProduct.id}` } : null,
-      tiles
+      hero: heroImage && heroProduct ? { imageUrl: heroImage, href: `/product/${heroProduct.id}` } : null
     };
   } catch (err) {
     console.error('Failed to load catalog', err);
@@ -94,8 +88,7 @@ export const load: PageServerLoad = async ({ url }) => {
       trail: [],
       categoryLabel: category,
       q,
-      hero: null,
-      tiles: []
+      hero: null
     };
   }
 };
