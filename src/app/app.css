@@ -549,12 +549,79 @@ input[type='number'] {
   [data-hero] p {
     color: CanvasText;
   }
+
+  .photo-frame::before,
+  .photo-frame::after {
+    border-color: CanvasText;
+  }
 }
 
 .product-card,
 .related-card {
   border-radius: var(--card-radius);
   overflow: hidden;
+}
+
+/* Two open corners. The offer stamp keeps the top left. */
+.photo-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-frame::before,
+.photo-frame::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  width: clamp(28px, 18%, 64px);
+  height: clamp(28px, 18%, 64px);
+  pointer-events: none;
+  border: 0 solid var(--ink);
+  transition:
+    width var(--dur) var(--ease-out),
+    height var(--dur) var(--ease-out);
+}
+
+.photo-frame::before {
+  top: 12px;
+  right: 12px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+
+.photo-frame::after {
+  bottom: 12px;
+  left: 12px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.photo-frame img {
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover .photo-frame::before,
+  a:hover .photo-frame::after {
+    width: clamp(52px, 42%, 132px);
+    height: clamp(52px, 42%, 132px);
+  }
+
+  a:hover .photo-frame img {
+    transform: scale(1.045);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-frame::before,
+  .photo-frame::after,
+  .photo-frame img {
+    transition: none;
+  }
+
+  a:hover .photo-frame img {
+    transform: none;
+  }
 }
 
 @keyframes vt-out {

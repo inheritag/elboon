@@ -99,11 +99,13 @@
 
 <article class="container product-detail">
   <div class="gallery">
-    {#if images[selectedImage]}
-      <img src={images[selectedImage]} alt={data.displayName} />
-    {:else}
-      <div class="image-placeholder"></div>
-    {/if}
+    <div class="photo-frame">
+      {#if images[selectedImage]}
+        <img src={images[selectedImage]} alt={data.displayName} />
+      {:else}
+        <div class="image-placeholder"></div>
+      {/if}
+    </div>
     {#if images.length > 1}
       <div class="thumbs">
         {#each images as url, i}
@@ -244,7 +246,7 @@
     <div class="related-grid">
       {#each data.related as product}
         <a class="related-card" href="/product/{product.id}">
-          <div class="related-media">
+          <div class="related-media photo-frame">
             {#if product.imageUrl}
               <img src={product.imageUrl} alt={product.name} />
             {:else}

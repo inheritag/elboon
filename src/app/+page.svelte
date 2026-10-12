@@ -53,7 +53,7 @@
 
 {#snippet card(product: PageData['products'][number])}
   <a class="product-card" href="/product/{product.id}">
-    <div class="thumb">
+    <div class="thumb photo-frame">
       {#if product.imageUrl}
         <img src={product.imageUrl} alt={product.name} />
       {:else}
