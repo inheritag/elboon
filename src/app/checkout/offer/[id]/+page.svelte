@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { formatPrice } from '../../../../domain/product';
+  import CountryField from '../../../CountryField.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -11,7 +12,7 @@
   let line1 = $state('');
   let city = $state('');
   let postcode = $state('');
-  let country = $state('Nigeria');
+  let country = $state('');
   let primed = $state(false);
   let status = $state<'idle' | 'submitting' | 'error'>('idle');
   let errorMessage = $state('');
@@ -23,7 +24,7 @@
     line1 = data.shipping?.line1 ?? '';
     city = data.shipping?.city ?? '';
     postcode = data.shipping?.postcode ?? '';
-    country = data.shipping?.country ?? 'Nigeria';
+    country = data.shipping?.country ?? '';
     primed = true;
   });
 
@@ -84,10 +85,8 @@
         <input id="postcode" bind:value={postcode} required />
       </div>
     </div>
-    <div class="field">
-      <label for="country">Country</label>
-      <input id="country" bind:value={country} required />
-    </div>
+    <p class="ship">Shipping is free. <a href="/policies">Delivery, returns, and defects</a>.</p>
+    <CountryField bind:value={country} />
     <button class="btn btn-primary" type="submit" disabled={status === 'submitting'}>
       {status === 'submitting' ? 'Continuing…' : 'Continue to payment'}
     </button>
@@ -101,6 +100,17 @@
   .offer-checkout {
     padding: 40px 0 64px;
     max-width: 640px;
+  }
+
+  .ship {
+    margin: 0 0 16px;
+    color: var(--text-secondary);
+  }
+
+  .ship a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .ticket {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { navigating } from '$app/state';
   import { formatPrice } from '../domain/product';
   import type { PageData } from './$types';
@@ -10,22 +11,82 @@
   let showCategories = $derived(
     data.categories.length > 0 && (data.total > 0 || Boolean(data.category) || Boolean(data.q) || loadingCatalog)
   );
-  let showCampaign = $derived(!data.category && !data.q && !loadingCatalog && Boolean(data.hero));
+  let showCampaign = $derived(!data.category && !data.q && data.page === 1 && !loadingCatalog && Boolean(data.hero));
   let showLooks = $derived(showCampaign && data.tiles.length > 0);
   let showTextNav = $derived(showCategories && (!showCampaign || data.tiles.length === 0));
+  let sectionTitle = $derived(data.q ? 'Search' : data.category ? (categoryLabel ?? data.category) : 'Everything');
 
-  function catalogHref(opts: { category?: string | null; q?: string; page?: number } = {}): string {
+  function catalogHref(opts: { category?: string | null; q?: string; page?: number; sort?: string } = {}): string {
     const category = opts.category === undefined ? data.category : opts.category;
     const q = opts.q === undefined ? data.q : opts.q;
+    const sort = opts.sort === undefined ? data.sort : opts.sort;
     const page = opts.page ?? 1;
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (q) params.set('q', q);
+    if (sort && sort !== 'featured') params.set('sort', sort);
     if (page > 1) params.set('page', String(page));
     const query = params.toString();
     return query ? `/?${query}` : '/';
   }
+
+  function onSort(event: Event) {
+    const value = (event.currentTarget as HTMLSelectElement).value;
+    void goto(catalogHref({ sort: value, page: 1 }));
+  }
+
+  function priceOf(product: { priceCents: number; priceMaxCents: number; currency: string }): string {
+    const price = formatPrice(product.priceCents, product.currency);
+    return product.priceMaxCents > product.priceCents ? `From ${price}` : price;
+  }
 </script>
+
+{#snippet sortControl()}
+  <label class="sort">
+    <span class="sr-only">Sort</span>
+    <select aria-label="Sort" value={data.sort} onchange={onSort}>
+      <option value="featured">Featured</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="name">Name</option>
+    </select>
+  </label>
+{/snippet}
+
+{#snippet card(product: PageData['products'][number])}
+  <a class="product-card" href="/product/{product.id}">
+    <div class="thumb">
+      {#if product.imageUrl}
+        <img src={product.imageUrl} alt={product.name} />
+      {:else}
+        <div class="image-placeholder"></div>
+      {/if}
+      {#if product.offerEnabled}
+        <span class="offer-stamp">Offer</span>
+      {/if}
+    </div>
+    <div class="product-card-body">
+      <h3>{product.name}</h3>
+      <p class="price">{priceOf(product)}</p>
+      {#if product.choices.length > 0}
+        <p class="choices">
+          {product.choices.slice(0, 4).join(' · ')}{#if product.choices.length > 4}
+            +{product.choices.length - 4}{/if}
+        </p>
+      {/if}
+      {#if product.colors.length > 0}
+        <p class="dots" aria-label="Colours">
+          {#each product.colors as color}
+            <span class="dot" style="background:{color.hex}" title={color.name}></span>
+          {/each}
+        </p>
+      {/if}
+      {#if product.remainingQty !== null}
+        <p class="badge badge-low-stock">Only {product.remainingQty} left</p>
+      {/if}
+    </div>
+  </a>
+{/snippet}
 
 {#if showCampaign && data.hero}
   <a class="campaign" data-hero href={data.hero.href}>
@@ -45,16 +106,19 @@
 {/if}
 
 {#if showLooks}
-  <nav class="looks container" aria-label="Categories">
-    {#each data.tiles as tile}
-      <a href={catalogHref({ category: tile.slug, page: 1 })} class:plain={!tile.imageUrl}>
-        {#if tile.imageUrl}
-          <img src={tile.imageUrl} alt="" />
-        {/if}
-        <span>{tile.label}</span>
-      </a>
-    {/each}
-  </nav>
+  <div class="looks-wrap container">
+    <h2 class="band-label">Categories</h2>
+    <nav class="looks" aria-label="Categories">
+      {#each data.tiles as tile}
+        <a href={catalogHref({ category: tile.slug, page: 1 })} class:plain={!tile.imageUrl}>
+          {#if tile.imageUrl}
+            <img src={tile.imageUrl} alt="" />
+          {/if}
+          <span>{tile.label}</span>
+        </a>
+      {/each}
+    </nav>
+  </div>
 {/if}
 
 {#if showTextNav}
@@ -92,89 +156,99 @@
 </div>
 {/if}
 
-<section class="grid container">
-  {#if data.total > 0 && !loadingCatalog && !showCampaign}
-    <p class="count">
-      {data.total}
-      {data.total === 1 ? 'item' : 'items'}{#if data.pages > 1}
-        · page {data.page} of {data.pages}{/if}
-    </p>
-  {/if}
-  {#if loadingCatalog}
-    {#each Array(6) as _}
-      <div class="product-card skel" aria-hidden="true">
-        <div class="image-placeholder"></div>
-        <div class="product-card-body">
-          <div class="skel-line"></div>
-          <div class="skel-line short"></div>
-        </div>
-      </div>
-    {/each}
-  {:else}
-    {#each data.products as product}
-      <a class="product-card" href="/product/{product.id}">
-        <div class="thumb">
-          {#if product.imageUrl}
-            <img src={product.imageUrl} alt={product.name} />
-          {:else}
-            <div class="image-placeholder"></div>
-          {/if}
-          {#if product.offerEnabled}
-            <span class="offer-stamp">Offer</span>
-          {/if}
-        </div>
-        <div class="product-card-body">
-          <h3>{product.name}</h3>
-          <p class="price">{formatPrice(product.priceCents, product.currency)}</p>
-          {#if product.colors.length > 0}
-            <p class="dots" aria-label="Colours">
-              {#each product.colors as color}
-                <span class="dot" style="background:{color.hex}" title={color.name}></span>
-              {/each}
-            </p>
-          {/if}
-          <div class="tags">
-            {#if product.remainingQty !== null}
-              <span class="badge badge-low-stock">Only {product.remainingQty} left</span>
-            {/if}
+{#if loadingCatalog}
+  <section class="shop container">
+    <div class="grid">
+      {#each Array(6) as _}
+        <div class="product-card skel" aria-hidden="true">
+          <div class="image-placeholder"></div>
+          <div class="product-card-body">
+            <div class="skel-line"></div>
+            <div class="skel-line short"></div>
           </div>
         </div>
-      </a>
-    {:else}
-      <div class="empty">
-        {#if data.q}
-          <p>Nothing matches “{data.q}”{categoryLabel ? ` in ${categoryLabel}` : ''}.</p>
-        {:else if data.category}
-          <p>Nothing listed in {categoryLabel ?? 'this category'} yet.</p>
-        {:else}
-          <p>Nothing for sale yet.</p>
-        {/if}
-        {#if data.category || data.q}
-          <a class="btn btn-primary" href="/">Browse all</a>
-        {/if}
+      {/each}
+    </div>
+  </section>
+{:else if data.bands}
+  {#if data.bands.length > 0}
+    <div class="container sort-row">{@render sortControl()}</div>
+  {/if}
+  {#each data.bands as band}
+    <section class="shop container">
+      <div class="section-break" aria-hidden="true"><span></span></div>
+      <div class="section-head">
+        <h2>{band.label}</h2>
+        <p class="count">{band.total} {band.total === 1 ? 'item' : 'items'}</p>
       </div>
-    {/each}
+      <div class="grid">
+        {#each band.items as product}
+          {@render card(product)}
+        {/each}
+      </div>
+      {#if band.total > band.items.length}
+        <a class="band-more" href={catalogHref({ category: band.slug, page: 1 })}>Shop all {band.label}</a>
+      {/if}
+    </section>
+  {:else}
+    <section class="shop container">
+      <div class="empty"><p>Nothing for sale yet.</p></div>
+    </section>
+  {/each}
+{:else}
+  <section class="shop container">
+    {#if data.total > 0}
+      <div class="section-head">
+        <h2>{sectionTitle}</h2>
+        <div class="head-tools">
+          <p class="count">
+            {data.total}
+            {data.total === 1 ? 'item' : 'items'}{#if data.pages > 1}
+              · page {data.page} of {data.pages}{/if}
+          </p>
+          {@render sortControl()}
+        </div>
+      </div>
+    {/if}
+    <div class="grid">
+      {#if data.products.length > 0}
+        {#each data.products as product}
+          {@render card(product)}
+        {/each}
+      {:else}
+        <div class="empty">
+          {#if data.q}
+            <p>Nothing matches “{data.q}”{categoryLabel ? ` in ${categoryLabel}` : ''}.</p>
+          {:else if data.category}
+            <p>Nothing listed in {categoryLabel ?? 'this category'} yet.</p>
+          {:else}
+            <p>Nothing for sale yet.</p>
+          {/if}
+          {#if data.category || data.q}
+            <a class="btn btn-primary" href="/">Browse all</a>
+          {/if}
+        </div>
+      {/if}
+    </div>
     {#if data.pages > 1}
       <nav class="pager" aria-label="Catalogue pages">
         {#if data.page > 1}
           <a href={catalogHref({ page: data.page - 1 })}>Previous</a>
-        {:else}
-          <span class="dead">Previous</span>
         {/if}
+        <span class="page-no">Page {data.page} of {data.pages}</span>
         {#if data.page < data.pages}
           <a href={catalogHref({ page: data.page + 1 })}>Next</a>
-        {:else}
-          <span class="dead">Next</span>
         {/if}
       </nav>
     {/if}
-  {/if}
-</section>
+  </section>
+{/if}
 
 <style>
   .campaign {
     position: relative;
-    display: block;
+    display: flex;
+    justify-content: center;
     color: #fff;
     background: #111;
   }
@@ -185,7 +259,8 @@
 
   .campaign img {
     width: 100%;
-    height: clamp(300px, 34vw, 440px);
+    height: clamp(400px, 52vw, 520px);
+    max-height: 72vh;
     object-fit: cover;
     object-position: center 42%;
   }
@@ -230,12 +305,27 @@
     color: var(--text-primary);
   }
 
+  .looks-wrap {
+    padding-top: 28px;
+  }
+
+  .band-label,
+  .section-head h2 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  .band-label {
+    margin-bottom: 12px;
+  }
+
   .looks {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 8px;
-    padding-top: 8px;
-    padding-bottom: 8px;
   }
 
   .looks a {
@@ -343,26 +433,73 @@
     border-bottom-color: var(--ink);
   }
 
+  .shop {
+    padding-top: 8px;
+    padding-bottom: 72px;
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .head-tools,
+  .sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+  }
+
+  .sort-row {
+    padding-top: 28px;
+  }
+
+  .sort {
+    min-width: 0;
+  }
+
+  .sort select {
+    max-width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    background: #fff;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
     gap: 28px 12px;
-    padding: 20px 0 72px;
+    padding-top: 22px;
   }
 
   .count {
-    grid-column: 1 / -1;
     margin: 0;
     font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--text-secondary);
   }
 
   .pager {
-    grid-column: 1 / -1;
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding-top: 8px;
+    margin-top: 28px;
     font-size: 14px;
     font-weight: 600;
   }
@@ -373,8 +510,29 @@
     text-underline-offset: 3px;
   }
 
-  .pager .dead {
-    color: var(--text-muted);
+  .page-no {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .band-more {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .choices {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .product-card {
@@ -450,13 +608,6 @@
     border: 1px solid color-mix(in srgb, var(--text-primary) 25%, transparent);
   }
 
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-
   .empty {
     grid-column: 1 / -1;
     padding: 28px 0 48px;
@@ -495,6 +646,43 @@
     }
   }
 
+  @media (min-width: 1100px) {
+    .campaign img {
+      height: clamp(400px, 34vw, 520px);
+      max-height: 62vh;
+    }
+
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+
+  /* Square product photos must not stretch into a thin strip on a wide monitor. */
+  @media (min-width: 1680px) {
+    .campaign {
+      background: var(--bg);
+    }
+
+    .campaign img,
+    .campaign-copy {
+      width: min(100%, var(--max-width));
+    }
+
+    .campaign img {
+      height: min(560px, 58vh);
+    }
+
+    .campaign-copy {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+    }
+
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  }
+
   @media (max-width: 900px) {
     .looks {
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -502,16 +690,19 @@
   }
 
   @media (max-width: 720px) {
-    .campaign img {
-      height: 420px;
-    }
-
     .looks {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .empty .btn {
       width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .head-tools {
+      flex: 1 1 220px;
+      justify-content: flex-end;
     }
   }
 

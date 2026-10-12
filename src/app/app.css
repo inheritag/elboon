@@ -104,6 +104,19 @@ a:hover {
   color: inherit;
 }
 
+/* A 13-inch laptop fills 1360. Wider monitors get a wider shop, still inset from the edges. */
+@media (min-width: 1680px) {
+  :root {
+    --max-width: 1600px;
+  }
+}
+
+@media (min-width: 2200px) {
+  :root {
+    --max-width: 1760px;
+  }
+}
+
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
@@ -179,6 +192,42 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 0;
   box-shadow: none;
+}
+
+/* Black that fades in from the page, then holds. */
+.ink-fade {
+  color: #fff;
+  background: linear-gradient(180deg, transparent 0%, #111 56px);
+}
+
+/* A pause between bands: the line fades out at the edges. */
+.section-break {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 0;
+  padding: 48px 0 20px;
+  color: var(--ink);
+}
+
+.section-break::before,
+.section-break::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor 28%);
+}
+
+.section-break::after {
+  background: linear-gradient(90deg, currentColor 72%, transparent);
+}
+
+.section-break > span {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  background: currentColor;
+  transform: rotate(45deg);
 }
 
 .field {
@@ -406,6 +455,23 @@ input[type='number'] {
   body {
     background: Canvas;
     color: CanvasText;
+  }
+
+  .ink-fade {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .section-break {
+    color: CanvasText;
+    background: transparent;
+  }
+
+  .section-break > span,
+  .section-break::before,
+  .section-break::after {
+    background: CanvasText;
   }
 
   a:hover {

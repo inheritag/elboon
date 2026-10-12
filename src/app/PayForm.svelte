@@ -1,4 +1,6 @@
 <script lang="ts">
+  import CountryField from './CountryField.svelte';
+
   let {
     email = $bindable(''),
     collectEmail = true,
@@ -34,7 +36,7 @@
   let line1 = $state('');
   let city = $state('');
   let postcode = $state('');
-  let country = $state('Nigeria');
+  let country = $state('');
   let cardNumber = $state('');
   let expiry = $state('');
   let cvc = $state('');
@@ -52,6 +54,7 @@
 
 <form onsubmit={submit} class="card pay-form">
   <h2>Delivery</h2>
+  <p class="hint">Delivery is free.</p>
 
   {#if collectEmail}
     <div class="field">
@@ -79,10 +82,7 @@
     <label for="postcode">Postcode</label>
     <input id="postcode" bind:value={postcode} required />
   </div>
-  <div class="field">
-    <label for="country">Country</label>
-    <input id="country" bind:value={country} required />
-  </div>
+  <CountryField bind:value={country} />
 
   <h2>Card</h2>
   {#if devHint}

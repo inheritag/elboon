@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { formatPrice } from '../../domain/product';
+  import CountryField from '../CountryField.svelte';
   import { cart } from '../cart';
   import type { PageData } from './$types';
 
@@ -12,7 +13,7 @@
   let line1 = $state('');
   let city = $state('');
   let postcode = $state('');
-  let country = $state('Nigeria');
+  let country = $state('');
   let primed = $state(false);
   let status = $state<'idle' | 'submitting' | 'error'>('idle');
   let errorMessage = $state('');
@@ -25,7 +26,7 @@
     line1 = data.shipping?.line1 ?? '';
     city = data.shipping?.city ?? '';
     postcode = data.shipping?.postcode ?? '';
-    country = data.shipping?.country ?? 'Nigeria';
+    country = data.shipping?.country ?? '';
     primed = true;
   });
 
@@ -80,6 +81,7 @@
         </li>
       {/each}
     </ul>
+    <p class="ship">Shipping <strong>Free</strong>. <a href="/policies">Delivery, returns, and defects</a>.</p>
     <p class="total">Total: {formatPrice(totalCents, 'GBP')}</p>
 
     <form onsubmit={submit} class="card">
@@ -112,10 +114,7 @@
           <input id="postcode" bind:value={postcode} required />
         </div>
       </div>
-      <div class="field">
-        <label for="country">Country</label>
-        <input id="country" bind:value={country} required />
-      </div>
+      <CountryField bind:value={country} />
       <button class="btn btn-primary" type="submit" disabled={status === 'submitting'}>
         {status === 'submitting' ? 'Continuing…' : 'Continue to payment'}
       </button>
@@ -154,9 +153,18 @@
     border-top: 1px solid var(--border);
   }
 
+  .ship {
+    margin: 18px 0 6px;
+    color: var(--text-secondary);
+  }
+
+  .ship a {
+    color: inherit;
+  }
+
   .total {
     font-weight: 700;
-    margin: 18px 0 28px;
+    margin: 0 0 28px;
   }
 
   form {

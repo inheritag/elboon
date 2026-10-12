@@ -30,6 +30,12 @@ describe('recommendProducts', () => {
     expect(ranked.map((row) => row.id)).toEqual(['speaker', 'cable']);
   });
 
+  it('keeps clothes with clothes, not with cables', () => {
+    const catalog = [item('cable', 'accessories'), item('tee', 'fashion'), item('serum', 'beauty')];
+    const ranked = recommendProducts({ id: 'shorts', category: 'fashion' }, catalog);
+    expect(ranked.map((row) => row.id)).toEqual(['tee', 'serum']);
+  });
+
   it('treats nested categories as the same top-level branch', () => {
     const catalog = [item('s20', 'phones'), item('speaker', 'tech'), item('cable', 'accessories')];
     const categories = [

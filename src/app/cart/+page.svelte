@@ -53,8 +53,11 @@
       {/each}
     </ul>
 
-    <p class="total">Total: {formatPrice(totalCents, 'GBP')}</p>
-    <button class="btn btn-primary" type="button" onclick={proceed}>Proceed to checkout</button>
+    <div class="summary ink-fade">
+      <p class="ship">Shipping <strong>Free</strong></p>
+      <p class="total">Total {formatPrice(totalCents, 'GBP')}</p>
+      <button class="btn btn-primary" type="button" onclick={proceed}>Proceed to checkout</button>
+    </div>
   {/if}
 </section>
 
@@ -79,14 +82,13 @@
 
   .lines li {
     display: grid;
-    grid-template-columns: 64px 1fr auto auto auto;
+    grid-template-columns: 72px 1fr auto auto auto;
     align-items: center;
     gap: 16px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
+    padding: 16px 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: none;
   }
 
   .thumb {
@@ -142,10 +144,36 @@
     cursor: pointer;
   }
 
-  .total {
+  .summary {
+    margin-top: 8px;
+    padding: 52px 18px 18px;
+  }
+
+  .summary .ship {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .summary .total {
+    margin: 0 0 16px;
+    color: #fff;
+    font-size: 22px;
     font-weight: 700;
-    font-size: 18px;
-    margin: 20px 0;
+  }
+
+  .summary .btn-primary {
+    width: 100%;
+    background: #fff;
+    color: #111;
+    border-color: #fff;
+  }
+
+  .summary .btn-primary:hover {
+    background: #e6e6e6;
+    color: #111;
+    border-color: #e6e6e6;
   }
 
   @media (forced-colors: active) {

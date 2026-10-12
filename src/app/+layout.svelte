@@ -147,15 +147,10 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
+      <p class="footer-mark">elboon</p>
       <nav>
         <a href="/privacy">Privacy</a>
-        <a
-          href={accountHref}
-          onclick={(event) => {
-            if (data.customer || data.admin) return;
-            openSheet(event, accountHref);
-          }}>Account</a
-        >
+        <a href="/policies">Delivery & returns</a>
         <a href="/cart">Cart</a>
       </nav>
     </div>
@@ -302,6 +297,17 @@
   }
 
   @media (forced-colors: active) {
+    .site-footer {
+      background: Canvas;
+      color: CanvasText;
+      border-top: 1px solid CanvasText;
+    }
+
+    .site-footer a,
+    .site-footer a:hover {
+      color: LinkText;
+    }
+
     .count {
       background: Highlight;
       color: HighlightText;
@@ -357,21 +363,28 @@
   }
 
   .site-footer {
-    background: #fff;
-    border-top: 1px solid var(--border);
-    color: var(--text-primary);
+    margin-top: 12px;
+    padding-top: 72px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, #111 64px);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
-    margin-top: var(--space-xl);
-    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .footer-mark {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
   .footer-inner {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     gap: 16px;
-    min-height: 76px;
+    min-height: 64px;
     flex-wrap: wrap;
   }
 
@@ -380,11 +393,11 @@
   }
 
   .site-footer a {
-    color: var(--text-primary);
+    color: #fff;
   }
 
   .site-footer a:hover {
-    color: var(--text-primary);
+    color: #fff;
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -430,8 +443,10 @@
     }
 
     .footer-inner {
+      flex-direction: column;
       justify-content: center;
-      min-height: 56px;
+      min-height: 72px;
+      padding-bottom: 16px;
     }
   }
 </style>

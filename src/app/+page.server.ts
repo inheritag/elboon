@@ -7,6 +7,7 @@ import {
   type CategoryRecord
 } from '../domain/catalog';
 import { heldMap, totalAvailable } from '../domain/inventory';
+import { categoryBands, groupListings, parseSort, sortListings } from '../domain/listing';
 import { paginate } from '../domain/paging';
 import { productFromRow, toProductSummary, type ProductRow } from '../domain/product';
 import { getStore } from '../libs/store';
@@ -32,6 +33,7 @@ function coverImage(rows: ProductRow[], slug: string | null, categories: Categor
 export const load: PageServerLoad = async ({ url }) => {
   const category = url.searchParams.get('category');
   const q = url.searchParams.get('q')?.trim() ?? '';
+  const sort = parseSort(url.searchParams.get('sort'));
   const requestedPage = Number(url.searchParams.get('page') ?? 1);
   try {
     const store = getStore();
@@ -46,20 +48,28 @@ export const load: PageServerLoad = async ({ url }) => {
       .filter((row) => matchesQuery(row, q))
       .map(productFromRow)
       .map((product) => toProductSummary(product, totalAvailable(product, held)));
-    const window = paginate(matched, requestedPage);
+    const grouped = sortListings(groupListings(matched), sort);
     const nav = categoryNav(category, categories);
-    const heroImage = coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories);
-    const heroProduct = rows.find((row) => row.image_urls[0] === heroImage);
+    const heroImage = !category && !q ? (coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories)) : null;
+    const heroProduct = heroImage ? rows.find((row) => row.image_urls[0] === heroImage) : undefined;
     const tiles = categoryNav(null, categories).top.map((item) => ({
       slug: item.slug,
       label: item.label,
       imageUrl: coverImage(rows, item.slug, categories)
     }));
+    const browsingAll = !category && !q;
+    const homeListings = browsingAll
+      ? grouped.filter((item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id))
+      : grouped;
+    const window = paginate(browsingAll ? [] : grouped, requestedPage);
+    const bands = browsingAll ? categoryBands(homeListings, categories) : null;
     return {
       products: window.items,
-      total: window.total,
-      page: window.page,
-      pages: window.pages,
+      bands,
+      total: browsingAll ? homeListings.length : window.total,
+      page: browsingAll ? 1 : window.page,
+      pages: browsingAll ? 1 : window.pages,
+      sort,
       category,
       categories,
       nav,
@@ -73,9 +83,11 @@ export const load: PageServerLoad = async ({ url }) => {
     console.error('Failed to load catalog', err);
     return {
       products: [],
+      bands: null,
       total: 0,
       page: 1,
       pages: 1,
+      sort,
       category,
       categories: [],
       nav: emptyNav,

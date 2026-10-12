@@ -52,7 +52,7 @@
   function line() {
     return {
       productId: data.product.id,
-      name: data.product.name,
+      name: data.displayName,
       unitPriceCents: data.product.priceCents,
       imageUrl: images[0] ?? null,
       color: selectedColor,
@@ -100,7 +100,7 @@
 <article class="container product-detail">
   <div class="gallery">
     {#if images[selectedImage]}
-      <img src={images[selectedImage]} alt={data.product.name} />
+      <img src={images[selectedImage]} alt={data.displayName} />
     {:else}
       <div class="image-placeholder"></div>
     {/if}
@@ -123,7 +123,7 @@
 
   <div class="info">
     <p class="category"><a href="/?category={data.product.category}">{data.categoryLabel}</a></p>
-    <h1>{data.product.name}</h1>
+    <h1>{data.displayName}</h1>
     <p class="price">{formatPrice(data.product.priceCents, data.product.currency)}</p>
 
     {#if data.product.colors.length > 0}
@@ -141,6 +141,22 @@
               aria-pressed={selectedColor === color.name}
               onclick={() => pickColor(color.name)}
             ></button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if data.options.length > 1 && data.product.sizes.length === 0}
+      <div class="sizes">
+        <p class="colour-label">{data.optionHeading}</p>
+        <div class="size-picks" role="list">
+          {#each data.options as option}
+            <a
+              class="size-pick"
+              class:active={option.id === data.product.id}
+              href="/product/{option.id}"
+              aria-current={option.id === data.product.id ? 'page' : undefined}>{option.label}</a
+            >
           {/each}
         </div>
       </div>
@@ -174,7 +190,7 @@
       {:else}
         <p class="stock out">Out of stock</p>
       {/if}
-      <p class="dispatch">Courier delivery.</p>
+      <p class="dispatch">Free delivery. <a href="/policies">Shipping, returns, and defects</a>.</p>
 
       {#if inStock}
         <div class="qty">
@@ -200,7 +216,7 @@
     {#if data.product.offerEnabled}
       <HagglePanel
         productId={data.product.id}
-        productName={data.product.name}
+        productName={data.displayName}
         askingCents={data.product.priceCents}
         currency={data.product.currency}
         signedInEmail={data.customer?.email ?? null}
@@ -210,15 +226,20 @@
       />
     {/if}
 
-    <section class="about">
-      <h2>About this item</h2>
-      <p class="description">{data.product.description}</p>
-    </section>
   </div>
 </article>
 
+{#if data.product.description.trim()}
+  <section class="container about">
+    <div class="section-break" aria-hidden="true"><span></span></div>
+    <h2>About this item</h2>
+    <p class="description">{data.product.description}</p>
+  </section>
+{/if}
+
 {#if data.related.length > 0}
   <section class="container related">
+    <div class="section-break" aria-hidden="true"><span></span></div>
     <h2>You might also like</h2>
     <div class="related-grid">
       {#each data.related as product}
@@ -291,6 +312,11 @@
     border-radius: 0;
   }
 
+  .info h1 {
+    max-width: 16ch;
+    font-size: clamp(28px, 3vw, 40px);
+  }
+
   .category {
     font-size: 11px;
     font-weight: 600;
@@ -304,7 +330,7 @@
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 8px 0 16px;
+    margin: 10px 0 22px;
   }
 
   .colours,
@@ -360,6 +386,8 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    text-decoration: none;
+    text-align: center;
   }
 
   .size-pick.active {
@@ -371,7 +399,8 @@
 
   .buy-box {
     border: none;
-    padding: 4px 0 0;
+    border-top: 1px solid var(--border);
+    padding: 18px 0 0;
     background: none;
     margin-top: 4px;
   }
@@ -397,6 +426,11 @@
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 14px;
+  }
+
+  .dispatch a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .qty {
@@ -470,26 +504,33 @@
   }
 
   .about {
-    margin-top: 36px;
-    padding-top: 28px;
-    border-top: 1px solid var(--border);
+    padding-top: 0;
+    padding-bottom: 8px;
   }
 
   .about h2 {
-    font-size: 18px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
   .description {
+    max-width: 68ch;
     color: var(--text-secondary);
   }
 
   .related {
-    padding: 16px 0 72px;
+    padding: 0 0 64px;
   }
 
   .related h2 {
-    margin-bottom: 4px;
+    margin-bottom: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
   .related-grid {
@@ -579,6 +620,17 @@
       background: Canvas;
       color: CanvasText;
       border: 1px solid CanvasText;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .product-detail {
+      grid-template-columns: minmax(0, 720px) minmax(300px, 440px);
+      justify-content: center;
+    }
+
+    .related-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     }
   }
 

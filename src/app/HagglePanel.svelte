@@ -74,7 +74,7 @@
   }
 </script>
 
-<section class="haggle" data-tone={read.tone}>
+<section class="haggle ink-fade" data-tone={read.tone}>
   <OfferThread step={status === 'sent' ? 2 : 1} />
 
   <div class="prices">
@@ -166,13 +166,35 @@
 
 <style>
   .haggle {
+    --text-primary: #fff;
+    --text-secondary: rgb(255 255 255 / 72%);
+    --text-muted: rgb(255 255 255 / 55%);
+    --haggle-ink: #fff;
+    --border: rgb(255 255 255 / 28%);
+    --haggle-rule: rgb(255 255 255 / 28%);
     margin-top: 28px;
-    padding: 20px 0 0;
-    background: #fff;
-    color: var(--haggle-ink);
+    padding: 68px 18px 18px;
+    color: #fff;
     border: none;
-    border-top: 1px solid var(--haggle-rule);
     border-radius: 0;
+  }
+
+  .haggle :global(.field input) {
+    color: #111;
+    background: #fff;
+    border-color: transparent;
+  }
+
+  .throw {
+    background: #fff;
+    color: #111;
+    border-color: #fff;
+  }
+
+  .throw:hover {
+    background: #e6e6e6;
+    color: #111;
+    border-color: #e6e6e6;
   }
 
   .prices {
@@ -274,6 +296,19 @@
     .proposed strong,
     .bid {
       color: CanvasText;
+    }
+
+    .throw,
+    .throw:hover {
+      background: ButtonFace;
+      color: ButtonText;
+      border-color: ButtonText;
+    }
+
+    .haggle :global(.field input) {
+      color: FieldText;
+      background: Field;
+      border: 1px solid CanvasText;
     }
 
     .listed strong {

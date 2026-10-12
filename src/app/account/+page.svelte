@@ -18,6 +18,7 @@
   </header>
 
   <section class="block">
+    <div class="section-break" aria-hidden="true"><span></span></div>
     <h2>Offers</h2>
     {#each data.offers as offer}
       <OfferCard {offer} />
@@ -28,6 +29,7 @@
   </section>
 
   <section class="block">
+    <div class="section-break" aria-hidden="true"><span></span></div>
     <h2>Saved shipping</h2>
     {#if data.profile.shippingAddress}
       <div class="card address">

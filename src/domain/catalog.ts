@@ -15,13 +15,13 @@ export const DEFAULT_CATEGORIES: CategoryRecord[] = DEFAULT_CATEGORY_SLUGS.map((
   parentSlug: null
 }));
 
-/** Complementary pairings use the top-level category (tech ↔ accessories, and so on). */
+/** Pairings stay inside a kind of shop: clothes with beauty, tech with its accessories. */
 export const COMPLEMENTARY: Record<string, string[]> = {
   tech: ['accessories'],
-  accessories: ['tech', 'fashion'],
-  fashion: ['accessories', 'beauty'],
-  beauty: ['fashion', 'accessories'],
-  home: ['accessories']
+  accessories: ['tech'],
+  fashion: ['beauty'],
+  beauty: ['fashion'],
+  home: []
 };
 
 export const MAX_CATEGORY_DEPTH = 4;
