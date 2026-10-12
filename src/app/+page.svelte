@@ -22,7 +22,7 @@
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (q) params.set('q', q);
-    if (sort && sort !== 'featured') params.set('sort', sort);
+    if (q && sort && sort !== 'featured') params.set('sort', sort);
     if (page > 1) params.set('page', String(page));
     const query = params.toString();
     return query ? `/?${query}` : '/';
@@ -153,9 +153,6 @@
     </div>
   </section>
 {:else if data.bands}
-  {#if data.bands.length > 0}
-    <div class="container sort-row">{@render sortControl()}</div>
-  {/if}
   {#each data.bands as band}
     <section class="shop container">
       <div class="section-break" aria-hidden="true"><span></span></div>
@@ -188,7 +185,9 @@
             {data.total === 1 ? 'item' : 'items'}{#if data.pages > 1}
               · page {data.page} of {data.pages}{/if}
           </p>
-          {@render sortControl()}
+          {#if data.q}
+            {@render sortControl()}
+          {/if}
         </div>
       </div>
     {/if}
@@ -370,16 +369,11 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .head-tools,
-  .sort-row {
+  .head-tools {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 16px;
-  }
-
-  .sort-row {
-    padding-top: 28px;
   }
 
   .sort {

@@ -33,7 +33,7 @@ function coverImage(rows: ProductRow[], slug: string | null, categories: Categor
 export const load: PageServerLoad = async ({ url }) => {
   const category = url.searchParams.get('category');
   const q = url.searchParams.get('q')?.trim() ?? '';
-  const sort = parseSort(url.searchParams.get('sort'));
+  const sort = q ? parseSort(url.searchParams.get('sort')) : 'featured';
   const requestedPage = Number(url.searchParams.get('page') ?? 1);
   try {
     const store = getStore();
