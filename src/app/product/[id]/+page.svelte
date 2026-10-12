@@ -100,11 +100,13 @@
 <article class="container product-detail">
   <div class="gallery">
     <div class="photo-frame">
-      {#if images[selectedImage]}
-        <img src={images[selectedImage]} alt={data.displayName} />
-      {:else}
-        <div class="image-placeholder"></div>
-      {/if}
+      <div class="photo-clip">
+        {#if images[selectedImage]}
+          <img src={images[selectedImage]} alt={data.displayName} />
+        {:else}
+          <div class="image-placeholder"></div>
+        {/if}
+      </div>
     </div>
     {#if images.length > 1}
       <div class="thumbs">
@@ -247,14 +249,16 @@
       {#each data.related as product}
         <a class="related-card" href="/product/{product.id}">
           <div class="related-media photo-frame">
-            {#if product.imageUrl}
-              <img src={product.imageUrl} alt={product.name} />
-            {:else}
-              <div class="related-placeholder"></div>
-            {/if}
-            {#if product.offerEnabled}
-              <span class="offer-stamp">Offer</span>
-            {/if}
+            <div class="photo-clip">
+              {#if product.imageUrl}
+                <img src={product.imageUrl} alt={product.name} />
+              {:else}
+                <div class="related-placeholder"></div>
+              {/if}
+              {#if product.offerEnabled}
+                <span class="offer-stamp">Offer</span>
+              {/if}
+            </div>
           </div>
           <div class="related-body">
             <h3>{product.name}</h3>
@@ -548,7 +552,6 @@
 
   .related-media {
     position: relative;
-    overflow: hidden;
   }
 
   .related-card:hover {

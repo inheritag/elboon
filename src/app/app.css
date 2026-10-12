@@ -550,9 +550,9 @@ input[type='number'] {
     color: CanvasText;
   }
 
-  .photo-frame::before,
-  .photo-frame::after {
-    border-color: CanvasText;
+  .photo-frame::before {
+    background: Canvas;
+    border: 1px solid CanvasText;
   }
 }
 
@@ -562,38 +562,30 @@ input[type='number'] {
   overflow: hidden;
 }
 
-/* Two open corners. The offer stamp keeps the top left. */
+/* Ink plate, half strength, shifted down and right so it sits outside the photo. */
 .photo-frame {
   position: relative;
-  overflow: hidden;
-}
-
-.photo-frame::before,
-.photo-frame::after {
-  content: '';
-  position: absolute;
-  z-index: 2;
-  width: clamp(28px, 18%, 64px);
-  height: clamp(28px, 18%, 64px);
-  pointer-events: none;
-  border: 0 solid var(--ink);
-  transition:
-    width var(--dur) var(--ease-out),
-    height var(--dur) var(--ease-out);
+  padding: 0 14px 14px 0;
 }
 
 .photo-frame::before {
-  top: 12px;
-  right: 12px;
-  border-top-width: 1px;
-  border-right-width: 1px;
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 14px;
+  right: 0;
+  bottom: 0;
+  left: 14px;
+  background: rgb(17 17 17 / 50%);
+  pointer-events: none;
+  transition: transform var(--dur) var(--ease-out);
 }
 
-.photo-frame::after {
-  bottom: 12px;
-  left: 12px;
-  border-bottom-width: 1px;
-  border-left-width: 1px;
+.photo-clip {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--bg-subtle);
 }
 
 .photo-frame img {
@@ -601,25 +593,23 @@ input[type='number'] {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  a:hover .photo-frame::before,
-  a:hover .photo-frame::after {
-    width: clamp(52px, 42%, 132px);
-    height: clamp(52px, 42%, 132px);
+  .photo-frame:hover img {
+    transform: scale(1.045);
   }
 
-  a:hover .photo-frame img {
-    transform: scale(1.045);
+  .photo-frame:hover::before {
+    transform: translate(-5px, -5px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .photo-frame::before,
-  .photo-frame::after,
   .photo-frame img {
     transition: none;
   }
 
-  a:hover .photo-frame img {
+  .photo-frame:hover img,
+  .photo-frame:hover::before {
     transform: none;
   }
 }

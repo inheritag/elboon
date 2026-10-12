@@ -54,14 +54,16 @@
 {#snippet card(product: PageData['products'][number])}
   <a class="product-card" href="/product/{product.id}">
     <div class="thumb photo-frame">
-      {#if product.imageUrl}
-        <img src={product.imageUrl} alt={product.name} />
-      {:else}
-        <div class="image-placeholder"></div>
-      {/if}
-      {#if product.offerEnabled}
-        <span class="offer-stamp">Offer</span>
-      {/if}
+      <div class="photo-clip">
+        {#if product.imageUrl}
+          <img src={product.imageUrl} alt={product.name} />
+        {:else}
+          <div class="image-placeholder"></div>
+        {/if}
+        {#if product.offerEnabled}
+          <span class="offer-stamp">Offer</span>
+        {/if}
+      </div>
     </div>
     <div class="product-card-body">
       <h3>{product.name}</h3>
@@ -384,13 +386,14 @@
     max-width: 100%;
     height: 40px;
     padding: 0 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--ink);
     border-radius: 0;
-    background: #fff;
-    color: var(--text-primary);
+    background: transparent;
+    color: var(--ink);
     font: inherit;
     font-size: 13px;
     font-weight: 600;
+    opacity: 0.5;
   }
 
   .grid {
@@ -461,7 +464,6 @@
 
   .thumb {
     position: relative;
-    overflow: hidden;
   }
 
   .product-card img,
