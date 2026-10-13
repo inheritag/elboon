@@ -7,7 +7,7 @@ import {
   type CategoryRecord
 } from '../domain/catalog';
 import { heldMap, totalAvailable } from '../domain/inventory';
-import { categoryBands, groupListings, parseSort, sortListings } from '../domain/listing';
+import { groupListings, parseSort, sortListings } from '../domain/listing';
 import { paginate } from '../domain/paging';
 import { productFromRow, toProductSummary, type ProductRow } from '../domain/product';
 import { getStore } from '../libs/store';
@@ -56,14 +56,12 @@ export const load: PageServerLoad = async ({ url }) => {
     const homeListings = browsingAll
       ? grouped.filter((item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id))
       : grouped;
-    const window = paginate(browsingAll ? [] : grouped, requestedPage);
-    const bands = browsingAll ? categoryBands(homeListings, categories) : null;
+    const window = paginate(homeListings, requestedPage);
     return {
       products: window.items,
-      bands,
-      total: browsingAll ? homeListings.length : window.total,
-      page: browsingAll ? 1 : window.page,
-      pages: browsingAll ? 1 : window.pages,
+      total: window.total,
+      page: window.page,
+      pages: window.pages,
       sort,
       category,
       categories,
@@ -77,7 +75,6 @@ export const load: PageServerLoad = async ({ url }) => {
     console.error('Failed to load catalog', err);
     return {
       products: [],
-      bands: null,
       total: 0,
       page: 1,
       pages: 1,

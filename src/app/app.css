@@ -551,8 +551,7 @@ input[type='number'] {
   }
 
   .photo-frame::before {
-    background: Canvas;
-    border: 1px solid CanvasText;
+    border-color: CanvasText;
   }
 }
 
@@ -562,21 +561,22 @@ input[type='number'] {
   overflow: hidden;
 }
 
-/* Ink plate, half strength, shifted down and right so it sits outside the photo. */
 .photo-frame {
   position: relative;
-  padding: 0 14px 14px 0;
+  padding: 0 3px 3px 0;
 }
 
 .photo-frame::before {
   content: '';
   position: absolute;
   z-index: 0;
-  top: 14px;
+  top: 3px;
   right: 0;
   bottom: 0;
-  left: 14px;
-  background: rgb(17 17 17 / 50%);
+  left: 3px;
+  border: 1px solid var(--ink);
+  border-radius: clamp(8px, 2.5%, 16px);
+  background: transparent;
   pointer-events: none;
   transition: transform var(--dur) var(--ease-out);
 }
@@ -585,6 +585,7 @@ input[type='number'] {
   position: relative;
   z-index: 1;
   overflow: hidden;
+  border-radius: clamp(8px, 2.5%, 16px);
   background: var(--bg-subtle);
 }
 
@@ -598,7 +599,7 @@ input[type='number'] {
   }
 
   .photo-frame:hover::before {
-    transform: translate(-5px, -5px);
+    transform: translate(-1px, -1px);
   }
 }
 

@@ -154,31 +154,9 @@
       {/each}
     </div>
   </section>
-{:else if data.bands}
-  {#each data.bands as band}
-    <section class="shop container">
-      <div class="section-break" aria-hidden="true"><span></span></div>
-      <div class="section-head">
-        <h2>{band.label}</h2>
-        <p class="count">{band.total} {band.total === 1 ? 'item' : 'items'}</p>
-      </div>
-      <div class="grid">
-        {#each band.items as product}
-          {@render card(product)}
-        {/each}
-      </div>
-      {#if band.total > band.items.length}
-        <a class="band-more" href={catalogHref({ category: band.slug, page: 1 })}>Shop all {band.label}</a>
-      {/if}
-    </section>
-  {:else}
-    <section class="shop container">
-      <div class="empty"><p>Nothing for sale yet.</p></div>
-    </section>
-  {/each}
 {:else}
   <section class="shop container">
-    {#if data.total > 0}
+    {#if data.total > 0 && (data.category || data.q)}
       <div class="section-head">
         <h2>{sectionTitle}</h2>
         <div class="head-tools">
@@ -431,17 +409,6 @@
   .page-no {
     color: var(--text-secondary);
     font-weight: 500;
-  }
-
-  .band-more {
-    display: inline-block;
-    margin-top: 18px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
 
   .choices {
