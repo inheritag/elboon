@@ -1,4 +1,4 @@
-import { childrenOf, type CategoryRecord } from './catalog';
+import { childrenOf, rootCategory, type CategoryRecord } from './catalog';
 import type { ProductSummary } from './product';
 
 export const CATALOG_SORTS = ['featured', 'price-asc', 'price-desc', 'name'] as const;
@@ -239,6 +239,45 @@ export function sortListings(items: Listing[], sort: CatalogSort): Listing[] {
   if (sort === 'price-desc') copy.sort((a, b) => b.priceCents - a.priceCents || a.name.localeCompare(b.name));
   if (sort === 'name') copy.sort((a, b) => a.name.localeCompare(b.name));
   return copy;
+}
+
+/**
+ * All-page order. One listing from each department in turn, in the same
+ * department order as the category rail. Nested categories count as their
+ * parent department. Input order is kept inside a department, so newest
+ * stays first there. The result is stable until the catalogue changes.
+ */
+export function mixByDepartment(listings: Listing[], categories: CategoryRecord[]): Listing[] {
+  const buckets = new Map<string, Listing[]>();
+  for (const listing of listings) {
+    const slug = rootCategory(listing.category, categories)?.slug ?? listing.category;
+    const rows = buckets.get(slug) ?? [];
+    rows.push(listing);
+    buckets.set(slug, rows);
+  }
+
+  const order = childrenOf(null, categories).map((category) => category.slug);
+  for (const slug of buckets.keys()) {
+    if (!order.includes(slug)) order.push(slug);
+  }
+
+  const queues = order.map((slug) => buckets.get(slug) ?? []).filter((queue) => queue.length > 0);
+  const mixed: Listing[] = [];
+  const cursors = queues.map(() => 0);
+  let remaining = listings.length;
+  while (remaining > 0) {
+    let took = false;
+    for (let i = 0; i < queues.length; i += 1) {
+      const next = queues[i][cursors[i]];
+      if (!next) continue;
+      cursors[i] += 1;
+      mixed.push(next);
+      remaining -= 1;
+      took = true;
+    }
+    if (!took) break;
+  }
+  return mixed;
 }
 
 export function categoryBands(

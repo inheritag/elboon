@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { categoryBands, choiceHeading, familyKey, groupListings, shopName, sortListings } from './listing';
+import {
+  categoryBands,
+  choiceHeading,
+  familyKey,
+  groupListings,
+  mixByDepartment,
+  shopName,
+  sortListings
+} from './listing';
 import type { ProductSummary } from './product';
 
 function item(id: string, name: string, category = 'clothing', priceCents = 1000): ProductSummary {
@@ -92,5 +100,40 @@ describe('sort and bands', () => {
     expect(bands.map((band) => band.slug)).toEqual(['accessories', 'clothing', 'home']);
     expect(bands.every((band) => band.items.every((item) => item.category === band.slug))).toBe(true);
     expect(listings.map((row) => row.priceCents)).toEqual([1200, 1499, 2200]);
+  });
+});
+
+describe('mixByDepartment', () => {
+  const categories = [
+    { slug: 'tech', label: 'Tech', parentSlug: null },
+    { slug: 'fashion', label: 'Fashion', parentSlug: null },
+    { slug: 'home', label: 'Home', parentSlug: null },
+    { slug: 'phones', label: 'Phones', parentSlug: 'tech' }
+  ];
+
+  it('takes one item from each department in rail order, newest first inside a department', () => {
+    const mixed = mixByDepartment(
+      groupListings([
+        item('phone-new', 'New phone', 'phones', 9000),
+        item('tee-new', 'New tee', 'fashion', 2000),
+        item('lamp', 'Lamp', 'home', 3000),
+        item('cable', 'Cable', 'tech', 1200),
+        item('tee-old', 'Old tee', 'fashion', 1800),
+        item('vase', 'Vase', 'home', 1500)
+      ]),
+      categories
+    );
+    expect(mixed.map((row) => row.id)).toEqual(['tee-new', 'lamp', 'phone-new', 'tee-old', 'vase', 'cable']);
+  });
+
+  it('leaves a single department in its incoming order', () => {
+    const mixed = mixByDepartment(
+      groupListings([
+        item('a', 'Alpha tee', 'fashion', 2000),
+        item('b', 'Beta tee', 'fashion', 1800)
+      ]),
+      categories
+    );
+    expect(mixed.map((row) => row.id)).toEqual(['a', 'b']);
   });
 });

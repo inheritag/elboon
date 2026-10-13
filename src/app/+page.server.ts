@@ -7,7 +7,7 @@ import {
   type CategoryRecord
 } from '../domain/catalog';
 import { heldMap, totalAvailable } from '../domain/inventory';
-import { groupListings, parseSort, sortListings } from '../domain/listing';
+import { groupListings, mixByDepartment, parseSort, sortListings } from '../domain/listing';
 import { paginate } from '../domain/paging';
 import { productFromRow, toProductSummary, type ProductRow } from '../domain/product';
 import { getStore } from '../libs/store';
@@ -53,9 +53,10 @@ export const load: PageServerLoad = async ({ url }) => {
     const heroImage = !category && !q ? (coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories)) : null;
     const heroProduct = heroImage ? rows.find((row) => row.image_urls[0] === heroImage) : undefined;
     const browsingAll = !category && !q;
-    const homeListings = browsingAll
-      ? grouped.filter((item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id))
-      : grouped;
+    const withoutHero = grouped.filter(
+      (item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id)
+    );
+    const homeListings = browsingAll ? mixByDepartment(withoutHero, categories) : grouped;
     const window = paginate(homeListings, requestedPage);
     return {
       products: window.items,
