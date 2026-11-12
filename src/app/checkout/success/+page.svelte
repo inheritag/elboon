@@ -6,12 +6,12 @@
   let { data }: { data: PageData } = $props();
 
   onMount(() => {
-    if (data.paid) clearCart();
+    if (data.view === 'paid') clearCart();
   });
 </script>
 
 <section class="container success">
-  {#if data.paid}
+  {#if data.view === 'paid'}
     <h1>Order confirmed</h1>
     <p>
       {#if data.tracking}
@@ -23,6 +23,10 @@
       {/if}
     </p>
     <a class="btn btn-primary" href="/">Continue shopping</a>
+  {:else if data.view === 'checking'}
+    <h1>Payment is being checked</h1>
+    <p>We have not confirmed this payment yet. Your cart is still here.</p>
+    <a class="btn btn-primary" href="/checkout/pay/{data.orderId}">Back to payment</a>
   {:else}
     <h1>Payment not taken</h1>
     <p>Nothing has been charged. Your cart is still here.</p>

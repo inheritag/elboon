@@ -9,9 +9,9 @@ hosting, guest checkout, make-an-offer on selected products, admin inventory.
 - Product pages with photos, descriptions, and remaining-count when stock is low
 - Make an offer on **selected** items only. Owner can accept, ignore, or counter.
 - Guest checkout, or optional account that saves shipping and offers
-- Shipping on elboon; card payment via a payment provider (mocked in dev)
+- Card payment on Stripe. With no Stripe key in dev, the pay button does not charge
 - Admin: product upload (photo, name, price, stock, listed flag, offer flag)
-- Orders handed to an external logistics partner rather than shipped in-house
+- Paid orders are booked with Royal Mail. Postage is applied in Click & Drop
 - Similar / complementary product recommendations
 - No flash sales, no ratings
 
@@ -29,14 +29,16 @@ hosting, guest checkout, make-an-offer on selected products, admin inventory.
 
 JSON store at `.data/dev-store.json`. Admin password is `elboon-dev`. Without
 `STRIPE_API_KEY`, the pay button takes no charge. With it, checkout goes to
-Stripe. Offer emails land in `/dev/inbox`.
+Stripe. Order and offer emails land in `/dev/inbox`. Paid orders and new haggles go to elboonltd@gmail.com.
 
 ## Production-like local setup
 
 1. Set `DEV_MODE=false` in `.env` and fill in Postgres and Resend.
-2. Generate an admin password: `node scripts/hash-password.mjs "your-password"`
-3. Run `psql $POSTGRES_URL -f db/schema.sql`
-4. `npm run dev`
+2. Set `STRIPE_API_KEY` to an `sk_live_` or `sk_test_` key, and `SITE_URL` to the public https address.
+3. Optional: `STRIPE_WEBHOOK_SECRET` for `POST /checkout/stripe`, and `ROYAL_MAIL_API_KEY` to book the parcel.
+4. Generate an admin password: `node scripts/hash-password.mjs "your-password"`
+5. Run `psql $POSTGRES_URL -f db/schema.sql`
+6. `npm run dev`
 
 ## Tests
 

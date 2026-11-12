@@ -21,13 +21,19 @@ export async function bookRoyalMail(
   const key = config.royalMailApiKey();
   if (!key || order.carrier_ref) return null;
 
-  const item = clickAndDropOrder({
-    orderId: order.id,
-    email: order.customer_email,
-    totalCents: order.total_cents,
-    orderedAt: order.created_at,
-    shipping: order.shipping_address
-  });
+  let item;
+  try {
+    item = clickAndDropOrder({
+      orderId: order.id,
+      email: order.customer_email,
+      totalCents: order.total_cents,
+      orderedAt: order.created_at,
+      shipping: order.shipping_address
+    });
+  } catch (err) {
+    console.error('Royal Mail did not take the order', order.id, err);
+    return null;
+  }
   if (!item) return null;
 
   try {

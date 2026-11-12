@@ -60,14 +60,14 @@
         {:else}
           <div class="image-placeholder"></div>
         {/if}
-        {#if product.offerEnabled}
-          <span class="offer-stamp">Offer</span>
-        {/if}
       </div>
     </div>
     <div class="product-card-body">
       <h3>{product.name}</h3>
-      <p class="price">{priceOf(product)}</p>
+      <p class="meta">
+        <span class="price">{priceOf(product)}</span>
+        {#if product.offerEnabled}<span class="offer-word">Offer</span>{/if}
+      </p>
       {#if product.choices.length > 0}
         <p class="choices">
           {product.choices.slice(0, 4).join(' · ')}{#if product.choices.length > 4}
@@ -107,7 +107,8 @@
 
 {#if showCategories}
 <div class="category-bar">
-  <nav class="categories container" aria-label="Categories">
+  <div class="container">
+  <nav class="categories" aria-label="Categories">
     <a
       href={catalogHref({ category: null, page: 1 })}
       class:active={!data.category}
@@ -122,7 +123,7 @@
     {/each}
   </nav>
   {#each data.nav.levels as level}
-    <nav class="categories container sub" aria-label={level.allLabel}>
+    <nav class="categories sub" aria-label={level.allLabel}>
       <a
         href={catalogHref({ category: level.parentSlug, page: 1 })}
         class:active={data.category === level.parentSlug}
@@ -137,6 +138,7 @@
       {/each}
     </nav>
   {/each}
+  </div>
 </div>
 {/if}
 
@@ -220,8 +222,7 @@
 
   .campaign img {
     width: 100%;
-    height: clamp(400px, 52vw, 520px);
-    max-height: 72vh;
+    height: 400px;
     object-fit: cover;
     object-position: center 42%;
   }
@@ -231,7 +232,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 40px) clamp(24px, 4vw, 40px);
+    padding: 36px 16px 20px;
     background: linear-gradient(transparent, rgb(0 0 0 / 62%));
   }
 
@@ -240,22 +241,22 @@
     margin-bottom: 10px;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
   .campaign h1,
   .hero-plain h1 {
-    max-width: 14ch;
-    font-size: clamp(36px, 5.4vw, 68px);
+    max-width: 16ch;
+    font-size: 32px;
     font-weight: 600;
-    letter-spacing: -0.045em;
-    line-height: 0.95;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
     color: #fff;
   }
 
   .hero-plain {
-    padding: clamp(48px, 8vw, 88px) 0 clamp(28px, 4vw, 40px);
+    padding: 36px 0 4px;
   }
 
   .hero-plain p {
@@ -267,10 +268,10 @@
   }
 
   .section-head h2 {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-transform: none;
     line-height: 1.2;
   }
 
@@ -285,7 +286,7 @@
   .categories {
     display: flex;
     gap: 0;
-    padding: 4px 0 2px;
+    padding: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
@@ -310,17 +311,22 @@
   .categories a {
     flex: 0 0 auto;
     scroll-snap-align: start;
-    padding: 12px 0 10px;
+    padding: 14px 0 12px;
     margin-right: 28px;
     border: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     border-radius: 0;
     background: none;
     white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 12px;
-    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .categories.sub a {
+    font-size: 13px;
   }
 
   .categories a:hover {
@@ -330,11 +336,12 @@
   .categories a.active,
   .categories a.active:hover {
     color: var(--text-primary);
+    font-weight: 600;
     border-bottom-color: var(--ink);
   }
 
   .shop {
-    padding-top: 8px;
+    padding-top: 0;
     padding-bottom: 72px;
   }
 
@@ -344,9 +351,9 @@
     align-items: baseline;
     flex-wrap: wrap;
     gap: 10px 16px;
-    margin-top: 8px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+    margin-top: 20px;
+    padding-bottom: 0;
+    border-bottom: none;
   }
 
   .head-tools {
@@ -376,15 +383,15 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-    gap: 28px 12px;
-    padding-top: 22px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 16px;
+    padding-top: 20px;
   }
 
   .count {
     margin: 0;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
     color: var(--text-secondary);
@@ -412,12 +419,15 @@
   }
 
   .choices {
-    margin: 4px 0 0;
+    margin: 8px 0 0;
     color: var(--text-secondary);
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .product-card {
@@ -442,49 +452,66 @@
   }
 
   .product-card-body {
-    padding: 10px 0 0;
+    padding: 12px 0 0;
   }
 
   .product-card-body h3 {
     font-family: var(--font-body);
     font-size: 14px;
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: -0.015em;
     line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.7em;
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .price {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
     color: var(--text-primary);
-    margin: 4px 0 0;
+    margin: 0;
   }
 
-  .offer-stamp {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    z-index: 1;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+  .offer-word {
+    flex: none;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 4px 7px;
   }
 
   .dots {
     display: flex;
-    gap: 5px;
+    gap: 6px;
     margin-top: 8px;
   }
 
   .dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     border: 1px solid color-mix(in srgb, var(--text-primary) 25%, transparent);
+  }
+
+  .product-card-body .badge {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
   }
 
   .empty {
@@ -518,44 +545,46 @@
     width: 40%;
   }
 
-  @media (max-width: 1100px) {
-    .categories {
-      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
-    }
-  }
-
-  @media (min-width: 1100px) {
+  @media (min-width: 1280px) {
     .campaign img {
-      height: clamp(400px, 34vw, 520px);
-      max-height: 62vh;
+      height: 460px;
+    }
+
+    .campaign-copy {
+      padding-top: 56px;
+      padding-bottom: 28px;
+      padding-left: max(24px, calc((100vw - min(100vw, var(--max-width))) / 2 + 24px));
+      padding-right: max(24px, calc((100vw - min(100vw, var(--max-width))) / 2 + 24px));
+    }
+
+    .campaign h1,
+    .hero-plain h1 {
+      max-width: 14ch;
+      font-size: 48px;
+      line-height: 1;
+      letter-spacing: -0.035em;
+    }
+
+    .hero-plain {
+      padding: 56px 0 8px;
+    }
+
+    .categories a {
+      margin-right: 36px;
+    }
+
+    .shop {
+      padding-bottom: 80px;
     }
 
     .grid {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 48px 24px;
+      padding-top: 28px;
     }
   }
 
-  /* Square product photos must not stretch into a thin strip on a wide monitor. */
-  @media (min-width: 1680px) {
-    .campaign {
-      background: var(--bg);
-    }
-
-    .campaign img,
-    .campaign-copy {
-      width: min(100%, var(--max-width));
-    }
-
-    .campaign img {
-      height: min(560px, 58vh);
-    }
-
-    .campaign-copy {
-      left: 50%;
-      right: auto;
-      transform: translateX(-50%);
-    }
-
+  @media (min-width: 1536px) {
     .grid {
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
@@ -575,18 +604,6 @@
   }
 
   @media (max-width: 520px) {
-    .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .product-card-body {
-      padding: 8px 0 0;
-    }
-
-    .product-card-body h3 {
-      font-size: 13px;
-    }
-
     .empty {
       grid-column: 1 / -1;
     }
@@ -604,11 +621,10 @@
       border: 1px solid CanvasText;
     }
 
-    .offer-stamp {
-      background: Canvas;
+    .offer-word {
       color: CanvasText;
-      border: 1px solid CanvasText;
-      box-shadow: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     .category-bar {
@@ -620,13 +636,13 @@
       background: Canvas;
       color: CanvasText;
       border: none;
-      border-bottom: 2px solid transparent;
+      border-bottom: 1px solid transparent;
     }
 
     .categories a.active,
     .categories a.active:hover {
       color: CanvasText;
-      border-width: 2px;
+      border-bottom: 2px solid CanvasText;
       font-weight: 800;
       text-decoration: underline;
       text-underline-offset: 3px;

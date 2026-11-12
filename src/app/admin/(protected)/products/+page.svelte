@@ -125,7 +125,6 @@
   </form>
   {/if}
 
-  <div class="table-scroll">
   <div class="find-row field">
     <label class="sr-only" for="find">Find in catalogue</label>
     <input id="find" type="search" placeholder="Find in catalogue" bind:value={find} />
@@ -133,6 +132,7 @@
       <p class="find-count">{visible.length} of {data.products.length}</p>
     {/if}
   </div>
+  <div class="table-scroll">
   <table class="product-table">
     <thead>
       <tr><th></th><th>Name</th><th>Price</th><th>Stock</th><th>Offers</th><th>Listed</th><th></th></tr>
@@ -145,7 +145,7 @@
               <img class="thumb" src={product.image_urls[0]} alt="" />
             {/if}
           </td>
-          <td><a href="/admin/products/{product.id}">{product.name}</a></td>
+          <td class="name"><a href="/admin/products/{product.id}">{product.name}</a></td>
           <td>{formatPrice(product.price_cents, product.currency)}</td>
           <td>
             {#if data.stock[product.id]}
@@ -220,7 +220,7 @@
 
   .find-row input {
     max-width: 280px;
-    border-radius: 999px;
+    border-radius: 0;
   }
 
   .find-count {
@@ -275,20 +275,47 @@
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: 0;
   }
 
   .product-table {
-    width: 100%;
+    width: max-content;
+    min-width: 720px;
     border-collapse: collapse;
+  }
+
+  .product-table .name {
+    width: 200px;
+    max-width: 200px;
+    white-space: normal;
+  }
+
+  .product-table .name a {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    max-height: 2.7em;
+    white-space: normal;
+  }
+
+  .product-table th {
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .product-table th,
   .product-table td {
     text-align: left;
-    padding: 16px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    white-space: nowrap;
   }
 
   .muted {
@@ -299,8 +326,12 @@
   .link-button {
     background: none;
     border: none;
-    color: var(--accent);
+    color: var(--ink);
     cursor: pointer;
     padding: 0;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 </style>

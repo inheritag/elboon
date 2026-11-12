@@ -1,7 +1,8 @@
 import type Stripe from 'stripe';
 import { fulfillPendingOrder } from '../../../libs/fulfillment';
 import { config } from '../../../libs/config';
-import { stripeClient } from '../../../libs/stripe-pay';
+import { paidSessionMatches, stripeClient } from '../../../libs/stripe-pay';
+import { getStore } from '../../../libs/store';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -19,10 +20,23 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response('Bad signature', { status: 400 });
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const orderId = session.metadata?.orderId ?? session.client_reference_id;
-    if (session.payment_status === 'paid' && orderId) await fulfillPendingOrder(orderId);
+  if (event.type !== 'checkout.session.completed') return new Response('ok');
+
+  const session = event.data.object;
+  const orderId = session.metadata?.orderId ?? session.client_reference_id;
+  if (session.payment_status !== 'paid' || !orderId) return new Response('ok');
+
+  try {
+    const order = await getStore().getOrder(orderId);
+    if (!order) return new Response('ok');
+    if (!paidSessionMatches(session, order)) {
+      console.error('Stripe session does not match the order', orderId);
+      return new Response('ok');
+    }
+    await fulfillPendingOrder(orderId);
+  } catch (err) {
+    console.error('Could not finish the paid order', orderId, err);
+    return new Response('retry', { status: 500 });
   }
 
   return new Response('ok');

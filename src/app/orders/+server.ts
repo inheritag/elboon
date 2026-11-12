@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { calculateOrderTotal, type ShippingAddress } from '../../domain/order';
+import { calculateOrderTotal, isCompleteShipping, type ShippingAddress } from '../../domain/order';
 import { priceItemsFromCatalog } from '../../libs/catalog-price';
 import { customerFromCookies } from '../../libs/customer';
 import { getStore } from '../../libs/store';
@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const customer = await customerFromCookies(cookies);
   const email = customer?.email ?? body.customerEmail;
 
-  if (!email || !email.includes('@') || !isValidShipping(body.shippingAddress) || !body.items?.length) {
+  if (!email || !email.includes('@') || !isCompleteShipping(body.shippingAddress) || !body.items?.length) {
     return json({ error: 'Shipping details are required' }, { status: 400 });
   }
 
@@ -40,14 +40,3 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
   return json({ orderId });
 };
-
-function isValidShipping(address: ShippingAddress | undefined): address is ShippingAddress {
-  return (
-    !!address &&
-    typeof address.fullName === 'string' &&
-    typeof address.phone === 'string' &&
-    address.phone.trim().length > 5 &&
-    typeof address.line1 === 'string' &&
-    typeof address.city === 'string'
-  );
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyReceive, applySale, applySet, parseColors, parseSizes, stockFor, totalColorStock, totalUnits } from './product';
+import { applyReceive, applySale, applySet, parseColors, parseSizes, planStockTake, stockFor, totalColorStock, totalUnits } from './product';
 
 describe('product colours', () => {
   it('parses named colours and ignores blanks', () => {
@@ -88,6 +88,35 @@ describe('product sizes', () => {
     const sold = applySale(product, 1, 'Black', 'M');
     expect(stockFor(sold, 'Black', 'M')).toBe(1);
     expect(sold.stockQty).toBe(4);
+  });
+});
+
+describe('planStockTake', () => {
+  it('applies every line or none when one line is short', () => {
+    const products = new Map([
+      ['mug', { stockQty: 5, colors: [], sizes: [] }]
+    ]);
+    expect(() =>
+      planStockTake(
+        [
+          { productId: 'mug', quantity: 3 },
+          { productId: 'mug', quantity: 3 }
+        ],
+        products
+      )
+    ).toThrow(/Cannot fulfil order/);
+    expect(products.get('mug')?.stockQty).toBe(5);
+
+    const taken = planStockTake(
+      [
+        { productId: 'mug', quantity: 2 },
+        { productId: 'mug', quantity: 2 },
+        { productId: 'missing', quantity: 1 }
+      ],
+      products
+    );
+    expect(taken).toEqual([{ id: 'mug', colors: [], sizes: [], stockQty: 1 }]);
+    expect(products.get('mug')?.stockQty).toBe(5);
   });
 });
 

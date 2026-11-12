@@ -22,19 +22,26 @@
     {/each}
   </ul>
 
-  <div class="actions">
-    <form method="POST" action="?/pay" use:enhance>
-      <button class="btn btn-primary" type="submit">{data.stripe ? 'Pay' : 'Pay with card'}</button>
-    </form>
-    <form method="POST" action="?/cancel" use:enhance>
-      <button class="btn btn-secondary" type="submit">Cancel</button>
-    </form>
-  </div>
+  {#if data.expired}
+    <p class="error">This checkout has expired.</p>
+    <a class="btn btn-secondary" href="/cart">Back to cart</a>
+  {:else if !data.stripe && !data.devMode}
+    <p class="error">Payment is not set up.</p>
+  {:else}
+    <div class="actions">
+      <form method="POST" action="?/pay" use:enhance>
+        <button class="btn btn-primary" type="submit">{data.stripe ? 'Pay' : 'Place order'}</button>
+      </form>
+      <form method="POST" action="?/cancel" use:enhance>
+        <button class="btn btn-secondary" type="submit">Cancel</button>
+      </form>
+    </div>
+    {#if data.devMode && !data.stripe}
+      <p class="fine">Dev: no real charge.</p>
+    {/if}
+  {/if}
   {#if form?.error}
     <p class="error">{form.error}</p>
-  {/if}
-  {#if !data.stripe}
-    <p class="fine">Dev: no real charge.</p>
   {/if}
 </section>
 
@@ -69,6 +76,7 @@
 
   .error {
     margin-top: 16px;
-    color: var(--accent);
+    color: var(--ink);
+    font-weight: 600;
   }
 </style>

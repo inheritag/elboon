@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import type { OrderItem, ShippingAddress } from '../domain/order';
 import { formatPrice } from '../domain/product';
 import { config } from './config';
 import { getLocalStore } from './store';
@@ -47,7 +48,7 @@ export async function sendNewOfferAlertEmail(params: {
   const asking = formatPrice(params.askingCents, 'GBP');
   const adminUrl = `${config.siteUrl()}/admin/offers`;
   await deliver(
-    config.offersInbox(),
+    config.ownerEmail(),
     `New offer on ${params.productName}: ${offer}`,
     `<p><strong>${params.customerEmail}</strong> offered <strong>${offer}</strong> on <strong>${params.productName}</strong> (listed ${asking}).</p>
       <p><a href="${adminUrl}">Review in admin</a></p>`
@@ -86,6 +87,60 @@ function offerBodyHtml(params: {
     <p><a href="${params.checkoutUrl}">Accept and checkout</a></p>`;
 }
 
+export async function sendOwnerOrderEmail(params: {
+  orderId: string;
+  customerEmail: string;
+  totalCents: number;
+  items: OrderItem[];
+  shipping: ShippingAddress;
+  booked?: boolean;
+  trackingNumber?: string | null;
+}): Promise<void> {
+  const total = formatPrice(params.totalCents, 'GBP');
+  const adminUrl = `${config.siteUrl()}/admin/orders`;
+  await deliver(config.ownerEmail(), `Order paid: ${params.orderId}`, ownerOrderHtml({ ...params, total, adminUrl }));
+}
+
+export function ownerOrderHtml(params: {
+  customerEmail: string;
+  total: string;
+  items: OrderItem[];
+  shipping: ShippingAddress;
+  booked?: boolean;
+  trackingNumber?: string | null;
+  adminUrl: string;
+}): string {
+  const lines = params.items
+    .map((item) => {
+      const detail = [item.productName, item.color, item.size].filter(Boolean).join(', ');
+      const lineTotal = formatPrice(item.unitPriceCents * item.quantity, 'GBP');
+      return `<li>${item.quantity} × ${escapeHtml(detail)} — ${lineTotal}</li>`;
+    })
+    .join('');
+  const address = [
+    params.shipping.fullName,
+    params.shipping.line1,
+    params.shipping.line2,
+    `${params.shipping.city} ${params.shipping.postcode}`,
+    params.shipping.country
+  ]
+    .filter(Boolean)
+    .map((part) => escapeHtml(String(part)))
+    .join(', ');
+  const tracking = params.trackingNumber ? escapeHtml(params.trackingNumber) : '';
+  const delivery = tracking
+    ? `Royal Mail tracking is ${tracking}.`
+    : params.booked
+      ? 'Booked with Royal Mail. No tracking number yet.'
+      : 'Not booked with Royal Mail yet.';
+
+  return `<p><strong>${escapeHtml(params.customerEmail)}</strong> paid <strong>${params.total}</strong>.</p>
+    <ul>${lines}</ul>
+    <p>Ship to ${address}. Phone ${escapeHtml(params.shipping.phone)}.</p>
+    <p>${delivery}</p>
+    <p><a href="${escapeHtml(params.adminUrl)}">Orders</a></p>`;
+}
+
 export async function sendOrderConfirmationEmail(params: {
   to: string;
   orderId: string;
@@ -96,10 +151,10 @@ export async function sendOrderConfirmationEmail(params: {
   const total = formatPrice(params.totalCents, 'GBP');
   const tracking = params.trackingNumber ? escapeHtml(params.trackingNumber) : '';
   const lead = tracking
-    ? `Thanks for your order. Royal Mail tracking is <strong>${tracking}</strong>. Delivery is free.`
+    ? `Payment received. Royal Mail tracking is <strong>${tracking}</strong>.`
     : params.booked
-      ? 'Thanks for your order. We will send it with Royal Mail. Delivery is free.'
-      : 'Thanks for your order. A logistics partner will contact you to arrange delivery. Elboon does not ship parcels itself.';
+      ? 'Payment received. We will send it with Royal Mail.'
+      : 'Payment received. We will be in touch about delivery.';
 
   await deliver(
     params.to,

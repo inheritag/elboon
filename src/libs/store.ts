@@ -115,9 +115,22 @@ export interface Store {
   }): Promise<string>;
   getPendingOrder(orderId: string): Promise<PendingOrder | null>;
   getOrder(orderId: string): Promise<OrderRecord | null>;
-  setStripeSession(orderId: string, sessionId: string): Promise<void>;
+  /**
+   * Save a Checkout session id. A different id already stored is left in place
+   * unless it is `replaceId` (an expired or over-long session we just closed).
+   */
+  setStripeSession(orderId: string, sessionId: string, replaceId?: string | null): Promise<'saved' | 'kept' | 'missing'>;
   /** True only when this call is the one that moves the order from pending to paid. */
   markOrderPaid(orderId: string): Promise<boolean>;
+  /**
+   * Decrement every line of a paid order, or record that the shelf was short.
+   * A second call does not decrement again.
+   */
+  takePaidStock(orderId: string): Promise<'taken' | 'short' | 'already' | 'unpaid'>;
+  /** One sender. `busy` means another run holds the claim. */
+  claimConfirmation(orderId: string): Promise<'send' | 'sent' | 'busy'>;
+  markConfirmationSent(orderId: string): Promise<void>;
+  releaseConfirmation(orderId: string): Promise<void>;
   recordShipment(orderId: string, shipment: { carrierRef: string; trackingNumber: string | null }): Promise<void>;
   markHandedToLogistics(orderId: string): Promise<void>;
   listOrders(): Promise<OrderSummaryRow[]>;

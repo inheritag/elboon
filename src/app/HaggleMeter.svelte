@@ -46,15 +46,15 @@
   .track {
     position: relative;
     height: 14px;
-    border-radius: 999px;
+    border-radius: 0;
     background: #e6e6e6;
     border: 1px solid var(--haggle-rule);
   }
 
   .fill {
     height: 100%;
-    border-radius: 999px;
-    background: var(--accent);
+    border-radius: 0;
+    background: #111;
     pointer-events: none;
     transition: width 160ms ease, background 160ms ease;
   }
@@ -67,9 +67,9 @@
     margin-left: -11px;
     margin-top: -11px;
     border-radius: 50%;
-    background: var(--bg-subtle);
-    border: 3px solid var(--accent);
-    box-shadow: var(--shadow-sm);
+    background: #fff;
+    border: 3px solid #111;
+    box-shadow: none;
     pointer-events: none;
   }
 
@@ -94,9 +94,9 @@
     height: 22px;
     margin-top: -4px;
     border-radius: 50%;
-    background: var(--bg-subtle);
-    border: 3px solid var(--accent);
-    box-shadow: var(--shadow-sm);
+    background: #fff;
+    border: 3px solid #111;
+    box-shadow: none;
   }
 
   .range::-moz-range-track {
@@ -109,9 +109,9 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: var(--bg-subtle);
-    border: 3px solid var(--accent);
-    box-shadow: var(--shadow-sm);
+    background: #fff;
+    border: 3px solid #111;
+    box-shadow: none;
   }
 
   .callout {
@@ -121,32 +121,12 @@
   }
 
   .meter[data-tone='lowball'] .fill {
-    background: #9ca3af;
+    background: #666;
   }
   .meter[data-tone='lowball'] .knob,
   .meter[data-tone='lowball'] .range::-webkit-slider-thumb,
   .meter[data-tone='lowball'] .range::-moz-range-thumb {
-    border-color: #6b7280;
-  }
-  .meter[data-tone='serious'] .fill {
-    background: var(--haggle-gold);
-  }
-  .meter[data-tone='serious'] .knob,
-  .meter[data-tone='serious'] .range::-webkit-slider-thumb,
-  .meter[data-tone='serious'] .range::-moz-range-thumb {
-    border-color: var(--haggle-gold);
-  }
-  .meter[data-tone='close'] .fill,
-  .meter[data-tone='asking'] .fill {
-    background: var(--haggle-green);
-  }
-  .meter[data-tone='close'] .knob,
-  .meter[data-tone='asking'] .knob,
-  .meter[data-tone='close'] .range::-webkit-slider-thumb,
-  .meter[data-tone='asking'] .range::-webkit-slider-thumb,
-  .meter[data-tone='close'] .range::-moz-range-thumb,
-  .meter[data-tone='asking'] .range::-moz-range-thumb {
-    border-color: var(--haggle-green);
+    border-color: #666;
   }
 
   @media (forced-colors: active) {

@@ -9,3 +9,7 @@ export function decrementStock(stockQty: number, quantityOrdered: number): numbe
   }
   return remaining;
 }
+
+export function isShortStock(err: unknown): boolean {
+  return err instanceof Error && err.message.startsWith('Cannot fulfil order');
+}

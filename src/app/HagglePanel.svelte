@@ -74,7 +74,7 @@
   }
 </script>
 
-<section class="haggle ink-fade" data-tone={read.tone}>
+<section class="haggle" data-tone={read.tone}>
   <OfferThread step={status === 'sent' ? 2 : 1} />
 
   <div class="prices">
@@ -133,7 +133,7 @@
 
       {#if atAsking}
         <button
-          class="btn btn-primary throw"
+          class="btn btn-primary"
           type="button"
           onclick={(event) =>
             addToCart(
@@ -152,7 +152,7 @@
           Add to cart at listed price
         </button>
       {:else}
-        <button class="btn btn-primary throw" type="submit" disabled={status === 'submitting'}>
+        <button class="btn btn-secondary" type="submit" disabled={status === 'submitting'}>
           {status === 'submitting' ? 'Sending…' : 'Send offer'}
         </button>
       {/if}
@@ -166,35 +166,16 @@
 
 <style>
   .haggle {
-    --text-primary: #fff;
-    --text-secondary: rgb(255 255 255 / 72%);
-    --text-muted: rgb(255 255 255 / 55%);
-    --haggle-ink: #fff;
-    --border: rgb(255 255 255 / 28%);
-    --haggle-rule: rgb(255 255 255 / 28%);
-    margin-top: 28px;
-    padding: 68px 18px 18px;
-    color: #fff;
+    margin-top: 32px;
+    padding: 0;
+    color: var(--ink);
     border: none;
     border-radius: 0;
+    background: none;
   }
 
-  .haggle :global(.field input) {
-    color: #111;
-    background: #fff;
-    border-color: transparent;
-  }
-
-  .throw {
-    background: #fff;
-    color: #111;
-    border-color: #fff;
-  }
-
-  .throw:hover {
-    background: #e6e6e6;
-    color: #111;
-    border-color: #e6e6e6;
+  .haggle :global(.btn) {
+    width: 100%;
   }
 
   .prices {
@@ -242,16 +223,13 @@
     border: none;
     background: transparent;
     font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(26px, 6vw, 36px);
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--haggle-ink);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
     padding: 0;
-  }
-
-  .listed strong {
-    color: var(--text-secondary);
   }
 
   .bid:focus {
@@ -266,10 +244,6 @@
     clip: rect(0 0 0 0);
   }
 
-  .throw {
-    width: 100%;
-  }
-
   .note,
   .sent,
   .fine {
@@ -279,10 +253,11 @@
   }
 
   .fine a {
-    color: var(--accent);
+    color: inherit;
     text-transform: none;
     letter-spacing: 0;
     text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   @media (forced-colors: active) {
@@ -298,8 +273,7 @@
       color: CanvasText;
     }
 
-    .throw,
-    .throw:hover {
+    .haggle :global(.btn) {
       background: ButtonFace;
       color: ButtonText;
       border-color: ButtonText;

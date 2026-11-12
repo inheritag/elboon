@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { checkoutPriceForOffer } from '../../../../domain/offer';
-import { calculateOrderTotal, type ShippingAddress } from '../../../../domain/order';
+import { calculateOrderTotal, isCompleteShipping, type ShippingAddress } from '../../../../domain/order';
 import { customerFromCookies } from '../../../../libs/customer';
 import { getStore } from '../../../../libs/store';
 import type { RequestHandler } from './$types';
@@ -11,7 +11,7 @@ interface CheckoutOfferBody {
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
   const body = (await request.json()) as CheckoutOfferBody;
-  if (!body.shippingAddress?.phone) {
+  if (!isCompleteShipping(body.shippingAddress)) {
     return json({ error: 'Shipping details are required' }, { status: 400 });
   }
 

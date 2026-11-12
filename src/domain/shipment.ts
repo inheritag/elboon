@@ -40,12 +40,26 @@ function clip(value: string, max: number): string {
  * in Click & Drop, so we do not invent a parcel size here.
  */
 export function clickAndDropOrder(input: ShipmentInput): ClickAndDropOrder | null {
-  const code = countryCode(input.shipping.country);
-  const line1 = clip(input.shipping.line1, 100);
+  const shipping = input.shipping;
+  if (
+    !shipping ||
+    typeof input.email !== 'string' ||
+    typeof shipping.country !== 'string' ||
+    typeof shipping.line1 !== 'string' ||
+    typeof shipping.fullName !== 'string' ||
+    typeof shipping.phone !== 'string' ||
+    typeof shipping.city !== 'string' ||
+    typeof shipping.postcode !== 'string'
+  ) {
+    return null;
+  }
+
+  const code = countryCode(shipping.country);
+  const line1 = clip(shipping.line1, 100);
   if (!code || !line1) return null;
 
   const pounds = Math.round(input.totalCents) / 100;
-  const line2 = input.shipping.line2 ? clip(input.shipping.line2, 100) : '';
+  const line2 = typeof shipping.line2 === 'string' ? clip(shipping.line2, 100) : '';
   const address: ClickAndDropOrder['recipient']['address'] = {
     fullName: clip(input.shipping.fullName, 210),
     addressLine1: line1,

@@ -79,7 +79,18 @@ const SCHEMA_STATEMENTS = [
 )`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_session_id text`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier_ref text`,
-  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number text`
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number text`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS stock_settled boolean`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS confirmation_sent boolean`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS email_claimed_at timestamptz`,
+  `ALTER TABLE orders ALTER COLUMN stock_settled SET DEFAULT false`,
+  `ALTER TABLE orders ALTER COLUMN confirmation_sent SET DEFAULT false`,
+  `UPDATE orders SET stock_settled = true WHERE payment_status = 'paid' AND stock_settled IS NULL`,
+  `UPDATE orders SET confirmation_sent = true WHERE payment_status = 'paid' AND confirmation_sent IS NULL`,
+  `UPDATE orders SET stock_settled = false WHERE stock_settled IS NULL`,
+  `UPDATE orders SET confirmation_sent = false WHERE confirmation_sent IS NULL`,
+  `ALTER TABLE orders ALTER COLUMN stock_settled SET NOT NULL`,
+  `ALTER TABLE orders ALTER COLUMN confirmation_sent SET NOT NULL`
 ];
 
 let sql: postgres.Sql | null = null;

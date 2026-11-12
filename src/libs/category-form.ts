@@ -1,4 +1,4 @@
-import { isCategorySlug } from '../domain/catalog';
+import { isCategorySlug, planNewCategory } from '../domain/catalog';
 import { getStore } from './store';
 
 /** A new category can stand alone, or it can have a new subcategory under it. */
@@ -16,11 +16,13 @@ export async function categoryFromForm(form: FormData): Promise<string | { error
   const label = String(form.get('newCategory') ?? '').trim();
   const subcategory = String(form.get('newSubcategory') ?? '').trim();
   const parent = String(form.get('newCategoryParent') ?? '').trim() || null;
-  if (!label) return { error: 'Enter a name for the new category' };
+  const existing = await store.listCategories();
+  const plan = planNewCategory(label, subcategory, parent, existing);
+  if ('error' in plan) return plan;
 
   try {
     const created = await store.createCategory(label, parent);
-    if (!subcategory) return created.slug;
+    if (!plan.childSlug) return created.slug;
     return (await store.createCategory(subcategory, created.slug)).slug;
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Could not add category' };

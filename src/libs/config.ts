@@ -15,7 +15,7 @@ import {
  * for scripts and tests.
  *
  * DEV_MODE=true skips Postgres: the app uses a local JSON/memory store.
- * Offer email is optional. New haggles always show in /admin/offers.
+ * Owner email is optional to send. Orders and haggles still show in admin.
  */
 
 function envValue(name: string): string | undefined {
@@ -67,8 +67,11 @@ export const config = {
       .trim()
       .replace(/\/$/, ''),
 
-  /** Where new haggles are sent so the shop can accept, ignore, or counter. */
-  offersInbox: () => envValue('OFFERS_INBOX') ?? 'elboonltd@gmail.com',
+  /**
+   * Shop owner. Paid orders, new haggles, and anything else that needs a person.
+   * `OFFERS_INBOX` still overrides this.
+   */
+  ownerEmail: () => envValue('OFFERS_INBOX') ?? 'elboonltd@gmail.com',
 
   /** Stripe secret key. Dev checkout takes no charge when this is unset. */
   stripeApiKey: () => envValue('STRIPE_API_KEY')?.trim() || undefined,

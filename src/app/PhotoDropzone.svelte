@@ -169,7 +169,7 @@
   }
 
   .remove:hover {
-    color: var(--accent);
+    color: var(--ink);
   }
 
   @media (forced-colors: active) {

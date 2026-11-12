@@ -185,6 +185,28 @@ export function applySale(
   return { colors, sizes, stockQty: totalUnits({ colors, sizes, stockQty: 0 }) };
 }
 
+export interface StockTakeLine {
+  productId: string;
+  quantity: number;
+  color?: string | null;
+  size?: string | null;
+}
+
+/** Every line, applied in order. Throws before returning if any line is short, so nothing is written. */
+export function planStockTake(
+  items: StockTakeLine[],
+  products: Map<string, Pick<Product, 'stockQty' | 'colors' | 'sizes'>>
+): { id: string; colors: ProductColor[]; sizes: ProductSize[]; stockQty: number }[] {
+  const working = new Map<string, { id: string; colors: ProductColor[]; sizes: ProductSize[]; stockQty: number }>();
+  for (const item of items) {
+    const current = working.get(item.productId) ?? products.get(item.productId);
+    if (!current) continue;
+    const next = applySale(current, item.quantity, item.color, item.size);
+    working.set(item.productId, { id: item.productId, colors: next.colors, sizes: next.sizes, stockQty: next.stockQty });
+  }
+  return [...working.values()];
+}
+
 export function applySet(
   product: Pick<Product, 'stockQty' | 'colors' | 'sizes'>,
   quantity: number,

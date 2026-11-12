@@ -42,6 +42,11 @@
     return freeFor(name, null);
   }
 
+  let showPicks = $derived(
+    data.product.colors.length > 0 ||
+      data.product.sizes.length > 0 ||
+      (data.options.length > 1 && data.product.sizes.length === 0)
+  );
   let selected = $derived(data.product.colors.find((color) => color.name === selectedColor) ?? null);
   let images = $derived(selected && selected.imageUrls.length > 0 ? selected.imageUrls : data.product.imageUrls);
   let stockQty = $derived(freeFor(selectedColor, selectedSize));
@@ -128,8 +133,13 @@
   <div class="info">
     <p class="category"><a href="/?category={data.product.category}">{data.categoryLabel}</a></p>
     <h1>{data.displayName}</h1>
-    <p class="price">{formatPrice(data.product.priceCents, data.product.currency)}</p>
+    <p class="price-row">
+      <span class="price">{formatPrice(data.product.priceCents, data.product.currency)}</span>
+      {#if data.product.offerEnabled}<span class="offer-word">Offer</span>{/if}
+    </p>
 
+    {#if showPicks}
+    <div class="picks">
     {#if data.product.colors.length > 0}
       <div class="colours">
         <p class="colour-label">Colour: <strong>{selectedColor ?? 'Choose'}</strong></p>
@@ -183,6 +193,8 @@
         </div>
       </div>
     {/if}
+    </div>
+    {/if}
 
     <div class="buy-box">
       {#if inStock}
@@ -213,7 +225,7 @@
         <button class="btn btn-primary" class:added type="button" onclick={add}>
           {added ? 'Added to cart' : 'Add to cart'}
         </button>
-        <button class="btn btn-secondary buy-now" type="button" onclick={buyNow}>Buy now</button>
+        <button class="buy-now" type="button" onclick={buyNow}>Buy now</button>
       {/if}
     </div>
 
@@ -235,7 +247,6 @@
 
 {#if data.product.description.trim()}
   <section class="container about">
-    <div class="section-break" aria-hidden="true"><span></span></div>
     <h2>About this item</h2>
     <p class="description">{data.product.description}</p>
   </section>
@@ -243,7 +254,6 @@
 
 {#if data.related.length > 0}
   <section class="container related">
-    <div class="section-break" aria-hidden="true"><span></span></div>
     <h2>You might also like</h2>
     <div class="related-grid">
       {#each data.related as product}
@@ -255,14 +265,30 @@
               {:else}
                 <div class="related-placeholder"></div>
               {/if}
-              {#if product.offerEnabled}
-                <span class="offer-stamp">Offer</span>
-              {/if}
             </div>
           </div>
           <div class="related-body">
             <h3>{product.name}</h3>
-            <p>{formatPrice(product.priceCents, product.currency)}</p>
+            <p class="meta">
+              <span class="price">{formatPrice(product.priceCents, product.currency)}</span>
+              {#if product.offerEnabled}<span class="offer-word">Offer</span>{/if}
+            </p>
+            {#if product.sizes.length > 0}
+              <p class="choices">
+                {product.sizes.slice(0, 4).map((size) => size.name).join(' · ')}{#if product.sizes.length > 4}
+                  +{product.sizes.length - 4}{/if}
+              </p>
+            {/if}
+            {#if product.colors.length > 0}
+              <p class="dots" aria-label="Colours">
+                {#each product.colors as color}
+                  <span class="dot" style="background:{color.hex}" title={color.name}></span>
+                {/each}
+              </p>
+            {/if}
+            {#if product.remainingQty !== null}
+              <p class="badge badge-low-stock">Only {product.remainingQty} left</p>
+            {/if}
           </div>
         </a>
       {/each}
@@ -273,10 +299,14 @@
 <style>
   .product-detail {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(28px, 5vw, 56px);
-    padding: clamp(28px, 5vw, 48px) 0;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 20px 0 48px;
     align-items: start;
+  }
+
+  .info {
+    max-width: 380px;
   }
 
   .gallery img,
@@ -319,8 +349,11 @@
   }
 
   .info h1 {
-    max-width: 16ch;
-    font-size: clamp(28px, 3vw, 40px);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    color: var(--ink);
   }
 
   .category {
@@ -332,27 +365,55 @@
     margin-bottom: 8px;
   }
 
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 12px 0 20px;
+  }
+
   .price {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 10px 0 22px;
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .offer-word {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .picks {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 28px;
   }
 
   .colours,
   .sizes {
-    margin: 0 0 22px;
+    margin: 0;
   }
 
   .colour-label {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 400;
     margin-bottom: 8px;
+  }
+
+  .colour-label strong {
+    font-weight: 600;
   }
 
   .swatches {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
 
   .swatch {
@@ -378,12 +439,16 @@
   .size-picks {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
 
   .size-pick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 44px;
-    padding: 8px 14px;
+    min-height: 44px;
+    padding: 0 14px;
     border: 1px solid var(--border);
     border-radius: 0;
     background: #fff;
@@ -397,41 +462,31 @@
   }
 
   .size-pick.active {
-    border-color: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--ink);
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
     color: var(--text-primary);
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .buy-box {
     border: none;
-    border-top: 1px solid var(--border);
-    padding: 18px 0 0;
+    padding: 0;
     background: none;
-    margin-top: 4px;
+    margin: 0;
   }
 
   .stock {
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-
-  .stock.in {
-    color: var(--haggle-green);
-  }
-
-  .stock.out {
-    color: var(--accent);
-  }
-
-  .urgency {
-    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0;
   }
 
   .dispatch {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 400;
     color: var(--text-secondary);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .dispatch a {
@@ -444,7 +499,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 16px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   .qty-label {
@@ -461,8 +516,8 @@
   }
 
   .step {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border: none;
     background: var(--bg-subtle);
     font-size: 18px;
@@ -481,15 +536,43 @@
   }
 
   .count {
-    min-width: 36px;
+    min-width: 44px;
+    height: 44px;
+    line-height: 44px;
     text-align: center;
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
 
   .buy-box .btn {
     width: 100%;
-    margin-top: 8px;
+    margin-top: 0;
+  }
+
+  .buy-now {
+    display: inline-block;
+    width: auto;
+    margin-top: 12px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .buy-now:hover {
+    color: var(--ink);
+  }
+
+  .buy-now:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   .buy-box .btn.added {
@@ -510,40 +593,36 @@
   }
 
   .about {
-    padding-top: 0;
-    padding-bottom: 8px;
+    padding-top: 48px;
+    padding-bottom: 0;
   }
 
-  .about h2 {
-    margin-bottom: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+  .about h2,
+  .related h2 {
+    margin-bottom: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
   .description {
     max-width: 68ch;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
     color: var(--text-secondary);
   }
 
   .related {
-    padding: 0 0 64px;
-  }
-
-  .related h2 {
-    margin-bottom: 0;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    padding: 48px 0 64px;
   }
 
   .related-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-    gap: 12px;
-    margin-top: 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 16px;
+    margin-top: 0;
   }
 
   .related-card {
@@ -558,20 +637,6 @@
     color: inherit;
   }
 
-  .offer-stamp {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    z-index: 1;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 4px 7px;
-  }
-
   .related-card img,
   .related-placeholder {
     width: 100%;
@@ -581,22 +646,65 @@
   }
 
   .related-body {
-    padding: 10px 0 0;
+    padding: 12px 0 0;
   }
 
   .related-body h3 {
     font-family: var(--font-body);
     font-size: 14px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: -0.015em;
     line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.7em;
   }
 
-  .related-body p {
-    font-weight: 700;
+  .related-body .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .related-body .price {
     font-size: 14px;
-    margin-top: 4px;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .choices {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 25%, transparent);
+  }
+
+  .related-body .badge {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
   }
 
   @media (forced-colors: active) {
@@ -611,46 +719,41 @@
       font-weight: 800;
     }
 
-    .stock.in,
-    .stock.out,
-    .urgency {
+    .stock {
       color: CanvasText;
     }
 
-    .buy-box {
-      border: 2px solid CanvasText;
+    .buy-now {
+      color: CanvasText;
     }
 
-    .offer-stamp {
-      background: Canvas;
+    .offer-word {
       color: CanvasText;
-      border: 1px solid CanvasText;
+      text-decoration: underline;
     }
   }
 
-  @media (min-width: 1100px) {
+  @media (min-width: 1280px) {
     .product-detail {
-      grid-template-columns: minmax(0, 720px) minmax(300px, 440px);
+      grid-template-columns: minmax(0, 640px) 380px;
+      gap: 56px;
+      padding: 36px 0 64px;
       justify-content: center;
     }
 
+    .info h1 {
+      font-size: 20px;
+    }
+
     .related-grid {
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 48px 24px;
     }
   }
 
-  @media (max-width: 720px) {
-    .product-detail {
-      grid-template-columns: 1fr;
-    }
-
-    .price {
-      font-size: 24px;
-    }
-
-    .step {
-      width: 44px;
-      height: 44px;
+  @media (min-width: 1536px) {
+    .related-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
   }
 </style>

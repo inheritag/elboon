@@ -41,7 +41,7 @@
   }
 
   .body :global(a) {
-    color: var(--accent);
+    color: var(--ink);
     text-decoration: underline;
   }
 </style>

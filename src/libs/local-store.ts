@@ -5,7 +5,8 @@ import { canNestUnder, DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } 
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
-import { applySale, applySet, productFromRow, type ProductRow } from '../domain/product';
+import { applySale, applySet, planStockTake, productFromRow, type ProductRow } from '../domain/product';
+import { isShortStock } from '../domain/stock';
 import type {
   CreateProductInput,
   CustomerPublic,
@@ -55,6 +56,9 @@ interface LocalOrder {
   stripe_session_id: string | null;
   carrier_ref: string | null;
   tracking_number: string | null;
+  stock_settled: boolean;
+  confirmation_sent: boolean;
+  email_claimed_at: string | null;
   created_at: string;
 }
 
@@ -214,7 +218,10 @@ export class LocalStore implements Store {
         logistics_status: order.logistics_status ?? 'awaiting_partner',
         stripe_session_id: order.stripe_session_id ?? null,
         carrier_ref: order.carrier_ref ?? null,
-        tracking_number: order.tracking_number ?? null
+        tracking_number: order.tracking_number ?? null,
+        stock_settled: order.stock_settled ?? order.payment_status === 'paid',
+        confirmation_sent: order.confirmation_sent ?? order.payment_status === 'paid',
+        email_claimed_at: order.email_claimed_at ?? null
       })),
       emails: raw.emails ?? [],
       categories: seedCategories(raw.products ?? [], raw.categories)
@@ -316,7 +323,7 @@ export class LocalStore implements Store {
     const slug = slugFromLabel(label);
     if (!slug) throw new Error('Enter a category name');
     const existing = this.data.categories.find((category) => category.slug === slug);
-    if (existing) return { ...existing, parentSlug: existing.parentSlug ?? null };
+    if (existing) throw new Error('That category already exists');
     const parent = parentSlug || null;
     if (parent && !canNestUnder(null, parent, this.data.categories)) {
       throw new Error('Choose a parent the new category can sit under');
@@ -485,6 +492,9 @@ export class LocalStore implements Store {
       stripe_session_id: null,
       carrier_ref: null,
       tracking_number: null,
+      stock_settled: false,
+      confirmation_sent: false,
+      email_claimed_at: null,
       created_at: new Date().toISOString()
     });
     this.persist();
@@ -507,11 +517,18 @@ export class LocalStore implements Store {
     return order ? this.toOrderRecord(order) : null;
   }
 
-  async setStripeSession(orderId: string, sessionId: string): Promise<void> {
+  async setStripeSession(
+    orderId: string,
+    sessionId: string,
+    replaceId: string | null = null
+  ): Promise<'saved' | 'kept' | 'missing'> {
     const order = this.data.orders.find((row) => row.id === orderId);
-    if (!order) return;
+    if (!order) return 'missing';
+    const current = order.stripe_session_id;
+    if (current && current !== sessionId && current !== replaceId) return 'kept';
     order.stripe_session_id = sessionId;
     this.persist();
+    return 'saved';
   }
 
   async markOrderPaid(orderId: string): Promise<boolean> {
@@ -520,6 +537,62 @@ export class LocalStore implements Store {
     order.payment_status = 'paid';
     this.persist();
     return true;
+  }
+
+  async takePaidStock(orderId: string): Promise<'taken' | 'short' | 'already' | 'unpaid'> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order || order.payment_status !== 'paid') return 'unpaid';
+    if (order.stock_settled) return 'already';
+
+    const products = new Map(
+      this.data.products.map((row) => [row.id, productFromRow(row)] as const)
+    );
+    let planned;
+    try {
+      planned = planStockTake(order.items, products);
+    } catch (err) {
+      if (!isShortStock(err)) throw err;
+      order.stock_settled = true;
+      this.persist();
+      return 'short';
+    }
+
+    for (const next of planned) {
+      const product = this.data.products.find((row) => row.id === next.id);
+      if (!product) continue;
+      product.variants = next.colors;
+      product.sizes = next.sizes;
+      product.stock_qty = next.stockQty;
+    }
+    order.stock_settled = true;
+    this.persist();
+    return 'taken';
+  }
+
+  async claimConfirmation(orderId: string): Promise<'send' | 'sent' | 'busy'> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order || order.payment_status !== 'paid') return 'busy';
+    if (order.confirmation_sent) return 'sent';
+    const claimedAt = order.email_claimed_at ? Date.parse(order.email_claimed_at) : Number.NaN;
+    if (Number.isFinite(claimedAt) && Date.now() - claimedAt < 2 * 60 * 1000) return 'busy';
+    order.email_claimed_at = new Date().toISOString();
+    this.persist();
+    return 'send';
+  }
+
+  async markConfirmationSent(orderId: string): Promise<void> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order) return;
+    order.confirmation_sent = true;
+    order.email_claimed_at = null;
+    this.persist();
+  }
+
+  async releaseConfirmation(orderId: string): Promise<void> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order || order.confirmation_sent) return;
+    order.email_claimed_at = null;
+    this.persist();
   }
 
   async recordShipment(

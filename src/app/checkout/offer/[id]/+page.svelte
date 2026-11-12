@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { formatPrice } from '../../../../domain/product';
-  import CountryField from '../../../CountryField.svelte';
+  import ShippingFields from '../../../ShippingFields.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -63,30 +63,9 @@
 
   <form onsubmit={submit} class="card">
     <h2>Shipping</h2>
-    <div class="field">
-      <label for="fullName">Full name</label>
-      <input id="fullName" bind:value={fullName} required />
-    </div>
-    <div class="field">
-      <label for="phone">Phone</label>
-      <input id="phone" type="tel" bind:value={phone} required />
-    </div>
-    <div class="field">
-      <label for="line1">Address</label>
-      <input id="line1" bind:value={line1} required />
-    </div>
-    <div class="fields-2">
-      <div class="field">
-        <label for="city">City</label>
-        <input id="city" bind:value={city} required />
-      </div>
-      <div class="field">
-        <label for="postcode">Postcode</label>
-        <input id="postcode" bind:value={postcode} required />
-      </div>
-    </div>
-    <p class="ship">Shipping is free. <a href="/policies">Delivery, returns, and defects</a>.</p>
-    <CountryField bind:value={country} />
+    <ShippingFields bind:fullName bind:phone bind:line1 bind:city bind:postcode bind:country>
+      <p class="ship">Shipping is free. <a href="/policies">Delivery, returns, and defects</a>.</p>
+    </ShippingFields>
     <button class="btn btn-primary" type="submit" disabled={status === 'submitting'}>
       {status === 'submitting' ? 'Continuing…' : 'Continue to payment'}
     </button>
@@ -127,12 +106,12 @@
   .ribbon {
     display: inline-block;
     padding: 4px 12px;
-    background: var(--accent);
+    background: var(--ink);
     color: #fff;
     font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 0.14em;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 

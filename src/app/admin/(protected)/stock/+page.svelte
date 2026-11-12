@@ -62,7 +62,7 @@
         {#each visible as line}
           <tr class:out={line.out} class:unlisted={!line.listed}>
             <td>
-              <a href="/admin/products/{line.productId}">{variantLabel(line.productName, line.color, line.size)}</a>
+              <a class="name" href="/admin/products/{line.productId}">{variantLabel(line.productName, line.color, line.size)}</a>
               {#if !line.listed}
                 <span class="muted">Unlisted</span>
               {/if}
@@ -140,9 +140,9 @@
 
   .filters button {
     border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-subtle);
-    color: var(--text-primary);
+    border-radius: 0;
+    background: #fff;
+    color: var(--text-secondary);
     padding: 6px 12px;
     font: inherit;
     font-size: 13px;
@@ -151,8 +151,9 @@
   }
 
   .filters button.on {
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--ink);
+    color: var(--ink);
+    background: #fff;
   }
 
   .find-row {
@@ -161,20 +162,43 @@
 
   .find-row input {
     max-width: 280px;
-    border-radius: 999px;
+    border-radius: 0;
   }
 
   .product-table {
-    width: 100%;
+    width: max-content;
+    min-width: 720px;
     border-collapse: collapse;
+  }
+
+  .product-table .name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    width: 200px;
+    max-width: 200px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    max-height: 2.7em;
+    white-space: normal;
+  }
+
+  .product-table th {
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .product-table th,
   .product-table td {
     text-align: left;
-    padding: 16px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    white-space: nowrap;
   }
 
   .sku {
@@ -217,10 +241,13 @@
   .link-button {
     background: none;
     border: none;
-    color: var(--accent);
+    color: var(--ink);
     cursor: pointer;
     padding: 0;
     font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   @media (max-width: 720px) {

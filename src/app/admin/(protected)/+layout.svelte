@@ -31,22 +31,28 @@
 <style>
   .admin-nav {
     display: flex;
-    gap: 10px;
-    padding: 20px 0 18px;
+    gap: 0;
+    padding: 8px 0 0;
     border-bottom: 1px solid var(--border);
-    font-weight: 600;
+    font-weight: 400;
     flex-wrap: wrap;
     align-items: center;
   }
 
   .admin-nav a {
-    padding: 8px 14px;
-    border-radius: 999px;
+    padding: 14px 0 12px;
+    margin-right: 28px;
+    border-radius: 0;
+    border-bottom: 1px solid transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
   }
 
   .admin-nav a.current {
-    background: var(--accent-light);
-    color: var(--accent);
+    background: none;
+    color: var(--ink);
+    font-weight: 600;
+    border-bottom-color: var(--ink);
   }
 
   @media (forced-colors: active) {

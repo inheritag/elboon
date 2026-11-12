@@ -119,6 +119,40 @@ export function flattenTree(all: CategoryRecord[]): { slug: string; label: strin
   return out;
 }
 
+/**
+ * Check a new category, and its subcategory, before anything is saved.
+ * A slug that already exists is refused, so Travel / Home cannot land in Home.
+ */
+export function planNewCategory(
+  label: string,
+  subcategory: string,
+  parentSlug: string | null,
+  all: CategoryRecord[]
+): { slug: string; childSlug: string | null } | { error: string } {
+  const name = label.trim();
+  if (!name) return { error: 'Enter a name for the new category' };
+  const parent = parentSlug || null;
+  if (parent && !canNestUnder(null, parent, all)) {
+    return { error: 'Choose a parent the new category can sit under' };
+  }
+  const slug = slugFromLabel(name);
+  if (!slug) return { error: 'Enter a name for the new category' };
+  if (all.some((category) => category.slug === slug)) return { error: 'That category already exists' };
+
+  const childName = subcategory.trim();
+  if (!childName) return { slug, childSlug: null };
+  const childSlug = slugFromLabel(childName);
+  if (!childSlug) return { error: 'Enter a name for the new category' };
+  if (childSlug === slug || all.some((category) => category.slug === childSlug)) {
+    return { error: 'That category already exists' };
+  }
+  const parentDepth = parent ? depthOf(parent, all) + 1 : 0;
+  if (parentDepth + 1 >= MAX_CATEGORY_DEPTH) {
+    return { error: 'Choose a parent the new category can sit under' };
+  }
+  return { slug, childSlug };
+}
+
 export function canNestUnder(childSlug: string | null, parentSlug: string | null, all: CategoryRecord[]): boolean {
   if (!parentSlug) return true;
   if (!all.some((category) => category.slug === parentSlug)) return false;

@@ -7,7 +7,7 @@
 
 <div class="field">
   <label for={id}>Country</label>
-  <select {id} name="country" bind:value required>
+  <select {id} name="country" autocomplete="shipping country-name" bind:value required>
     <option value="">Choose a country</option>
     {#each options as name}
       <option value={name}>{name}</option>

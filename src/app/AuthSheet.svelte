@@ -170,7 +170,7 @@
   }
 
   .close:hover {
-    color: var(--accent);
+    color: var(--ink);
   }
 
   dialog.sheet::backdrop {
@@ -201,7 +201,7 @@
     border: none;
     padding: 0;
     font: inherit;
-    color: var(--accent);
+    color: var(--ink);
     text-decoration: underline;
     cursor: pointer;
   }

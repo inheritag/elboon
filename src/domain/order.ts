@@ -31,3 +31,21 @@ export interface CardReceipt {
 export function calculateOrderTotal(items: OrderItem[]): number {
   return items.reduce((total, item) => total + item.unitPriceCents * item.quantity, 0);
 }
+
+function text(value: unknown, min: number): boolean {
+  return typeof value === 'string' && value.trim().length >= min;
+}
+
+/** Address text is present, so later booking does not call trim on a missing field. */
+export function isCompleteShipping(address: Partial<ShippingAddress> | null | undefined): address is ShippingAddress {
+  if (!address) return false;
+  return (
+    text(address.fullName, 1) &&
+    text(address.phone, 6) &&
+    text(address.line1, 1) &&
+    text(address.city, 1) &&
+    typeof address.postcode === 'string' &&
+    text(address.country, 1) &&
+    (address.line2 == null || typeof address.line2 === 'string')
+  );
+}

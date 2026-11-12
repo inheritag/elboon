@@ -249,7 +249,7 @@
   }
 
   .remove:hover {
-    color: var(--accent);
+    color: var(--ink);
   }
 
   @media (max-width: 420px) {

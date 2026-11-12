@@ -29,6 +29,18 @@ describe('clickAndDropOrder', () => {
     expect(order?.currencyCode).toBe('GBP');
   });
 
+  it('skips an address field that is not text', () => {
+    expect(
+      clickAndDropOrder({
+        orderId: 'abc',
+        email: 'ada@example.com',
+        totalCents: 1000,
+        orderedAt: '2026-11-12T10:00:00.000Z',
+        shipping: { ...shipping, postcode: null as unknown as string }
+      })
+    ).toBeNull();
+  });
+
   it('skips a country we cannot code', () => {
     expect(
       clickAndDropOrder({

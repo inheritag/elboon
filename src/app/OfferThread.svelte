@@ -58,7 +58,7 @@
   }
 
   .now .dot {
-    background: var(--accent);
+    background: #111;
   }
 
   .done {

@@ -154,9 +154,9 @@ describe('LocalStore', () => {
     const accessories = await store.createCategory('phone accessories', 'phones');
     expect(accessories.slug).toBe('phone-accessories');
     expect(accessories.parentSlug).toBe('phones');
-    const again = await store.createCategory('Phones', 'fashion');
-    expect(again.slug).toBe('phones');
-    expect(again.parentSlug).toBe('tech');
+    await expect(store.createCategory('Phones', 'fashion')).rejects.toThrow('That category already exists');
+    const phonesAgain = (await store.listCategories()).find((category) => category.slug === 'phones');
+    expect(phonesAgain?.parentSlug).toBe('tech');
   });
 
   it('attaches guest offers to a new account with the same email', async () => {
@@ -178,5 +178,74 @@ describe('LocalStore', () => {
     const offers = await store.listOffersForUser(customer.id);
     expect(offers).toHaveLength(1);
     expect(offers[0].user_id).toBe(customer.id);
+  });
+
+  it('takes stock once, and leaves it alone when a line is short', async () => {
+    const store = new LocalStore({ persistPath: null, seed: false });
+    await store.createProduct({
+      name: 'Mug',
+      description: 'A mug',
+      priceCents: 800,
+      category: 'home',
+      stockQty: 5,
+      lowStockThreshold: 1,
+      offerEnabled: false
+    });
+    const mug = (await store.listAllProducts())[0];
+
+    const shortId = await store.createPendingOrder({
+      customerEmail: 'ada@example.com',
+      shippingAddress: shipping,
+      items: [
+        { productId: mug.id, productName: 'Mug', quantity: 3, unitPriceCents: 800 },
+        { productId: mug.id, productName: 'Mug', quantity: 3, unitPriceCents: 800 }
+      ],
+      totalCents: 4800
+    });
+    expect(await store.takePaidStock(shortId)).toBe('unpaid');
+    await store.markOrderPaid(shortId);
+    expect(await store.takePaidStock(shortId)).toBe('short');
+    expect((await store.getProduct(mug.id))?.stock_qty).toBe(5);
+    expect(await store.takePaidStock(shortId)).toBe('already');
+    expect((await store.getProduct(mug.id))?.stock_qty).toBe(5);
+
+    const paidId = await store.createPendingOrder({
+      customerEmail: 'ada@example.com',
+      shippingAddress: shipping,
+      items: [
+        { productId: mug.id, productName: 'Mug', quantity: 2, unitPriceCents: 800 },
+        { productId: mug.id, productName: 'Mug', quantity: 2, unitPriceCents: 800 }
+      ],
+      totalCents: 3200
+    });
+    await store.markOrderPaid(paidId);
+    expect(await store.takePaidStock(paidId)).toBe('taken');
+    expect((await store.getProduct(mug.id))?.stock_qty).toBe(1);
+    expect(await store.takePaidStock(paidId)).toBe('already');
+    expect((await store.getProduct(mug.id))?.stock_qty).toBe(1);
+  });
+
+  it('keeps the first Checkout session and sends the confirmation once', async () => {
+    const store = new LocalStore({ persistPath: null, seed: false });
+    const orderId = await store.createPendingOrder({
+      customerEmail: 'ada@example.com',
+      shippingAddress: shipping,
+      items: [],
+      totalCents: 1200
+    });
+    expect(await store.setStripeSession(orderId, 'cs_first')).toBe('saved');
+    expect(await store.setStripeSession(orderId, 'cs_second')).toBe('kept');
+    expect((await store.getOrder(orderId))?.stripe_session_id).toBe('cs_first');
+    expect(await store.setStripeSession(orderId, 'cs_new', 'cs_first')).toBe('saved');
+    expect((await store.getOrder(orderId))?.stripe_session_id).toBe('cs_new');
+
+    expect(await store.claimConfirmation(orderId)).toBe('busy');
+    await store.markOrderPaid(orderId);
+    expect(await store.claimConfirmation(orderId)).toBe('send');
+    expect(await store.claimConfirmation(orderId)).toBe('busy');
+    await store.releaseConfirmation(orderId);
+    expect(await store.claimConfirmation(orderId)).toBe('send');
+    await store.markConfirmationSent(orderId);
+    expect(await store.claimConfirmation(orderId)).toBe('sent');
   });
 });

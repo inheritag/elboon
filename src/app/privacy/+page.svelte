@@ -6,7 +6,8 @@
   </p>
   <p>
     We do not collect card numbers. Payment is handled by a payment provider. Order records keep name, phone,
-    address, and email so we can pass the parcel to a logistics partner.
+    address, and email so we can pass the parcel to Royal Mail. When you type an address, that text is sent
+    to an address search on OpenStreetMap so we can suggest a match. We do not store the search.
   </p>
   <p>
     Offers are stored against your email, and against your account if you are signed in. Ignored offers are

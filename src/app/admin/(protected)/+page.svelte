@@ -102,7 +102,7 @@
   }
 
   h2 a {
-    color: var(--accent);
+    color: var(--ink);
     text-decoration: underline;
   }
 

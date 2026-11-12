@@ -2,7 +2,8 @@ import { canNestUnder, slugFromLabel, type CategoryRecord } from '../domain/cata
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
-import { applySale, applySet, productFromRow, type ProductRow } from '../domain/product';
+import { applySale, applySet, planStockTake, productFromRow, type ProductRow } from '../domain/product';
+import { isShortStock } from '../domain/stock';
 import { readyDb, toJsonValue } from './db';
 import type {
   CreateProductInput,
@@ -138,9 +139,10 @@ export class PostgresStore implements Store {
     }
     const rows = await sql<CategoryRow[]>`
       INSERT INTO categories (slug, label, parent_slug) VALUES (${slug}, ${label.trim()}, ${parent})
-      ON CONFLICT (slug) DO UPDATE SET label = EXCLUDED.label
+      ON CONFLICT (slug) DO NOTHING
       RETURNING slug, label, parent_slug
     `;
+    if (!rows[0]) throw new Error('That category already exists');
     return asCategory(rows[0]);
   }
 
@@ -383,9 +385,25 @@ export class PostgresStore implements Store {
     return rows[0] ? asOrder(rows[0]) : null;
   }
 
-  async setStripeSession(orderId: string, sessionId: string): Promise<void> {
+  async setStripeSession(
+    orderId: string,
+    sessionId: string,
+    replaceId: string | null = null
+  ): Promise<'saved' | 'kept' | 'missing'> {
     const sql = await readyDb();
-    await sql`UPDATE orders SET stripe_session_id = ${sessionId} WHERE id = ${orderId}`;
+    const rows = await sql<{ id: string }[]>`
+      UPDATE orders SET stripe_session_id = ${sessionId}
+      WHERE id = ${orderId}
+        AND (
+          stripe_session_id IS NULL
+          OR stripe_session_id = ${sessionId}
+          OR (${replaceId}::text IS NOT NULL AND stripe_session_id = ${replaceId})
+        )
+      RETURNING id
+    `;
+    if (rows.length > 0) return 'saved';
+    const existing = await sql<{ id: string }[]>`SELECT id FROM orders WHERE id = ${orderId}`;
+    return existing.length > 0 ? 'kept' : 'missing';
   }
 
   async markOrderPaid(orderId: string): Promise<boolean> {
@@ -396,6 +414,77 @@ export class PostgresStore implements Store {
       RETURNING id
     `;
     return rows.length > 0;
+  }
+
+  async takePaidStock(orderId: string): Promise<'taken' | 'short' | 'already' | 'unpaid'> {
+    const sql = await readyDb();
+    return sql.begin(async (tx) => {
+      const rows = await tx<
+        { id: string; items: OrderItem[]; payment_status: PaymentStatus; stock_settled: boolean }[]
+      >`
+        SELECT id, items, payment_status, stock_settled FROM orders WHERE id = ${orderId} FOR UPDATE
+      `;
+      const order = rows[0];
+      if (!order || order.payment_status !== 'paid') return 'unpaid' as const;
+      if (order.stock_settled) return 'already' as const;
+
+      const ids = [...new Set((order.items ?? []).map((item) => item.productId))];
+      const products = ids.length
+        ? await tx<ProductRow[]>`SELECT * FROM products WHERE id IN ${tx(ids)} FOR UPDATE`
+        : [];
+      const byId = new Map(products.map((row) => [row.id, productFromRow(row)] as const));
+      let planned;
+      try {
+        planned = planStockTake(order.items ?? [], byId);
+      } catch (err) {
+        if (!isShortStock(err)) throw err;
+        await tx`UPDATE orders SET stock_settled = true WHERE id = ${orderId}`;
+        return 'short' as const;
+      }
+
+      for (const next of planned) {
+        await tx`
+          UPDATE products SET
+            variants = ${tx.json(toJsonValue(next.colors))},
+            sizes = ${tx.json(toJsonValue(next.sizes))},
+            stock_qty = ${next.stockQty}
+          WHERE id = ${next.id}
+        `;
+      }
+      await tx`UPDATE orders SET stock_settled = true WHERE id = ${orderId}`;
+      return 'taken' as const;
+    });
+  }
+
+  async claimConfirmation(orderId: string): Promise<'send' | 'sent' | 'busy'> {
+    const sql = await readyDb();
+    const claimed = await sql<{ id: string }[]>`
+      UPDATE orders SET email_claimed_at = now()
+      WHERE id = ${orderId}
+        AND payment_status = 'paid'
+        AND confirmation_sent = false
+        AND (email_claimed_at IS NULL OR email_claimed_at < now() - interval '2 minutes')
+      RETURNING id
+    `;
+    if (claimed.length > 0) return 'send';
+    const rows = await sql<{ confirmation_sent: boolean }[]>`
+      SELECT confirmation_sent FROM orders WHERE id = ${orderId}
+    `;
+    return rows[0]?.confirmation_sent ? 'sent' : 'busy';
+  }
+
+  async markConfirmationSent(orderId: string): Promise<void> {
+    const sql = await readyDb();
+    await sql`
+      UPDATE orders SET confirmation_sent = true, email_claimed_at = NULL WHERE id = ${orderId}
+    `;
+  }
+
+  async releaseConfirmation(orderId: string): Promise<void> {
+    const sql = await readyDb();
+    await sql`
+      UPDATE orders SET email_claimed_at = NULL WHERE id = ${orderId} AND confirmation_sent = false
+    `;
   }
 
   async recordShipment(

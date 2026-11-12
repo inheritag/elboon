@@ -39,7 +39,7 @@
       {/if}
       <form method="POST" action="?/handoff" use:enhance>
         <input type="hidden" name="id" value={order.id} />
-        <button class="btn btn-primary" type="submit">Handed to partner</button>
+        <button class="btn btn-primary" type="submit">Mark as sent</button>
       </form>
     </article>
   {:else}

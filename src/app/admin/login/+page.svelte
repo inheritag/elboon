@@ -35,7 +35,7 @@
 
   .dev-hint {
     font-size: 13px;
-    color: var(--accent);
+    color: var(--text-secondary);
     margin-bottom: 16px;
   }
 </style>

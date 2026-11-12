@@ -2,7 +2,7 @@ import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import { config } from '../../../../libs/config';
 import { fulfillPendingOrder } from '../../../../libs/fulfillment';
 import { getStore } from '../../../../libs/store';
-import { checkoutUrl } from '../../../../libs/stripe-pay';
+import { checkoutExpiresAt, checkoutUrl } from '../../../../libs/stripe-pay';
 import type { Actions, PageServerLoad } from './$types';
 
 function isThrownRedirect(err: unknown): boolean {
@@ -14,33 +14,56 @@ function isThrownRedirect(err: unknown): boolean {
 
 function paymentError(err: unknown): string {
   const message = err instanceof Error ? err.message : '';
-  if (/publishable key|invalid api key|not configured/i.test(message)) return 'Payment is not set up.';
+  if (/publishable( api)? key|invalid api key|not configured|secret_key_required|more_permissions_required/i.test(message)) {
+    return 'Payment is not set up.';
+  }
   if (/cannot be charged|unit_amount|amount must|at least .+pence/i.test(message)) {
     return 'This amount cannot be charged.';
   }
+  if (/checkout has expired/i.test(message)) return 'This checkout has expired.';
+  if (/does not match the order/i.test(message)) return 'Payment is being checked.';
   return 'Payment could not be started. Try again.';
 }
 
 export const load: PageServerLoad = async ({ params }) => {
-  const order = await getStore().getPendingOrder(params.id);
-  if (!order) {
+  const order = await getStore().getOrder(params.id);
+  if (!order || order.payment_status !== 'pending') {
     error(404, 'Payment session not found');
   }
-  return { order, stripe: Boolean(config.stripeApiKey()) };
+  return {
+    order: {
+      id: order.id,
+      customer_email: order.customer_email,
+      items: order.items,
+      total_cents: order.total_cents
+    },
+    stripe: Boolean(config.stripeApiKey()),
+    devMode: config.isDevMode(),
+    expired: checkoutExpiresAt(order.created_at) === null
+  };
 };
 
 export const actions: Actions = {
   pay: async ({ params, url }) => {
-    if (!config.stripeApiKey()) {
-      if (!config.isDevMode()) return fail(400, { error: 'Payment is not set up.' });
-      const ok = await fulfillPendingOrder(params.id);
-      if (!ok) error(400, 'This order is no longer awaiting payment');
-      redirect(303, `/checkout/success?orderId=${params.id}`);
-    }
-
     const order = await getStore().getOrder(params.id);
     if (!order || order.payment_status !== 'pending') {
       error(400, 'This order is no longer awaiting payment');
+    }
+    if (checkoutExpiresAt(order.created_at) === null) {
+      return fail(400, { error: 'This checkout has expired.' });
+    }
+
+    if (!config.stripeApiKey()) {
+      if (!config.isDevMode()) return fail(400, { error: 'Payment is not set up.' });
+      try {
+        const ok = await fulfillPendingOrder(params.id, { book: false });
+        if (!ok) error(400, 'This order is no longer awaiting payment');
+      } catch (err) {
+        const current = await getStore().getOrder(params.id);
+        if (current?.payment_status !== 'paid') throw err;
+        console.error('Could not finish the paid order', params.id, err);
+      }
+      redirect(303, `/checkout/success?orderId=${params.id}`);
     }
 
     try {

@@ -26,12 +26,12 @@
   --radius-lg: 0;
   --card-radius: 0;
   --btn-radius: 0;
-  --btn-weight: 700;
+  --btn-weight: 600;
   --btn-size: 14px;
-  --btn-track: 0.04em;
-  --btn-transform: uppercase;
+  --btn-track: 0;
+  --btn-transform: none;
   --btn-border: 1px solid transparent;
-  --btn-pad-y: 14px;
+  --btn-pad-y: 0;
   --btn-pad-x: 22px;
 
   --shadow-sm: none;
@@ -79,7 +79,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 28%, white);
+  background: color-mix(in srgb, #111 12%, white);
   color: var(--text-primary);
 }
 
@@ -126,8 +126,11 @@ a:hover {
 }
 
 .btn {
-  display: inline-block;
-  padding: var(--btn-pad-y, 12px) var(--btn-pad-x, 20px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--btn-pad-y, 0) var(--btn-pad-x, 22px);
   border-radius: var(--btn-radius, var(--radius-sm));
   border: var(--btn-border, 1px solid transparent);
   font-weight: var(--btn-weight, 600);
@@ -283,12 +286,6 @@ a:focus-visible {
 }
 
 @media (max-width: 720px) {
-  :root {
-    --btn-pad-y: 14px;
-    --btn-pad-x: 16px;
-    --btn-size: 13px;
-  }
-
   .btn {
     width: 100%;
     text-align: center;
@@ -296,7 +293,10 @@ a:focus-visible {
 }
 
 .table-scroll {
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -347,7 +347,7 @@ input[type='number'] {
 
 .badge-low-stock {
   background: none;
-  color: var(--accent);
+  color: var(--ink);
   border: none;
 }
 
@@ -400,7 +400,7 @@ input[type='number'] {
 }
 
 .error-text {
-  color: #b91c1c;
+  color: var(--ink);
   font-size: 14px;
   font-weight: 600;
 }
@@ -563,19 +563,19 @@ input[type='number'] {
 
 .photo-frame {
   position: relative;
-  padding: 0 3px 3px 0;
+  padding: 0 2px 2px 0;
 }
 
 .photo-frame::before {
   content: '';
   position: absolute;
   z-index: 0;
-  top: 3px;
+  top: 2px;
   right: 0;
   bottom: 0;
-  left: 3px;
+  left: 2px;
   border: 1px solid var(--ink);
-  border-radius: clamp(8px, 2.5%, 16px);
+  border-radius: 0;
   background: transparent;
   pointer-events: none;
   transition: transform var(--dur) var(--ease-out);
@@ -585,7 +585,7 @@ input[type='number'] {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  border-radius: clamp(8px, 2.5%, 16px);
+  border-radius: 0;
   background: var(--bg-subtle);
 }
 
