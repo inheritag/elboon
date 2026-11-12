@@ -58,8 +58,13 @@ export interface OrderSummaryRow {
   total_cents: number;
   payment_status: PaymentStatus;
   logistics_status: LogisticsStatus;
+  stripe_session_id: string | null;
+  carrier_ref: string | null;
+  tracking_number: string | null;
   created_at: string;
 }
+
+export interface OrderRecord extends OrderSummaryRow {}
 
 export interface PendingOrder {
   id: string;
@@ -109,7 +114,11 @@ export interface Store {
     totalCents: number;
   }): Promise<string>;
   getPendingOrder(orderId: string): Promise<PendingOrder | null>;
-  markOrderPaid(orderId: string): Promise<void>;
+  getOrder(orderId: string): Promise<OrderRecord | null>;
+  setStripeSession(orderId: string, sessionId: string): Promise<void>;
+  /** True only when this call is the one that moves the order from pending to paid. */
+  markOrderPaid(orderId: string): Promise<boolean>;
+  recordShipment(orderId: string, shipment: { carrierRef: string; trackingNumber: string | null }): Promise<void>;
   markHandedToLogistics(orderId: string): Promise<void>;
   listOrders(): Promise<OrderSummaryRow[]>;
 }

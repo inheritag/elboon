@@ -90,11 +90,29 @@ export async function sendOrderConfirmationEmail(params: {
   to: string;
   orderId: string;
   totalCents: number;
+  booked?: boolean;
+  trackingNumber?: string | null;
 }): Promise<void> {
+  const total = formatPrice(params.totalCents, 'GBP');
+  const tracking = params.trackingNumber ? escapeHtml(params.trackingNumber) : '';
+  const lead = tracking
+    ? `Thanks for your order. Royal Mail tracking is <strong>${tracking}</strong>. Delivery is free.`
+    : params.booked
+      ? 'Thanks for your order. We will send it with Royal Mail. Delivery is free.'
+      : 'Thanks for your order. A logistics partner will contact you to arrange delivery. Elboon does not ship parcels itself.';
+
   await deliver(
     params.to,
     `Order confirmed: ${params.orderId}`,
-    `<p>Thanks for your order. A logistics partner will contact you to arrange delivery. Elboon does not ship parcels itself.</p>
-      <p>Order total: <strong>${formatPrice(params.totalCents, 'GBP')}</strong></p>`
+    `<p>${lead}</p><p>Order total: <strong>${total}</strong></p>`
   );
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (char) => {
+    if (char === '&') return '&amp;';
+    if (char === '<') return '&lt;';
+    if (char === '>') return '&gt;';
+    return '&quot;';
+  });
 }

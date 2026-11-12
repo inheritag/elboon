@@ -32,6 +32,11 @@
           <li>{item.productName} × {item.quantity}</li>
         {/each}
       </ul>
+      {#if order.carrier_ref}
+        <p class="when">
+          Booked with Royal Mail{#if order.tracking_number} · {order.tracking_number}{/if}
+        </p>
+      {/if}
       <form method="POST" action="?/handoff" use:enhance>
         <input type="hidden" name="id" value={order.id} />
         <button class="btn btn-primary" type="submit">Handed to partner</button>
@@ -46,7 +51,7 @@
     {#each sent as order}
       <p class="muted">
         {new Date(order.created_at).toLocaleString('en-GB')} · {order.shipping_address.fullName} ·
-        {formatPrice(order.total_cents, 'GBP')}
+        {formatPrice(order.total_cents, 'GBP')}{#if order.tracking_number} · {order.tracking_number}{/if}
       </p>
     {/each}
   {/if}

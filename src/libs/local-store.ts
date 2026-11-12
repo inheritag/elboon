@@ -11,6 +11,7 @@ import type {
   CustomerPublic,
   DevEmail,
   OfferListRow,
+  OrderRecord,
   OrderSummaryRow,
   PendingOrder,
   Store
@@ -51,6 +52,9 @@ interface LocalOrder {
   total_cents: number;
   payment_status: PaymentStatus;
   logistics_status: LogisticsStatus;
+  stripe_session_id: string | null;
+  carrier_ref: string | null;
+  tracking_number: string | null;
   created_at: string;
 }
 
@@ -207,7 +211,10 @@ export class LocalStore implements Store {
           ...order.shipping_address,
           phone: order.shipping_address.phone ?? ''
         },
-        logistics_status: order.logistics_status ?? 'awaiting_partner'
+        logistics_status: order.logistics_status ?? 'awaiting_partner',
+        stripe_session_id: order.stripe_session_id ?? null,
+        carrier_ref: order.carrier_ref ?? null,
+        tracking_number: order.tracking_number ?? null
       })),
       emails: raw.emails ?? [],
       categories: seedCategories(raw.products ?? [], raw.categories)
@@ -475,6 +482,9 @@ export class LocalStore implements Store {
       total_cents: input.totalCents,
       payment_status: 'pending',
       logistics_status: 'awaiting_partner',
+      stripe_session_id: null,
+      carrier_ref: null,
+      tracking_number: null,
       created_at: new Date().toISOString()
     });
     this.persist();
@@ -492,10 +502,35 @@ export class LocalStore implements Store {
     };
   }
 
-  async markOrderPaid(orderId: string): Promise<void> {
+  async getOrder(orderId: string): Promise<OrderRecord | null> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    return order ? this.toOrderRecord(order) : null;
+  }
+
+  async setStripeSession(orderId: string, sessionId: string): Promise<void> {
     const order = this.data.orders.find((row) => row.id === orderId);
     if (!order) return;
+    order.stripe_session_id = sessionId;
+    this.persist();
+  }
+
+  async markOrderPaid(orderId: string): Promise<boolean> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order || order.payment_status !== 'pending') return false;
     order.payment_status = 'paid';
+    this.persist();
+    return true;
+  }
+
+  async recordShipment(
+    orderId: string,
+    shipment: { carrierRef: string; trackingNumber: string | null }
+  ): Promise<void> {
+    const order = this.data.orders.find((row) => row.id === orderId);
+    if (!order) return;
+    order.carrier_ref = shipment.carrierRef;
+    order.tracking_number = shipment.trackingNumber;
+    if (shipment.trackingNumber) order.logistics_status = 'handed_off';
     this.persist();
   }
 
@@ -507,7 +542,11 @@ export class LocalStore implements Store {
   }
 
   async listOrders(): Promise<OrderSummaryRow[]> {
-    return [...this.data.orders].sort(newestFirst).map((order) => ({
+    return [...this.data.orders].sort(newestFirst).map((order) => this.toOrderRecord(order));
+  }
+
+  private toOrderRecord(order: LocalOrder): OrderRecord {
+    return {
       id: order.id,
       customer_email: order.customer_email,
       shipping_address: order.shipping_address,
@@ -515,8 +554,11 @@ export class LocalStore implements Store {
       total_cents: order.total_cents,
       payment_status: order.payment_status,
       logistics_status: order.logistics_status,
+      stripe_session_id: order.stripe_session_id ?? null,
+      carrier_ref: order.carrier_ref ?? null,
+      tracking_number: order.tracking_number ?? null,
       created_at: order.created_at
-    }));
+    };
   }
 
   async recordEmail(email: Omit<DevEmail, 'id' | 'sentAt'>): Promise<void> {

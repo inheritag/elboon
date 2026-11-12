@@ -76,7 +76,10 @@ const SCHEMA_STATEMENTS = [
   mime       text NOT NULL,
   bytes      bytea NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
-)`
+)`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_session_id text`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier_ref text`,
+  `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number text`
 ];
 
 let sql: postgres.Sql | null = null;

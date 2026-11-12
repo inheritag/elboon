@@ -1,9 +1,9 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { formatPrice } from '../../../../domain/product';
-  import type { PageData } from './$types';
+  import type { ActionData, PageData } from './$types';
 
-  let { data }: { data: PageData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <section class="container pay">
@@ -24,13 +24,16 @@
 
   <div class="actions">
     <form method="POST" action="?/pay" use:enhance>
-      <button class="btn btn-primary" type="submit">Pay with card</button>
+      <button class="btn btn-primary" type="submit">{data.stripe ? 'Pay' : 'Pay with card'}</button>
     </form>
     <form method="POST" action="?/cancel" use:enhance>
       <button class="btn btn-secondary" type="submit">Cancel</button>
     </form>
   </div>
-  {#if data.devMode}
+  {#if form?.error}
+    <p class="error">{form.error}</p>
+  {/if}
+  {#if !data.stripe}
     <p class="fine">Dev: no real charge.</p>
   {/if}
 </section>
@@ -62,5 +65,10 @@
     margin-top: 16px;
     font-size: 13px;
     color: var(--text-muted);
+  }
+
+  .error {
+    margin-top: 16px;
+    color: var(--accent);
   }
 </style>

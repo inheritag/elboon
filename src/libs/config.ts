@@ -65,5 +65,14 @@ export const config = {
   siteUrl: () => envValue('SITE_URL') ?? envValue('PUBLIC_SITE_URL') ?? 'http://localhost:5173',
 
   /** Where new haggles are sent so the shop can accept, ignore, or counter. */
-  offersInbox: () => envValue('OFFERS_INBOX') ?? 'elboonltd@gmail.com'
+  offersInbox: () => envValue('OFFERS_INBOX') ?? 'elboonltd@gmail.com',
+
+  /** Stripe secret key. Dev checkout takes no charge when this is unset. */
+  stripeApiKey: () => envValue('STRIPE_API_KEY'),
+
+  /** Optional. A webhook can mark the order paid if the shopper closes the tab. */
+  stripeWebhookSecret: () => envValue('STRIPE_WEBHOOK_SECRET'),
+
+  /** Royal Mail Click & Drop key. Paid orders are booked when this is set. */
+  royalMailApiKey: () => envValue('ROYAL_MAIL_API_KEY')
 };

@@ -4,7 +4,15 @@ import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from 
 import type { HeldUnit } from '../domain/inventory';
 import { applySale, applySet, productFromRow, type ProductRow } from '../domain/product';
 import { readyDb, toJsonValue } from './db';
-import type { CreateProductInput, CustomerPublic, OfferListRow, OrderSummaryRow, PendingOrder, Store } from './store';
+import type {
+  CreateProductInput,
+  CustomerPublic,
+  OfferListRow,
+  OrderRecord,
+  OrderSummaryRow,
+  PendingOrder,
+  Store
+} from './store';
 
 interface CategoryRow {
   slug: string;
@@ -365,9 +373,50 @@ export class PostgresStore implements Store {
     return rows[0] ?? null;
   }
 
-  async markOrderPaid(orderId: string): Promise<void> {
+  async getOrder(orderId: string): Promise<OrderRecord | null> {
     const sql = await readyDb();
-    await sql`UPDATE orders SET payment_status = 'paid' WHERE id = ${orderId}`;
+    const rows = await sql<OrderRow[]>`
+      SELECT id, customer_email, shipping_address, items, total_cents, payment_status,
+             logistics_status, stripe_session_id, carrier_ref, tracking_number, created_at
+      FROM orders WHERE id = ${orderId}
+    `;
+    return rows[0] ? asOrder(rows[0]) : null;
+  }
+
+  async setStripeSession(orderId: string, sessionId: string): Promise<void> {
+    const sql = await readyDb();
+    await sql`UPDATE orders SET stripe_session_id = ${sessionId} WHERE id = ${orderId}`;
+  }
+
+  async markOrderPaid(orderId: string): Promise<boolean> {
+    const sql = await readyDb();
+    const rows = await sql<{ id: string }[]>`
+      UPDATE orders SET payment_status = 'paid'
+      WHERE id = ${orderId} AND payment_status = 'pending'
+      RETURNING id
+    `;
+    return rows.length > 0;
+  }
+
+  async recordShipment(
+    orderId: string,
+    shipment: { carrierRef: string; trackingNumber: string | null }
+  ): Promise<void> {
+    const sql = await readyDb();
+    if (shipment.trackingNumber) {
+      await sql`
+        UPDATE orders SET
+          carrier_ref = ${shipment.carrierRef},
+          tracking_number = ${shipment.trackingNumber},
+          logistics_status = 'handed_off'
+        WHERE id = ${orderId}
+      `;
+      return;
+    }
+    await sql`
+      UPDATE orders SET carrier_ref = ${shipment.carrierRef}, tracking_number = NULL
+      WHERE id = ${orderId}
+    `;
   }
 
   async markHandedToLogistics(orderId: string): Promise<void> {
@@ -377,26 +426,36 @@ export class PostgresStore implements Store {
 
   async listOrders(): Promise<OrderSummaryRow[]> {
     const sql = await readyDb();
-    const rows = await sql<
-      {
-        id: string;
-        customer_email: string;
-        shipping_address: ShippingAddress;
-        items: OrderItem[];
-        total_cents: number;
-        payment_status: PaymentStatus;
-        logistics_status: LogisticsStatus;
-        created_at: Date | string;
-      }[]
-    >`
+    const rows = await sql<OrderRow[]>`
       SELECT id, customer_email, shipping_address, items, total_cents, payment_status,
-             logistics_status, created_at
+             logistics_status, stripe_session_id, carrier_ref, tracking_number, created_at
       FROM orders
       ORDER BY created_at DESC
     `;
-    return rows.map((row) => ({
-      ...row,
-      created_at: typeof row.created_at === 'string' ? row.created_at : row.created_at.toISOString()
-    }));
+    return rows.map(asOrder);
   }
+}
+
+interface OrderRow {
+  id: string;
+  customer_email: string;
+  shipping_address: ShippingAddress;
+  items: OrderItem[];
+  total_cents: number;
+  payment_status: PaymentStatus;
+  logistics_status: LogisticsStatus;
+  stripe_session_id: string | null;
+  carrier_ref: string | null;
+  tracking_number: string | null;
+  created_at: Date | string;
+}
+
+function asOrder(row: OrderRow): OrderRecord {
+  return {
+    ...row,
+    stripe_session_id: row.stripe_session_id ?? null,
+    carrier_ref: row.carrier_ref ?? null,
+    tracking_number: row.tracking_number ?? null,
+    created_at: typeof row.created_at === 'string' ? row.created_at : row.created_at.toISOString()
+  };
 }

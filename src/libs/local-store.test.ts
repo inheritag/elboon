@@ -88,6 +88,22 @@ describe('LocalStore', () => {
     expect((await store.listOrders())[0].logistics_status).toBe('handed_off');
   });
 
+  it('keeps a booked parcel on the desk until there is a tracking number', async () => {
+    const store = new LocalStore({ persistPath: null });
+    const orderId = await store.createPendingOrder({
+      customerEmail: 'ada@example.com',
+      shippingAddress: shipping,
+      items: [],
+      totalCents: 1200
+    });
+    await store.recordShipment(orderId, { carrierRef: '55', trackingNumber: null });
+    expect((await store.getOrder(orderId))?.logistics_status).toBe('awaiting_partner');
+    await store.recordShipment(orderId, { carrierRef: '55', trackingNumber: 'AB123456789GB' });
+    const booked = await store.getOrder(orderId);
+    expect(booked?.tracking_number).toBe('AB123456789GB');
+    expect(booked?.logistics_status).toBe('handed_off');
+  });
+
   it('persists to disk so a new instance sees the same data', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'elboon-store-'));
     const persistPath = join(dir, 'dev-store.json');

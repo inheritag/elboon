@@ -27,9 +27,9 @@ hosting, guest checkout, make-an-offer on selected products, admin inventory.
 2. Copy `.env.example` to `.env` (`DEV_MODE=true` is the default)
 3. `npm run dev`
 
-JSON store at `.data/dev-store.json`. Admin password is `elboon-dev`. Card
-payments are accepted in-app (test Visa `4242 4242 4242 4242`). Offer emails
-land in `/dev/inbox`.
+JSON store at `.data/dev-store.json`. Admin password is `elboon-dev`. Without
+`STRIPE_API_KEY`, the pay button takes no charge. With it, checkout goes to
+Stripe. Offer emails land in `/dev/inbox`.
 
 ## Production-like local setup
 

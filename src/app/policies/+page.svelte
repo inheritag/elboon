@@ -3,9 +3,8 @@
 
   <h2>Delivery</h2>
   <p>
-    Delivery is free. Elboon does not run its own vans. After you pay, a logistics partner contacts you to
-    arrange the drop-off. The price you see at checkout is the price you pay. There is no shipping charge added
-    later.
+    Delivery is free. After you pay, we book the parcel with Royal Mail, and they deliver it. The price you
+    see at checkout is the price you pay. There is no shipping charge added later.
   </p>
 
   <h2>Returns</h2>
