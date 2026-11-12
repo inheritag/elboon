@@ -210,8 +210,8 @@
   }
 
   .manual {
-    display: inline-block;
-    width: auto;
+    display: block;
+    width: fit-content;
     margin: 0 0 18px;
     padding: 0;
     border: 0;
