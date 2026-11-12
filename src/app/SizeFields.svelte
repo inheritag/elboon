@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CLOTHING_SIZES, type ProductSize } from '../domain/product';
+  import { SIZE_PRESETS, sizePresetKind, type ProductSize, type SizePresetKind } from '../domain/product';
 
   let {
     initial = [],
@@ -14,12 +14,29 @@
   let stocks = $state<number[]>([]);
   let skus = $state<string[]>([]);
   let custom = $state('');
+  let kind = $state<SizePresetKind>('letters');
   let primed = $state(false);
+  const sizeTabs: { id: SizePresetKind; label: string }[] = [
+    { id: 'letters', label: 'XS–XXL' },
+    { id: 'uk', label: 'UK shoes' },
+    { id: 'eu', label: 'Euro shoes' },
+    { id: 'us', label: 'US shoes' },
+    { id: 'dress', label: 'Dress' }
+  ];
+  const placeholders: Record<SizePresetKind, string> = {
+    letters: '90 cm, 1.5 m, 32…',
+    uk: 'UK 6.5',
+    eu: 'EU 39.5',
+    us: 'US 8.5',
+    dress: 'Size 26'
+  };
+  const presets = $derived(SIZE_PRESETS[kind]);
   $effect.pre(() => {
     if (primed) return;
     names = initial.map((size) => size.name);
     stocks = initial.map((size) => size.stockQty);
     skus = initial.map((size) => size.sku ?? '');
+    kind = sizePresetKind(names);
     primed = true;
   });
 
@@ -65,8 +82,19 @@
     <span class="optional-tag">Optional</span>
   </div>
   <p class="hint">Pick the ones you sell, or type your own. Skip this for one size.</p>
+  <div class="kinds" role="tablist" aria-label="Size type">
+    {#each sizeTabs as tab}
+      <button
+        type="button"
+        role="tab"
+        aria-selected={kind === tab.id}
+        class:on={kind === tab.id}
+        onclick={() => (kind = tab.id)}>{tab.label}</button
+      >
+    {/each}
+  </div>
   <div class="presets" role="group" aria-labelledby="sizes-label">
-    {#each CLOTHING_SIZES as preset}
+    {#each presets as preset}
       <button
         type="button"
         class="chip"
@@ -81,7 +109,7 @@
     <input
       id="size-custom"
       bind:value={custom}
-      placeholder="90 cm, 1.5 m, 32…"
+      placeholder={placeholders[kind]}
       onkeydown={(event) => {
         if (event.key === 'Enter') {
           event.preventDefault();
@@ -151,6 +179,35 @@
 
   .moved {
     margin-bottom: 12px;
+  }
+
+  .kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 0 0 12px;
+  }
+
+  .kinds button {
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: none;
+    padding: 0 0 4px;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .kinds button.on {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  .kinds button:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   .presets {

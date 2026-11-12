@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { applyReceive, applySale, applySet, parseColors, parseSizes, planStockTake, stockFor, totalColorStock, totalUnits } from './product';
+import {
+  applyReceive,
+  applySale,
+  applySet,
+  parseColors,
+  parseSizes,
+  planStockTake,
+  sizePresetKind,
+  stockFor,
+  totalColorStock,
+  totalUnits
+} from './product';
 
 describe('product colours', () => {
   it('parses named colours and ignores blanks', () => {
@@ -35,6 +46,18 @@ describe('product colours', () => {
 });
 
 describe('product sizes', () => {
+  it('opens the matching size presets', () => {
+    expect(sizePresetKind(['M', 'L'])).toBe('letters');
+    expect(sizePresetKind(['UK 6', 'UK 7'])).toBe('uk');
+    expect(sizePresetKind(['uk 8'])).toBe('uk');
+    expect(sizePresetKind(['EU 40'])).toBe('eu');
+    expect(sizePresetKind(['US 9', 'US 10'])).toBe('us');
+    expect(sizePresetKind(['Size 8', 'Size 10'])).toBe('dress');
+    expect(sizePresetKind(['M', 'UK 6'])).toBe('letters');
+    expect(sizePresetKind(['90 cm'])).toBe('letters');
+    expect(sizePresetKind([])).toBe('letters');
+  });
+
   it('parses clothing and length labels', () => {
     expect(
       parseSizes([

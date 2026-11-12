@@ -2,6 +2,90 @@ import { decrementStock, isLowStock } from './stock';
 
 export const CLOTHING_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
 
+/** Adult whole sizes. Halves are typed in. */
+export const UK_SHOE_SIZES = [
+  'UK 3',
+  'UK 4',
+  'UK 5',
+  'UK 6',
+  'UK 7',
+  'UK 8',
+  'UK 9',
+  'UK 10',
+  'UK 11',
+  'UK 12',
+  'UK 13'
+] as const;
+
+export const EU_SHOE_SIZES = [
+  'EU 35',
+  'EU 36',
+  'EU 37',
+  'EU 38',
+  'EU 39',
+  'EU 40',
+  'EU 41',
+  'EU 42',
+  'EU 43',
+  'EU 44',
+  'EU 45',
+  'EU 46',
+  'EU 47',
+  'EU 48'
+] as const;
+
+export const US_SHOE_SIZES = [
+  'US 5',
+  'US 6',
+  'US 7',
+  'US 8',
+  'US 9',
+  'US 10',
+  'US 11',
+  'US 12',
+  'US 13',
+  'US 14',
+  'US 15'
+] as const;
+
+/** Even dress sizes. Odds and larger sizes are typed in. */
+export const DRESS_SIZES = [
+  'Size 4',
+  'Size 6',
+  'Size 8',
+  'Size 10',
+  'Size 12',
+  'Size 14',
+  'Size 16',
+  'Size 18',
+  'Size 20',
+  'Size 22',
+  'Size 24'
+] as const;
+
+export const SIZE_PRESETS = {
+  letters: CLOTHING_SIZES,
+  uk: UK_SHOE_SIZES,
+  eu: EU_SHOE_SIZES,
+  us: US_SHOE_SIZES,
+  dress: DRESS_SIZES
+} as const;
+
+export type SizePresetKind = keyof typeof SIZE_PRESETS;
+
+/** Which preset row to open. Mixed or unknown sizes stay on the letter sizes. */
+export function sizePresetKind(names: string[]): SizePresetKind {
+  const hits = new Set<SizePresetKind>();
+  for (const name of names) {
+    const key = name.trim().toLowerCase();
+    for (const kind of Object.keys(SIZE_PRESETS) as SizePresetKind[]) {
+      if (SIZE_PRESETS[kind].some((size) => size.toLowerCase() === key)) hits.add(kind);
+    }
+  }
+  if (hits.size === 1) return [...hits][0];
+  return 'letters';
+}
+
 export interface ProductSize {
   name: string;
   stockQty: number;
