@@ -62,13 +62,16 @@ export const config = {
     return requireEnv('SESSION_SECRET');
   },
 
-  siteUrl: () => envValue('SITE_URL') ?? envValue('PUBLIC_SITE_URL') ?? 'http://localhost:5173',
+  siteUrl: () =>
+    (envValue('SITE_URL') ?? envValue('PUBLIC_SITE_URL') ?? 'http://localhost:5173')
+      .trim()
+      .replace(/\/$/, ''),
 
   /** Where new haggles are sent so the shop can accept, ignore, or counter. */
   offersInbox: () => envValue('OFFERS_INBOX') ?? 'elboonltd@gmail.com',
 
   /** Stripe secret key. Dev checkout takes no charge when this is unset. */
-  stripeApiKey: () => envValue('STRIPE_API_KEY'),
+  stripeApiKey: () => envValue('STRIPE_API_KEY')?.trim() || undefined,
 
   /** Optional. A webhook can mark the order paid if the shopper closes the tab. */
   stripeWebhookSecret: () => envValue('STRIPE_WEBHOOK_SECRET'),

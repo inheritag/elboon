@@ -5,6 +5,22 @@ import { getStore } from '../../../../libs/store';
 import { checkoutUrl } from '../../../../libs/stripe-pay';
 import type { Actions, PageServerLoad } from './$types';
 
+function isThrownRedirect(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const status = 'status' in err ? err.status : undefined;
+  const location = 'location' in err ? err.location : undefined;
+  return typeof status === 'number' && status >= 300 && status < 400 && typeof location === 'string';
+}
+
+function paymentError(err: unknown): string {
+  const message = err instanceof Error ? err.message : '';
+  if (/publishable key|invalid api key|not configured/i.test(message)) return 'Payment is not set up.';
+  if (/cannot be charged|unit_amount|amount must|at least .+pence/i.test(message)) {
+    return 'This amount cannot be charged.';
+  }
+  return 'Payment could not be started. Try again.';
+}
+
 export const load: PageServerLoad = async ({ params }) => {
   const order = await getStore().getPendingOrder(params.id);
   if (!order) {
@@ -14,7 +30,7 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-  pay: async ({ params }) => {
+  pay: async ({ params, url }) => {
     if (!config.stripeApiKey()) {
       if (!config.isDevMode()) return fail(400, { error: 'Payment is not set up.' });
       const ok = await fulfillPendingOrder(params.id);
@@ -28,12 +44,12 @@ export const actions: Actions = {
     }
 
     try {
-      const url = await checkoutUrl(order);
-      redirect(303, url);
+      const checkout = await checkoutUrl(order, url.origin);
+      redirect(303, checkout);
     } catch (err) {
-      if (isRedirect(err)) throw err;
+      if (isRedirect(err) || isThrownRedirect(err)) throw err;
       console.error('Stripe checkout failed', params.id, err);
-      return fail(400, { error: 'Payment could not be started. Try again.' });
+      return fail(400, { error: paymentError(err) });
     }
   },
 
