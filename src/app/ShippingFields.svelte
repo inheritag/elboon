@@ -24,8 +24,18 @@
   let suggestions = $state<AddressSuggestion[]>([]);
   let open = $state(false);
   let active = $state(0);
+  let revealed = $state(false);
+  let addressInput = $state<HTMLInputElement | null>(null);
   let requestId = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+
+  $effect(() => {
+    if (city.trim() || postcode.trim() || country.trim()) revealed = true;
+  });
+
+  $effect(() => {
+    addressInput?.setCustomValidity(revealed ? '' : 'Choose an address, or enter it manually.');
+  });
 
   function scheduleLookup() {
     open = true;
@@ -59,8 +69,15 @@
     city = suggestion.city;
     postcode = suggestion.postcode;
     country = suggestion.country;
+    revealed = true;
     suggestions = [];
     open = false;
+  }
+
+  function enterManually() {
+    revealed = true;
+    open = false;
+    queueMicrotask(() => document.getElementById('city')?.focus());
   }
 
   function onKeydown(event: KeyboardEvent) {
@@ -94,12 +111,14 @@
     <input
       id="line1"
       name="address"
-      autocomplete="shipping address-line1"
+      placeholder={revealed ? '' : 'Search for your address'}
+      autocomplete={revealed ? 'shipping address-line1' : 'off'}
       role="combobox"
       aria-autocomplete="list"
       aria-expanded={open}
       aria-controls="address-suggestions"
       aria-activedescendant={open ? `address-option-${active}` : undefined}
+      bind:this={addressInput}
       bind:value={line1}
       oninput={scheduleLookup}
       onkeydown={onKeydown}
@@ -126,20 +145,25 @@
     {/if}
   </div>
 </div>
-<div class="fields-2">
-  <div class="field">
-    <label for="city">City</label>
-    <input id="city" name="city" autocomplete="shipping address-level2" bind:value={city} required />
+{#if !revealed}
+  <button class="manual" type="button" onclick={enterManually}>Enter address manually</button>
+{/if}
+{#if revealed}
+  <div class="fields-2">
+    <div class="field">
+      <label for="city">City</label>
+      <input id="city" name="city" autocomplete="shipping address-level2" bind:value={city} required />
+    </div>
+    <div class="field">
+      <label for="postcode">Postcode</label>
+      <input id="postcode" name="postcode" autocomplete="shipping postal-code" bind:value={postcode} required />
+    </div>
   </div>
-  <div class="field">
-    <label for="postcode">Postcode</label>
-    <input id="postcode" name="postcode" autocomplete="shipping postal-code" bind:value={postcode} required />
-  </div>
-</div>
+  <CountryField bind:value={country} />
+{/if}
 {#if children}
   {@render children()}
 {/if}
-<CountryField bind:value={country} />
 
 <style>
   .lookup {
@@ -183,5 +207,27 @@
   .list button[aria-selected='true'],
   .list button:hover {
     background: var(--bg-subtle);
+  }
+
+  .manual {
+    display: inline-block;
+    width: auto;
+    margin: 0 0 18px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .manual:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 </style>
