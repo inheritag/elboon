@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { categoryPath } from '../../../domain/catalog';
 import { heldMap, linesForProduct, totalAvailable } from '../../../domain/inventory';
-import { choiceHeading, groupListings, listingToSummary, shopName } from '../../../domain/listing';
+import { choiceHeading, groupListings, listingToSummary } from '../../../domain/listing';
 import { productFromRow, toProductSummary, type Product } from '../../../domain/product';
 import { recommendProducts } from '../../../domain/recommend';
 import { getStore } from '../../../libs/store';
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
   return {
     product,
-    displayName: shopName(product.name),
+    displayName: product.name,
     options,
     optionHeading: choiceHeading(options.map((option) => option.label)),
     holds: linesForProduct(product, held).map((line) => ({

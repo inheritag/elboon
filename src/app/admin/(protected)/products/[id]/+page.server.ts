@@ -1,5 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../../domain/catalog';
+import { categoryFromForm } from '../../../../../libs/category-form';
 import { getStore } from '../../../../../libs/store';
 import { parseSku, totalUnits } from '../../../../../domain/product';
 import { colorsFromForm, sizesFromForm } from '../../../../../libs/product-colors';
@@ -22,17 +23,9 @@ export const actions: Actions = {
     const name = form.get('name');
     const price = Number(form.get('price'));
     const store = getStore();
-    let category = String(form.get('category') ?? '');
-    if (category === '__new__') {
-      const label = String(form.get('newCategory') ?? '').trim();
-      const parent = String(form.get('newCategoryParent') ?? '').trim() || null;
-      if (!label) return fail(400, { error: 'Enter a name for the new category' });
-      try {
-        category = (await store.createCategory(label, parent)).slug;
-      } catch (err) {
-        return fail(400, { error: err instanceof Error ? err.message : 'Could not add category' });
-      }
-    }
+    const resolved = await categoryFromForm(form);
+    if (typeof resolved === 'object') return fail(400, { error: resolved.error });
+    const category = resolved;
     const known = new Set((await store.listCategories()).map((row) => row.slug));
     if (typeof name !== 'string' || !name || !price || !isCategorySlug(category) || !known.has(category)) {
       return fail(400, { error: 'Name, category and price are required' });

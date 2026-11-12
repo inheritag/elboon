@@ -60,10 +60,10 @@ describe('groupListings', () => {
     ]);
 
     expect(listings.map((row) => row.name)).toEqual([
-      "Men's V-Neck Sports Top",
-      'Cleaning Brush',
-      'Case for Xiaomi Redmi A3 4G',
-      'Case for Samsung Galaxy S24 FE'
+      "RRvane Men's V-Neck Sports Top, Lightweight Quick-Dry (M, Teal)",
+      'TQRR Cleaning Brush, Grout Brush (6, Blue)',
+      'THIYUFUNS Case for Xiaomi Redmi A3 4G with 2 Tempered Glass Screen Protector',
+      'THIYUFUNS Case for Samsung Galaxy S24 FE 5G with 2 Tempered Glass'
     ]);
     expect(listings[0].choices).toEqual(['M, Teal', 'XL, Black']);
     expect(listings[0].priceCents).toBe(1499);

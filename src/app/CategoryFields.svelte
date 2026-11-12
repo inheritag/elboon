@@ -24,10 +24,13 @@
     <option value="__new__">Add category…</option>
   </select>
   {#if value === '__new__'}
-    <input name="newCategory" required placeholder="Name" />
-    <label class="parent-label" for="{id}-parent">Under</label>
+    <label class="parent-label" for="{id}-name">Category name</label>
+    <input id="{id}-name" name="newCategory" required placeholder="Travel" />
+    <label class="parent-label" for="{id}-sub">Subcategory</label>
+    <input id="{id}-sub" name="newSubcategory" placeholder="Leave blank if it has none" />
+    <label class="parent-label" for="{id}-parent">Put it under</label>
     <select id="{id}-parent" name="newCategoryParent">
-      <option value="">Top level</option>
+      <option value="">No parent</option>
       {#each parents as option}
         <option value={option.slug}>{option.path}</option>
       {/each}

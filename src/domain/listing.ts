@@ -217,7 +217,7 @@ export function groupListings(items: ProductSummary[]): Listing[] {
 
     return {
       id: representative.id,
-      name: shopName(representative.name),
+      name: representative.name,
       priceCents: Math.min(...prices),
       priceMaxCents: Math.max(...prices),
       currency: representative.currency,

@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
-import { isCategorySlug } from '../../../../domain/catalog';
 import { listedInventory } from '../../../../domain/desk';
 import { heldMap, stockView } from '../../../../domain/inventory';
+import { categoryFromForm } from '../../../../libs/category-form';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
 import { colorsFromForm, sizesFromForm } from '../../../../libs/product-colors';
 import { parseSku, productFromRow, totalUnits } from '../../../../domain/product';
@@ -20,30 +20,10 @@ export const load: PageServerLoad = async () => {
   return { products, categories, listed: listedInventory(products, held), stock };
 };
 
-async function resolveCategory(form: FormData): Promise<string | { error: string }> {
-  const selected = String(form.get('category') ?? '');
-  const store = getStore();
-  if (selected === '__new__') {
-    const label = String(form.get('newCategory') ?? '').trim();
-    const parent = String(form.get('newCategoryParent') ?? '').trim() || null;
-    if (!label) return { error: 'Enter a name for the new category' };
-    try {
-      return (await store.createCategory(label, parent)).slug;
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Could not add category' };
-    }
-  }
-  const known = new Set((await store.listCategories()).map((row) => row.slug));
-  if (!isCategorySlug(selected) || !known.has(selected)) {
-    return { error: 'Name, category and price are required' };
-  }
-  return selected;
-}
-
 async function productFromForm(form: FormData): Promise<CreateProductInput | { error: string }> {
   const name = form.get('name');
   const price = Number(form.get('price'));
-  const category = await resolveCategory(form);
+  const category = await categoryFromForm(form);
 
   if (typeof category === 'object') return category;
   if (typeof name !== 'string' || !name || !price) {
