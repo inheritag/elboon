@@ -70,6 +70,29 @@
   });
 
   $effect(() => {
+    if (typeof document === 'undefined') return;
+    const docked = trayOn && wide;
+    if (!docked) {
+      document.documentElement.style.setProperty('--footer-cover', '0px');
+      return;
+    }
+    const footer = document.querySelector('.site-footer');
+    if (!footer) return;
+    const set = () => {
+      const cover = Math.max(0, window.innerHeight - footer.getBoundingClientRect().top);
+      document.documentElement.style.setProperty('--footer-cover', `${cover}px`);
+    };
+    set();
+    window.addEventListener('scroll', set, { passive: true });
+    window.addEventListener('resize', set);
+    return () => {
+      window.removeEventListener('scroll', set);
+      window.removeEventListener('resize', set);
+      document.documentElement.style.setProperty('--footer-cover', '0px');
+    };
+  });
+
+  $effect(() => {
     if (!headerEl) return;
     const set = () => {
       document.documentElement.style.setProperty('--header-h', `${headerEl!.offsetHeight}px`);
@@ -242,6 +265,7 @@
     color: var(--text-primary);
     background: #fff;
     border-bottom: 1px solid var(--border);
+    padding-top: env(safe-area-inset-top);
   }
 
   .site-header.compact {
@@ -528,11 +552,26 @@
       z-index: 40;
       top: var(--banner-h, 33px);
       left: 0;
-      bottom: 0;
+      bottom: var(--footer-cover, 0px);
       width: 300px;
       overflow: auto;
       background: #fff;
       border-right: 1px solid #111;
+    }
+
+    .shell.tray-on .site-footer {
+      position: relative;
+    }
+
+    .shell.tray-on .site-footer::before {
+      content: '';
+      position: absolute;
+      left: -300px;
+      top: 0;
+      bottom: 0;
+      width: 300px;
+      background: linear-gradient(180deg, transparent, #111 64px);
+      pointer-events: none;
     }
   }
 
@@ -574,7 +613,15 @@
     }
 
     .nav-item {
-      padding: 8px 10px;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 10px;
+      justify-content: center;
+    }
+
+    .search input {
+      height: 44px;
+      font-size: 16px;
     }
 
     .nav-label {

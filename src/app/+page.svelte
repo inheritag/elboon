@@ -33,6 +33,28 @@
     void goto(catalogHref({ sort: value, page: 1 }));
   }
 
+  /** Keep the current category in the rail without scrolling the page. */
+  function showCurrent(node: HTMLElement, _category: string | null) {
+    const run = () => {
+      const current = node.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!current) return;
+      const rail = node.getBoundingClientRect();
+      const item = current.getBoundingClientRect();
+      if (item.left < rail.left + 8 || item.right > rail.right - 28) {
+        node.scrollLeft += item.left - rail.left - 16;
+      }
+    };
+    const id = requestAnimationFrame(run);
+    return {
+      update() {
+        requestAnimationFrame(run);
+      },
+      destroy() {
+        cancelAnimationFrame(id);
+      }
+    };
+  }
+
 </script>
 
 {#snippet sortControl()}
@@ -115,7 +137,7 @@
 {#if showCategories}
 <div class="category-bar">
   <div class="container">
-  <nav class="categories" aria-label="Categories">
+  <nav class="categories" aria-label="Categories" use:showCurrent={data.category}>
     <a
       href={catalogHref({ category: null, page: 1 })}
       class:active={!data.category}
@@ -130,7 +152,7 @@
     {/each}
   </nav>
   {#each data.nav.levels as level}
-    <nav class="categories sub" aria-label={level.allLabel}>
+    <nav class="categories sub" aria-label={level.allLabel} use:showCurrent={data.category}>
       <a
         href={catalogHref({ category: level.parentSlug, page: 1 })}
         class:active={data.category === level.parentSlug}
@@ -204,10 +226,14 @@
       <nav class="pager" aria-label="Catalogue pages">
         {#if data.page > 1}
           <a href={catalogHref({ page: data.page - 1 })}>Previous</a>
+        {:else}
+          <span aria-hidden="true"></span>
         {/if}
         <span class="page-no">Page {data.page} of {data.pages}</span>
         {#if data.page < data.pages}
-          <a href={catalogHref({ page: data.page + 1 })}>Next</a>
+          <a class="next" href={catalogHref({ page: data.page + 1 })}>Next</a>
+        {:else}
+          <span aria-hidden="true"></span>
         {/if}
       </nav>
     {/if}
@@ -297,9 +323,11 @@
     overflow-x: auto;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    touch-action: pan-x;
+    scrollbar-width: thin;
+    scrollbar-color: #cfcfcf transparent;
+    touch-action: pan-x pan-y;
     scroll-snap-type: x proximity;
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
   }
 
   .categories.sub {
@@ -307,12 +335,16 @@
   }
 
   .categories::-webkit-scrollbar {
-    display: none;
+    height: 4px;
+  }
+
+  .categories::-webkit-scrollbar-thumb {
+    background: #cfcfcf;
   }
 
   .categories::after {
     content: '';
-    flex: 0 0 8px;
+    flex: 0 0 36px;
   }
 
   .categories a {
@@ -405,13 +437,17 @@
   }
 
   .pager {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
     margin-top: 28px;
     font-size: 14px;
     font-weight: 600;
+  }
+
+  .pager .next {
+    justify-self: end;
   }
 
   .pager a {
@@ -598,8 +634,26 @@
   }
 
   @media (max-width: 720px) {
+    .campaign img {
+      height: 280px;
+    }
+
+    .campaign-copy {
+      padding: 20px 16px 16px;
+    }
+
     .empty .btn {
       width: 100%;
+    }
+
+    .sort select {
+      font-size: 16px;
+    }
+
+    .pager a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
     }
   }
 
@@ -637,6 +691,10 @@
     .category-bar {
       background: Canvas;
       border-bottom-color: CanvasText;
+    }
+
+    .categories {
+      mask-image: none;
     }
 
     .categories a {

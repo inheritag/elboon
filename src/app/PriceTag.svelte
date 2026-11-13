@@ -21,12 +21,12 @@
 <span class="tag">
   {#if cut && wasCents != null}
     <span class="off">−{percent}%</span>
-    <span class="was"><span class="sr-only">Was </span>{formatPrice(wasCents, currency)}</span>
+    <span class="was"><span class="sr-only">Was{' '}</span>{formatPrice(wasCents, currency)}</span>
     <span class="now">
-      {#if prefix}{prefix} {/if}<span class="sr-only">Now </span>{formatPrice(cents, currency)}
+      {#if prefix}{prefix}{' '}{/if}<span class="sr-only">Now{' '}</span>{formatPrice(cents, currency)}
     </span>
   {:else}
-    <span class="now">{#if prefix}{prefix} {/if}{formatPrice(cents, currency)}</span>
+    <span class="now">{#if prefix}{prefix}{' '}{/if}{formatPrice(cents, currency)}</span>
   {/if}
 </span>
 

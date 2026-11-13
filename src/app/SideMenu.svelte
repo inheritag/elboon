@@ -245,7 +245,7 @@
     left: 0;
     width: min(360px, 100%);
     overflow-y: auto;
-    padding: 12px 20px calc(28px + env(safe-area-inset-bottom));
+    padding: calc(12px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
     background: #fff;
     color: var(--ink);
     border-right: 1px solid var(--ink);

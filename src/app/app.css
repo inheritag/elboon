@@ -312,9 +312,19 @@ a:focus-visible {
 }
 
 @media (max-width: 720px) {
+  :root {
+    --header-h: calc(136px + env(safe-area-inset-top));
+  }
+
   .btn {
     width: 100%;
     text-align: center;
+  }
+
+  .field input:not(:where([type='checkbox'], [type='file'], [type='radio'], [type='color'])),
+  .field select,
+  .field textarea {
+    font-size: 16px;
   }
 }
 

@@ -756,6 +756,22 @@
     }
   }
 
+  @media (max-width: 1279px) {
+    .gallery {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gallery .photo-frame {
+      width: min(100%, 70dvh, 560px);
+    }
+
+    .info {
+      max-width: 560px;
+    }
+  }
+
   @media (min-width: 1280px) {
     .product-detail {
       grid-template-columns: minmax(0, 640px) 380px;
