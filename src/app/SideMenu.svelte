@@ -133,7 +133,7 @@
     aria-label="Menu"
   >
     <div class="drawer-top">
-      <a href="/" class="mark" onclick={leave}><span>e.</span> elboon</a>
+      <a href="/" class="mark" onclick={leave}><span class="mark-e">e.</span> elboon</a>
       <button type="button" class="close" bind:this={closeBtn} aria-label="Close menu" onclick={shut}>
         <Icon name="close" />
       </button>
@@ -275,6 +275,13 @@
     color: inherit;
     text-decoration: none;
     text-transform: lowercase;
+  }
+
+  .mark-e {
+    text-decoration: underline;
+    text-decoration-color: var(--pop);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   .close:focus-visible,
@@ -434,12 +441,7 @@
     }
 
     .drawer-top {
-      justify-content: flex-end;
       min-height: 64px;
-    }
-
-    .mark {
-      display: none;
     }
   }
 
@@ -484,7 +486,8 @@
     }
 
     .cat a.current,
-    .cat-link.current {
+    .cat-link.current,
+    .mark-e {
       text-decoration-color: CanvasText;
     }
   }
