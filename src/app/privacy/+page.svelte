@@ -13,6 +13,9 @@
     Offers are stored against your email, and against your account if you are signed in. Ignored offers are
     not emailed.
   </p>
+  <p>
+    A support message is emailed to the shop with the address you type. We do not put it on the site.
+  </p>
   <p>Contact us to request a copy of an order or account record, or to have it deleted.</p>
 </section>
 

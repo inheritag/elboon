@@ -18,6 +18,7 @@ function item(id: string, name: string, category = 'clothing', priceCents = 1000
     currency: 'GBP',
     category,
     imageUrl: `/uploads/${id}.jpg`,
+    altImageUrl: null,
     lowStock: false,
     remainingQty: null,
     offerEnabled: false,
@@ -79,6 +80,31 @@ describe('groupListings', () => {
     const [listing] = groupListings([shorts]);
     expect(listing.choices).toEqual(['S', 'M', 'L']);
     expect(choiceHeading(listing.choices)).toBe('Size');
+  });
+
+  it('shows the cheapest sale price, and that item’s old price', () => {
+    const full = item('full', 'Braided Charging Cable', 'accessories', 1200);
+    const cut = item('cut', 'Braided Charging Cable', 'accessories', 800);
+    cut.wasCents = 1000;
+    cut.discountPercent = 20;
+    const dear = item('dear', 'Braided Charging Cable', 'accessories', 1500);
+    dear.wasCents = 2000;
+    dear.discountPercent = 25;
+    const [listing] = groupListings([dear, full, cut]);
+    expect(listing.priceCents).toBe(800);
+    expect(listing.priceMaxCents).toBe(1500);
+    expect(listing.wasCents).toBe(1000);
+    expect(listing.discountPercent).toBe(20);
+  });
+
+  it('keeps a plain price when the cheapest item is not discounted', () => {
+    const cheap = item('cheap', 'Braided Charging Cable', 'accessories', 800);
+    const cut = item('cut', 'Braided Charging Cable', 'accessories', 1000);
+    cut.wasCents = 2000;
+    cut.discountPercent = 50;
+    const [listing] = groupListings([cut, cheap]);
+    expect(listing.priceCents).toBe(800);
+    expect(listing.wasCents).toBeNull();
   });
 });
 

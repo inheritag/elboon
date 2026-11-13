@@ -11,6 +11,8 @@
     productId,
     productName,
     askingCents,
+    wasCents = null,
+    discountPercent = 0,
     currency = 'GBP',
     signedInEmail = null,
     color = null,
@@ -20,6 +22,8 @@
     productId: string;
     productName: string;
     askingCents: number;
+    wasCents?: number | null;
+    discountPercent?: number;
     currency?: string;
     signedInEmail?: string | null;
     color?: string | null;
@@ -141,6 +145,8 @@
                 productId,
                 name: productName,
                 unitPriceCents: askingCents,
+                wasCents,
+                discountPercent,
                 color,
                 size,
                 imageUrl

@@ -17,11 +17,15 @@ export interface ListingOption {
 export interface Listing {
   id: string;
   name: string;
+  /** Lowest price a shopper pays in this group. */
   priceCents: number;
   priceMaxCents: number;
+  wasCents?: number | null;
+  discountPercent?: number;
   currency: string;
   category: string;
   imageUrl: string | null;
+  altImageUrl: string | null;
   lowStock: boolean;
   remainingQty: number | null;
   offerEnabled: boolean;
@@ -209,7 +213,11 @@ export function groupListings(items: ProductSummary[]): Listing[] {
       choices.unshift('Standard');
     }
 
-    const prices = group.members.map((member) => member.priceCents);
+    const deal = group.members.reduce((best, member) => {
+      if (member.priceCents < best.priceCents) return member;
+      if (member.priceCents === best.priceCents && member.wasCents != null && best.wasCents == null) return member;
+      return best;
+    });
     const colors = new Map<string, { name: string; hex: string }>();
     for (const member of group.members) {
       for (const color of member.colors) colors.set(color.name.toLowerCase(), color);
@@ -218,11 +226,14 @@ export function groupListings(items: ProductSummary[]): Listing[] {
     return {
       id: representative.id,
       name: representative.name,
-      priceCents: Math.min(...prices),
-      priceMaxCents: Math.max(...prices),
+      priceCents: deal.priceCents,
+      priceMaxCents: Math.max(...group.members.map((member) => member.priceCents)),
+      wasCents: deal.wasCents ?? null,
+      discountPercent: deal.wasCents != null ? (deal.discountPercent ?? 0) : 0,
       currency: representative.currency,
       category: representative.category,
       imageUrl: representative.imageUrl,
+      altImageUrl: representative.altImageUrl,
       lowStock: representative.lowStock,
       remainingQty: representative.remainingQty,
       offerEnabled: group.members.some((member) => member.offerEnabled),
@@ -316,9 +327,12 @@ export function listingToSummary(listing: Listing): ProductSummary {
     id: listing.id,
     name: listing.name,
     priceCents: listing.priceCents,
+    wasCents: listing.wasCents ?? null,
+    discountPercent: listing.discountPercent ?? 0,
     currency: listing.currency,
     category: listing.category,
     imageUrl: listing.imageUrl,
+    altImageUrl: listing.altImageUrl,
     lowStock: listing.lowStock,
     remainingQty: listing.remainingQty,
     offerEnabled: listing.offerEnabled,

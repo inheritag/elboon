@@ -9,6 +9,7 @@ const SCHEMA_STATEMENTS = [
   name                text NOT NULL,
   description         text NOT NULL DEFAULT '',
   price_cents         integer NOT NULL CHECK (price_cents >= 0),
+  discount_percent    integer NOT NULL DEFAULT 0 CHECK (discount_percent >= 0 AND discount_percent <= 90),
   currency            text NOT NULL DEFAULT 'GBP',
   category            text NOT NULL,
   image_urls          text[] NOT NULL DEFAULT '{}',
@@ -70,6 +71,7 @@ const SCHEMA_STATEMENTS = [
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb`,
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes jsonb NOT NULL DEFAULT '[]'::jsonb`,
   `ALTER TABLE products ADD COLUMN IF NOT EXISTS sku text`,
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS discount_percent integer NOT NULL DEFAULT 0 CHECK (discount_percent >= 0 AND discount_percent <= 90)`,
   `ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_slug text REFERENCES categories (slug) ON DELETE SET NULL`,
   `CREATE TABLE IF NOT EXISTS product_images (
   id         text PRIMARY KEY,

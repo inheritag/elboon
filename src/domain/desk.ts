@@ -1,4 +1,5 @@
 import { totalAvailable } from './inventory';
+import { salePrice } from './price';
 import { productFromRow, type ProductRow } from './product';
 
 export const SHOP_TIME_ZONE = 'Europe/London';
@@ -69,7 +70,10 @@ export function listedInventory(products: ProductRow[], held: Map<string, number
   return {
     listingCount: listed.length,
     unitCount: listed.reduce((sum, product) => sum + totalAvailable(product, held), 0),
-    worthCents: listed.reduce((sum, product) => sum + totalAvailable(product, held) * product.priceCents, 0),
+    worthCents: listed.reduce(
+      (sum, product) => sum + totalAvailable(product, held) * salePrice(product.priceCents, product.discountPercent).priceCents,
+      0
+    ),
     currency: listed[0]?.currency ?? 'GBP'
   };
 }

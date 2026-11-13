@@ -5,6 +5,8 @@ export interface CartLine {
   productId: string;
   name: string;
   unitPriceCents: number;
+  wasCents?: number | null;
+  discountPercent?: number;
   quantity: number;
   imageUrl?: string | null;
   color?: string | null;
@@ -57,7 +59,14 @@ export function addToCart(
     if (existing) {
       return lines.map((item) =>
         sameLine(item, line.productId, line.color, line.size)
-          ? { ...item, quantity: item.quantity + quantity, imageUrl: line.imageUrl ?? item.imageUrl }
+          ? {
+              ...item,
+              quantity: item.quantity + quantity,
+              imageUrl: line.imageUrl ?? item.imageUrl,
+              unitPriceCents: line.unitPriceCents,
+              wasCents: line.wasCents ?? null,
+              discountPercent: line.discountPercent ?? 0
+            }
           : item
       );
     }

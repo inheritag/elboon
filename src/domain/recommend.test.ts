@@ -10,6 +10,7 @@ function item(id: string, category: string): ProductSummary {
     currency: 'GBP',
     category,
     imageUrl: null,
+    altImageUrl: null,
     lowStock: false,
     remainingQty: null,
     offerEnabled: false,

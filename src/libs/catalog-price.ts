@@ -1,4 +1,5 @@
 import { availableFor, heldMap } from '../domain/inventory';
+import { salePrice } from '../domain/price';
 import { productFromRow, variantLabel } from '../domain/product';
 import type { OrderItem } from '../domain/order';
 import { getStore } from './store';
@@ -18,12 +19,14 @@ export async function priceItemsFromCatalog(
     if (product.colors.length > 0 && !requested.color) return null;
     if (product.sizes.length > 0 && !requested.size) return null;
     if (availableFor(product, held, requested.color, requested.size) < requested.quantity) return null;
+    const sale = salePrice(product.priceCents, product.discountPercent);
 
     items.push({
       productId: requested.productId,
       productName: variantLabel(product.name, requested.color, requested.size),
       quantity: requested.quantity,
-      unitPriceCents: product.priceCents,
+      unitPriceCents: sale.priceCents,
+      ...(sale.wasCents != null ? { wasCents: sale.wasCents, discountPercent: sale.discountPercent } : {}),
       color: requested.color ?? null,
       size: requested.size ?? null
     });

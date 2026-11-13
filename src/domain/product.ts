@@ -1,3 +1,4 @@
+import { discountPercentFromRow, salePrice } from './price';
 import { decrementStock, isLowStock } from './stock';
 
 export const CLOTHING_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
@@ -105,7 +106,9 @@ export interface Product {
   id: string;
   name: string;
   description: string;
+  /** Price before any discount. */
   priceCents: number;
+  discountPercent: number;
   currency: string;
   category: string;
   imageUrls: string[];
@@ -122,10 +125,16 @@ export interface Product {
 export interface ProductSummary {
   id: string;
   name: string;
+  /** What the shopper pays. */
   priceCents: number;
+  /** Price before the discount, when one is showing. */
+  wasCents?: number | null;
+  discountPercent?: number;
   currency: string;
   category: string;
   imageUrl: string | null;
+  /** A second photo, shown when the catalogue card is hovered. */
+  altImageUrl: string | null;
   lowStock: boolean;
   /** Remaining units, only set when stock is low, shown to create urgency. */
   remainingQty: number | null;
@@ -140,6 +149,7 @@ export interface ProductRow {
   name: string;
   description: string;
   price_cents: number;
+  discount_percent?: number | null;
   currency: string;
   category: string;
   image_urls: string[];
@@ -356,6 +366,7 @@ export function productFromRow(row: ProductRow): Product {
     name: row.name,
     description: row.description,
     priceCents: row.price_cents,
+    discountPercent: discountPercentFromRow(row.discount_percent),
     currency: row.currency,
     category: row.category,
     imageUrls: row.image_urls,
@@ -369,14 +380,24 @@ export function productFromRow(row: ProductRow): Product {
   };
 }
 
+export function altImageUrl(urls: string[]): string | null {
+  const first = urls.find((url) => url.trim());
+  if (!first) return null;
+  return urls.find((url) => url.trim() && url !== first)?.trim() ?? null;
+}
+
 export function toProductSummary(product: Product, availableQty = product.stockQty): ProductSummary {
+  const sale = salePrice(product.priceCents, product.discountPercent);
   return {
     id: product.id,
     name: product.name,
-    priceCents: product.priceCents,
+    priceCents: sale.priceCents,
+    wasCents: sale.wasCents,
+    discountPercent: sale.discountPercent,
     currency: product.currency,
     category: product.category,
     imageUrl: product.imageUrls[0] ?? null,
+    altImageUrl: altImageUrl(product.imageUrls),
     lowStock: isLowStock(availableQty, product.lowStockThreshold),
     remainingQty: isLowStock(availableQty, product.lowStockThreshold) ? availableQty : null,
     offerEnabled: product.offerEnabled,

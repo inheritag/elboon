@@ -2,6 +2,7 @@
   import { enhance } from '$app/forms';
   import { parseColors, parseSizes } from '../../../../../domain/product';
   import CategoryFields from '../../../../CategoryFields.svelte';
+  import DiscountField from '../../../../DiscountField.svelte';
   import NumberStepper from '../../../../NumberStepper.svelte';
   import OfferToggle from '../../../../OfferToggle.svelte';
   import PhotoDropzone from '../../../../PhotoDropzone.svelte';
@@ -11,7 +12,8 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let categoryChoice = $state('');
   let primed = $state(false);
-  let price = $state(0);
+  let price = $state<number | ''>(0);
+  let discount = $state<number | ''>(0);
   let stockQty = $state(0);
   let lowStockThreshold = $state(3);
   let sizeNames = $state<string[]>([]);
@@ -21,6 +23,7 @@
     if (primed) return;
     categoryChoice = data.product.category;
     price = Number((data.product.price_cents / 100).toFixed(2));
+    discount = data.product.discount_percent ?? 0;
     stockQty = data.product.stock_qty;
     lowStockThreshold = data.product.low_stock_threshold;
     sizeNames = parseSizes(data.product.sizes).map((size) => size.name);
@@ -39,6 +42,7 @@
       <label for="price">Price</label>
       <NumberStepper id="price" name="price" min={0.01} step={0.01} required bind:value={price} />
     </div>
+    <DiscountField bind:value={discount} {price} />
     <div class="field">
       <p class="field-label">Photos</p>
       <PhotoDropzone existing={data.product.image_urls} />

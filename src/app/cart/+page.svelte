@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { formatPrice } from '../../domain/product';
+  import PriceTag from '../PriceTag.svelte';
   import { authHref } from '../auth-href';
   import { cart, removeFromCart, setCartQuantity } from '../cart';
   import type { LayoutData } from '../$types';
@@ -37,9 +38,8 @@
           <div class="meta">
             <a href="/product/{line.productId}">{line.name}</a>
             <p>
-              {formatPrice(line.unitPriceCents, 'GBP')} each{line.color ? ` · ${line.color}` : ''}{line.size
-                ? ` · ${line.size}`
-                : ''}
+              <PriceTag cents={line.unitPriceCents} wasCents={line.wasCents} percent={line.discountPercent} />
+              each{line.color ? ` · ${line.color}` : ''}{line.size ? ` · ${line.size}` : ''}
             </p>
           </div>
           <div class="stepper" role="group" aria-label="Quantity for {line.name}">
@@ -47,7 +47,13 @@
             <span class="qty">{line.quantity}</span>
             <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1, line.color, line.size)} aria-label="Increase">+</button>
           </div>
-          <span class="line-total">{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
+          <span class="line-total">
+            <PriceTag
+              cents={line.unitPriceCents * line.quantity}
+              wasCents={line.wasCents != null ? line.wasCents * line.quantity : null}
+              percent={line.discountPercent}
+            />
+          </span>
           <button class="link-button" onclick={() => removeFromCart(line.productId, line.color, line.size)}>Remove</button>
         </li>
       {/each}
@@ -165,15 +171,16 @@
 
   .summary .btn-primary {
     width: 100%;
-    background: #fff;
-    color: #111;
-    border-color: #fff;
+    background: var(--pop);
+    color: var(--ink);
+    border-color: var(--ink);
+    box-shadow: none;
   }
 
   .summary .btn-primary:hover {
-    background: #e6e6e6;
-    color: #111;
-    border-color: #e6e6e6;
+    background: var(--pop);
+    color: var(--ink);
+    border-color: var(--ink);
   }
 
   @media (forced-colors: active) {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { formatPrice } from '../../../../domain/product';
+  import PriceTag from '../../../PriceTag.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -17,7 +18,13 @@
     {#each data.order.items as item}
       <li>
         <span>{item.productName} &times; {item.quantity}</span>
-        <span>{formatPrice(item.unitPriceCents * item.quantity, 'GBP')}</span>
+        <span>
+          <PriceTag
+            cents={item.unitPriceCents * item.quantity}
+            wasCents={item.wasCents != null ? item.wasCents * item.quantity : null}
+            percent={item.discountPercent}
+          />
+        </span>
       </li>
     {/each}
   </ul>

@@ -2,6 +2,7 @@ import { canNestUnder, slugFromLabel, type CategoryRecord } from '../domain/cata
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
+import { discountPercentFromRow, salePrice } from '../domain/price';
 import { applySale, applySet, planStockTake, productFromRow, type ProductRow } from '../domain/product';
 import { isShortStock } from '../domain/stock';
 import { readyDb, toJsonValue } from './db';
@@ -14,6 +15,33 @@ import type {
   PendingOrder,
   Store
 } from './store';
+
+interface OfferSqlRow {
+  id: string;
+  product_id: string;
+  product_name: string;
+  price_cents: number;
+  discount_percent: number | null;
+  customer_email: string;
+  user_id: string | null;
+  offer_price_cents: number;
+  status: OfferStatus;
+  counter_price_cents: number | null;
+}
+
+function asOffer(row: OfferSqlRow): OfferListRow {
+  return {
+    id: row.id,
+    product_id: row.product_id,
+    product_name: row.product_name,
+    product_price_cents: salePrice(row.price_cents, discountPercentFromRow(row.discount_percent)).priceCents,
+    customer_email: row.customer_email,
+    user_id: row.user_id,
+    offer_price_cents: row.offer_price_cents,
+    status: row.status,
+    counter_price_cents: row.counter_price_cents
+  };
+}
 
 interface CategoryRow {
   slug: string;
@@ -56,11 +84,12 @@ export class PostgresStore implements Store {
   async createProduct(input: CreateProductInput): Promise<void> {
     const sql = await readyDb();
     await sql`
-      INSERT INTO products (name, description, price_cents, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls, variants, sizes, sku)
+      INSERT INTO products (name, description, price_cents, discount_percent, category, stock_qty, low_stock_threshold, offer_enabled, active, image_urls, variants, sizes, sku)
       VALUES (
         ${input.name},
         ${input.description},
         ${input.priceCents},
+        ${input.discountPercent ?? 0},
         ${input.category},
         ${input.stockQty},
         ${input.lowStockThreshold},
@@ -83,6 +112,7 @@ export class PostgresStore implements Store {
           name = ${input.name},
           description = ${input.description},
           price_cents = ${input.priceCents},
+          discount_percent = ${input.discountPercent ?? 0},
           category = ${input.category},
           stock_qty = ${input.stockQty},
           low_stock_threshold = ${input.lowStockThreshold},
@@ -101,6 +131,7 @@ export class PostgresStore implements Store {
         name = ${input.name},
         description = ${input.description},
         price_cents = ${input.priceCents},
+        discount_percent = ${input.discountPercent ?? 0},
         category = ${input.category},
         stock_qty = ${input.stockQty},
         low_stock_threshold = ${input.lowStockThreshold},
@@ -218,26 +249,27 @@ export class PostgresStore implements Store {
 
   async listPendingOffers(): Promise<OfferListRow[]> {
     const sql = await readyDb();
-    return sql<OfferListRow[]>`
-      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
+    const rows = await sql<OfferSqlRow[]>`
+      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents, p.discount_percent,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
       FROM offers o
       JOIN products p ON p.id = o.product_id
       WHERE o.status = 'pending'
       ORDER BY o.created_at ASC
     `;
+    return rows.map(asOffer);
   }
 
   async getOfferWithProduct(id: string): Promise<OfferListRow | null> {
     const sql = await readyDb();
-    const rows = await sql<OfferListRow[]>`
-      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
+    const rows = await sql<OfferSqlRow[]>`
+      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents, p.discount_percent,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
       FROM offers o
       JOIN products p ON p.id = o.product_id
       WHERE o.id = ${id}
     `;
-    return rows[0] ?? null;
+    return rows[0] ? asOffer(rows[0]) : null;
   }
 
   async updateOffer(id: string, offer: { status: OfferStatus; counterPriceCents: number | null }): Promise<void> {
@@ -250,14 +282,15 @@ export class PostgresStore implements Store {
 
   async listOffersForUser(userId: string): Promise<OfferListRow[]> {
     const sql = await readyDb();
-    return sql<OfferListRow[]>`
-      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents AS product_price_cents,
+    const rows = await sql<OfferSqlRow[]>`
+      SELECT o.id, o.product_id, p.name AS product_name, p.price_cents, p.discount_percent,
              o.customer_email, o.user_id, o.offer_price_cents, o.status, o.counter_price_cents
       FROM offers o
       JOIN products p ON p.id = o.product_id
       WHERE o.user_id = ${userId}
       ORDER BY o.created_at DESC
     `;
+    return rows.map(asOffer);
   }
 
   async createCustomer(input: { email: string; passwordHash: string; fullName?: string }): Promise<CustomerPublic> {

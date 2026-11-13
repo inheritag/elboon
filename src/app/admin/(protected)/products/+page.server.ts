@@ -4,6 +4,7 @@ import { heldMap, stockView } from '../../../../domain/inventory';
 import { categoryFromForm } from '../../../../libs/category-form';
 import { getStore, type CreateProductInput } from '../../../../libs/store';
 import { colorsFromForm, sizesFromForm } from '../../../../libs/product-colors';
+import { discountFromForm } from '../../../../domain/price';
 import { parseSku, productFromRow, totalUnits } from '../../../../domain/product';
 import { saveProductImages } from '../../../../libs/uploads';
 import type { Actions, PageServerLoad } from './$types';
@@ -29,6 +30,8 @@ async function productFromForm(form: FormData): Promise<CreateProductInput | { e
   if (typeof name !== 'string' || !name || !price) {
     return { error: 'Name, category and price are required' };
   }
+  const discountPercent = discountFromForm(form.get('discount'));
+  if (typeof discountPercent !== 'number') return discountPercent;
 
   let imageUrls: string[] | undefined;
   let colors;
@@ -50,6 +53,7 @@ async function productFromForm(form: FormData): Promise<CreateProductInput | { e
     name,
     description: String(form.get('description') ?? ''),
     priceCents: Math.round(price * 100),
+    discountPercent,
     category,
     stockQty,
     lowStockThreshold: Number(form.get('lowStockThreshold') ?? 3),

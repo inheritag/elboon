@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { formatPrice } from '../../domain/product';
+  import PriceTag from '../PriceTag.svelte';
   import ShippingFields from '../ShippingFields.svelte';
   import { cart } from '../cart';
   import type { PageData } from './$types';
@@ -77,7 +78,13 @@
           <span
             >{line.name}{line.color ? ` · ${line.color}` : ''}{line.size ? ` · ${line.size}` : ''} &times; {line.quantity}</span
           >
-          <span>{formatPrice(line.unitPriceCents * line.quantity, 'GBP')}</span>
+          <span>
+            <PriceTag
+              cents={line.unitPriceCents * line.quantity}
+              wasCents={line.wasCents != null ? line.wasCents * line.quantity : null}
+              percent={line.discountPercent}
+            />
+          </span>
         </li>
       {/each}
     </ul>

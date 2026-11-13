@@ -38,6 +38,13 @@ describe('listedInventory', () => {
     expect(figures.worthCents).toBe(40 * 1200 + 3 * 5000);
   });
 
+  it('values discounted stock at the sale price', () => {
+    const figures = listedInventory([
+      product({ id: 'a', name: 'Cable', price_cents: 1000, stock_qty: 2, discount_percent: 20 })
+    ]);
+    expect(figures.worthCents).toBe(2 * 800);
+  });
+
   it('treats an empty catalogue as zero', () => {
     expect(listedInventory([])).toEqual({
       listingCount: 0,

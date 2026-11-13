@@ -11,6 +11,8 @@ export interface CreateProductInput {
   name: string;
   description: string;
   priceCents: number;
+  /** Whole percent taken off priceCents. Omitted means no discount. */
+  discountPercent?: number;
   category: string;
   stockQty: number;
   lowStockThreshold: number;

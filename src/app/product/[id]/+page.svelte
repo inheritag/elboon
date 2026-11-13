@@ -1,7 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { formatPrice, stockFor } from '../../../domain/product';
+  import { salePrice } from '../../../domain/price';
+  import { stockFor } from '../../../domain/product';
   import { addToCart, originFromEvent } from '../../cart';
+  import PriceTag from '../../PriceTag.svelte';
   import HagglePanel from '../../HagglePanel.svelte';
   import type { PageData } from './$types';
 
@@ -53,12 +55,15 @@
   let inStock = $derived(stockQty > 0);
   let lowStock = $derived(stockQty > 0 && stockQty <= data.product.lowStockThreshold);
   let maxQty = $derived(Math.max(1, stockQty));
+  let sale = $derived(salePrice(data.product.priceCents, data.product.discountPercent));
 
   function line() {
     return {
       productId: data.product.id,
       name: data.displayName,
-      unitPriceCents: data.product.priceCents,
+      unitPriceCents: sale.priceCents,
+      wasCents: sale.wasCents,
+      discountPercent: sale.discountPercent,
       imageUrl: images[0] ?? null,
       color: selectedColor,
       size: selectedSize
@@ -134,7 +139,14 @@
     <p class="category"><a href="/?category={data.product.category}">{data.categoryLabel}</a></p>
     <h1>{data.displayName}</h1>
     <p class="price-row">
-      <span class="price">{formatPrice(data.product.priceCents, data.product.currency)}</span>
+      <span class="price">
+        <PriceTag
+          cents={sale.priceCents}
+          currency={data.product.currency}
+          wasCents={sale.wasCents}
+          percent={sale.discountPercent}
+        />
+      </span>
       {#if data.product.offerEnabled}<span class="offer-word">Offer</span>{/if}
     </p>
 
@@ -233,7 +245,9 @@
       <HagglePanel
         productId={data.product.id}
         productName={data.displayName}
-        askingCents={data.product.priceCents}
+        askingCents={sale.priceCents}
+        wasCents={sale.wasCents}
+        discountPercent={sale.discountPercent}
         currency={data.product.currency}
         signedInEmail={data.customer?.email ?? null}
         color={selectedColor}
@@ -262,6 +276,9 @@
             <div class="photo-clip">
               {#if product.imageUrl}
                 <img src={product.imageUrl} alt={product.name} />
+                {#if product.altImageUrl}
+                  <img class="alt" src={product.altImageUrl} alt="" />
+                {/if}
               {:else}
                 <div class="related-placeholder"></div>
               {/if}
@@ -270,7 +287,14 @@
           <div class="related-body">
             <h3>{product.name}</h3>
             <p class="meta">
-              <span class="price">{formatPrice(product.priceCents, product.currency)}</span>
+              <span class="price">
+                <PriceTag
+                  cents={product.priceCents}
+                  currency={product.currency}
+                  wasCents={product.wasCents}
+                  percent={product.discountPercent}
+                />
+              </span>
               {#if product.offerEnabled}<span class="offer-word">Offer</span>{/if}
             </p>
             {#if product.sizes.length > 0}
@@ -576,7 +600,6 @@
   }
 
   .buy-box .btn.added {
-    background: var(--haggle-green);
     animation: added-pop 400ms ease;
   }
 

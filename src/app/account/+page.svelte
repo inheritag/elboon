@@ -11,6 +11,7 @@
     <div>
       <h1>Your account</h1>
       <p class="email">{data.profile.email}</p>
+      <p class="jumps"><a href="/account/orders">Orders</a></p>
     </div>
     <form method="POST" action="?/logout" use:enhance>
       <button class="btn btn-secondary" type="submit">Sign out</button>
@@ -61,6 +62,17 @@
 
   .email {
     color: var(--text-secondary);
+  }
+
+  .jumps {
+    margin-top: 8px;
+  }
+
+  .jumps a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .top .btn {

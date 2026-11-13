@@ -2,6 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { isCategorySlug } from '../../../../../domain/catalog';
 import { categoryFromForm } from '../../../../../libs/category-form';
 import { getStore } from '../../../../../libs/store';
+import { discountFromForm } from '../../../../../domain/price';
 import { parseSku, totalUnits } from '../../../../../domain/product';
 import { colorsFromForm, sizesFromForm } from '../../../../../libs/product-colors';
 import { keptImageUrls, saveProductImages } from '../../../../../libs/uploads';
@@ -30,6 +31,8 @@ export const actions: Actions = {
     if (typeof name !== 'string' || !name || !price || !isCategorySlug(category) || !known.has(category)) {
       return fail(400, { error: 'Name, category and price are required' });
     }
+    const discountPercent = discountFromForm(form.get('discount'));
+    if (typeof discountPercent !== 'number') return fail(400, { error: discountPercent.error });
 
     let uploaded: string[];
     let colors;
@@ -48,6 +51,7 @@ export const actions: Actions = {
       name,
       description: String(form.get('description') ?? ''),
       priceCents: Math.round(price * 100),
+      discountPercent,
       category,
       stockQty: totalUnits({ colors, sizes, stockQty: Number(form.get('stockQty') ?? 0) }),
       lowStockThreshold: Number(form.get('lowStockThreshold') ?? 3),

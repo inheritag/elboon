@@ -3,6 +3,7 @@
     name,
     id = name,
     min = 0,
+    max = undefined,
     step = 1,
     value = $bindable<number | ''>(0),
     required = false
@@ -10,6 +11,7 @@
     name: string;
     id?: string;
     min?: number;
+    max?: number;
     step?: number;
     value?: number | '';
     required?: boolean;
@@ -22,8 +24,10 @@
 
   function bump(dir: number) {
     const current = Number(value);
-    const next = (Number.isFinite(current) ? current : 0) + dir * step;
-    value = round(Math.max(min, next));
+    let next = (Number.isFinite(current) ? current : 0) + dir * step;
+    next = Math.max(min, next);
+    if (max !== undefined) next = Math.min(max, next);
+    value = round(next);
   }
 </script>
 
@@ -31,8 +35,15 @@
   <button type="button" class="step" onclick={() => bump(-1)} disabled={Number(value) <= min} aria-label="Decrease">
     -
   </button>
-  <input {id} {name} type="number" {min} {step} {required} bind:value />
-  <button type="button" class="step" onclick={() => bump(1)} aria-label="Increase">+</button>
+  <input {id} {name} type="number" {min} {max} {step} {required} bind:value />
+  <button
+    type="button"
+    class="step"
+    onclick={() => bump(1)}
+    disabled={max !== undefined && Number(value) >= max}
+    aria-label="Increase"
+    >+</button
+  >
 </div>
 
 <style>

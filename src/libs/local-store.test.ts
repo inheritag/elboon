@@ -225,6 +225,26 @@ describe('LocalStore', () => {
     expect((await store.getProduct(mug.id))?.stock_qty).toBe(1);
   });
 
+  it('keeps the old price and judges an offer against the sale price', async () => {
+    const store = new LocalStore({ persistPath: null, seed: false });
+    await store.createProduct({
+      name: 'Mug',
+      description: 'A mug',
+      priceCents: 1000,
+      discountPercent: 20,
+      category: 'home',
+      stockQty: 2,
+      lowStockThreshold: 1,
+      offerEnabled: true
+    });
+    const mug = (await store.listAllProducts())[0];
+    expect(mug.price_cents).toBe(1000);
+    expect(mug.discount_percent).toBe(20);
+    await store.createOffer({ productId: mug.id, customerEmail: 'a@b.co', offerPriceCents: 700 });
+    const pending = await store.listPendingOffers();
+    expect(pending[0].product_price_cents).toBe(800);
+  });
+
   it('keeps the first Checkout session and sends the confirmation once', async () => {
     const store = new LocalStore({ persistPath: null, seed: false });
     const orderId = await store.createPendingOrder({

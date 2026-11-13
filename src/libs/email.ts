@@ -17,7 +17,7 @@ function getResend(): Resend | null {
 
 const FROM_ADDRESS = 'Elboon <orders@elboon.com>';
 
-async function deliver(to: string, subject: string, html: string): Promise<void> {
+async function deliver(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
   if (config.isDevMode()) {
     await getLocalStore().recordEmail({ to, subject, html });
     console.info(`[dev email] to=${to} subject=${subject}`);
@@ -34,8 +34,22 @@ async function deliver(to: string, subject: string, html: string): Promise<void>
     from: FROM_ADDRESS,
     to,
     subject,
-    html
+    html,
+    ...(replyTo ? { replyTo } : {})
   });
+}
+
+export async function sendSupportEmail(params: { email: string; message: string }): Promise<void> {
+  const body = params.message
+    .split('\n')
+    .map((line) => escapeHtml(line))
+    .join('<br>');
+  await deliver(
+    config.ownerEmail(),
+    'Customer support',
+    `<p>${escapeHtml(params.email)} wrote:</p><p>${body}</p>`,
+    params.email
+  );
 }
 
 export async function sendNewOfferAlertEmail(params: {

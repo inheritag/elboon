@@ -17,6 +17,7 @@ function product(overrides: Partial<Product> = {}): Product {
     name: 'Cotton tee',
     description: '',
     priceCents: 2200,
+    discountPercent: 0,
     currency: 'GBP',
     category: 'fashion',
     imageUrls: [],

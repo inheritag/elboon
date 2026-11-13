@@ -1,10 +1,12 @@
 <script lang="ts">
   import { goto, onNavigate } from '$app/navigation';
   import { page } from '$app/state';
+  import { onMount } from 'svelte';
   import { scale } from 'svelte/transition';
   import './app.css';
   import AuthSheet from './AuthSheet.svelte';
   import ComingSoonBanner from './ComingSoonBanner.svelte';
+  import SideMenu from './SideMenu.svelte';
   import { authHref, authModeFrom } from './auth-href';
   import { cart, cartBump, cartFly } from './cart';
   import Icon from './Icon.svelte';
@@ -16,6 +18,39 @@
   let flyTo = $state<{ x: number; y: number } | null>(null);
   let cartLink: HTMLAnchorElement | null = $state(null);
   let headerEl: HTMLElement | null = $state(null);
+  let menuBtn = $state<HTMLButtonElement | null>(null);
+  /** Laptop tray stays open until it is closed. A smaller window starts closed. */
+  let dismissed = $state(false);
+  let overlay = $state(false);
+  let wide = $state(false);
+  let adminPage = $derived(page.url.pathname.startsWith('/admin'));
+  let trayOn = $derived(!adminPage && !dismissed);
+
+  onMount(() => {
+    const mq = window.matchMedia('(min-width: 1280px)');
+    const sync = () => {
+      wide = mq.matches;
+      if (mq.matches) overlay = false;
+    };
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  });
+
+  function menuIsWide(): boolean {
+    return window.matchMedia('(min-width: 1280px)').matches;
+  }
+
+  function toggleMenu() {
+    if (menuIsWide()) dismissed = !dismissed;
+    else overlay = !overlay;
+  }
+
+  function closeMenu() {
+    if (menuIsWide()) dismissed = true;
+    else overlay = false;
+    requestAnimationFrame(() => menuBtn?.focus());
+  }
   let leftHero = $state(page.url.pathname !== '/' && page.status < 400);
 
   $effect(() => {
@@ -38,6 +73,8 @@
     if (!headerEl) return;
     const set = () => {
       document.documentElement.style.setProperty('--header-h', `${headerEl!.offsetHeight}px`);
+      const banner = headerEl!.querySelector('.soon');
+      document.documentElement.style.setProperty('--banner-h', `${banner?.getBoundingClientRect().height ?? 0}px`);
     };
     set();
     const ro = new ResizeObserver(set);
@@ -90,13 +127,28 @@
   }
 </script>
 
-<div class="shell">
+<div class="shell" class:tray-on={trayOn} class:overlay>
   <header class="site-header" class:compact={leftHero} bind:this={headerEl}>
     {#if !page.url.pathname.startsWith('/admin')}
       <ComingSoonBanner />
     {/if}
     <div class="container header-inner">
-      <a href="/" class="logo"><span class="logo-mark">e.</span> elboon</a>
+      <div class="brand">
+        {#if !page.url.pathname.startsWith('/admin')}
+          <button
+            type="button"
+            class="menu-btn"
+            bind:this={menuBtn}
+            aria-expanded={wide ? !dismissed : overlay}
+            aria-controls="side-menu"
+            onclick={toggleMenu}
+          >
+            <Icon name="menu" />
+            <span class="sr-only">Menu</span>
+          </button>
+        {/if}
+        <a href="/" class="logo"><span class="logo-mark">e.</span> elboon</a>
+      </div>
       <form class="search" action="/" method="get" role="search">
         <label class="sr-only" for="q">Find products</label>
         <span class="search-icon"><Icon name="search" /></span>
@@ -140,6 +192,20 @@
   <main>
     {@render children()}
   </main>
+
+  {#if !adminPage}
+    <div class="tray-slot">
+      <SideMenu
+        modal={overlay}
+        docked={wide && !dismissed}
+        customer={data.customer}
+        admin={data.admin}
+        categories={data.categories}
+        cartCount={cartCount}
+        onClose={closeMenu}
+      />
+    </div>
+  {/if}
 
   {#if showAuth}
     <AuthSheet />
@@ -192,6 +258,41 @@
 
   .site-header a {
     color: inherit;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-left: -10px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .menu-btn :global(.icon) {
+    width: 28px;
+    height: 28px;
+  }
+
+  .menu-btn:hover {
+    opacity: 0.55;
+  }
+
+  .menu-btn:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   .logo {
@@ -403,6 +504,44 @@
     text-underline-offset: 3px;
   }
 
+  .tray-slot {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
+    .shell.tray-on {
+      padding-left: 300px;
+    }
+
+    .shell.tray-on :global(.soon) {
+      margin-left: -300px;
+      width: calc(100% + 300px);
+    }
+
+    .shell.tray-on .menu-btn {
+      display: none;
+    }
+
+    .shell.tray-on .tray-slot {
+      display: block;
+      position: fixed;
+      z-index: 40;
+      top: var(--banner-h, 33px);
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      overflow: auto;
+      background: #fff;
+      border-right: 1px solid #111;
+    }
+  }
+
+  @media (max-width: 1279px) {
+    .shell.overlay .tray-slot {
+      display: block;
+    }
+  }
+
   @media (max-width: 720px) {
     .header-inner {
       grid-template-columns: 1fr auto;
@@ -414,8 +553,11 @@
       gap: 10px;
     }
 
-    .logo {
+    .brand {
       grid-area: logo;
+    }
+
+    .logo {
       font-size: 22px;
     }
 
@@ -448,6 +590,13 @@
       justify-content: center;
       min-height: 72px;
       padding-bottom: 16px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .tray-slot {
+      background: Canvas;
+      border-color: CanvasText;
     }
   }
 </style>

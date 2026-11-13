@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { navigating } from '$app/state';
-  import { formatPrice } from '../domain/product';
+  import PriceTag from './PriceTag.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -33,10 +33,6 @@
     void goto(catalogHref({ sort: value, page: 1 }));
   }
 
-  function priceOf(product: { priceCents: number; priceMaxCents: number; currency: string }): string {
-    const price = formatPrice(product.priceCents, product.currency);
-    return product.priceMaxCents > product.priceCents ? `From ${price}` : price;
-  }
 </script>
 
 {#snippet sortControl()}
@@ -57,6 +53,9 @@
       <div class="photo-clip">
         {#if product.imageUrl}
           <img src={product.imageUrl} alt={product.name} />
+          {#if product.altImageUrl}
+            <img class="alt" src={product.altImageUrl} alt="" />
+          {/if}
         {:else}
           <div class="image-placeholder"></div>
         {/if}
@@ -65,7 +64,15 @@
     <div class="product-card-body">
       <h3>{product.name}</h3>
       <p class="meta">
-        <span class="price">{priceOf(product)}</span>
+        <span class="price">
+          <PriceTag
+            cents={product.priceCents}
+            currency={product.currency}
+            wasCents={product.wasCents}
+            percent={product.discountPercent}
+            prefix={product.priceMaxCents > product.priceCents ? 'From' : ''}
+          />
+        </span>
         {#if product.offerEnabled}<span class="offer-word">Offer</span>{/if}
       </p>
       {#if product.choices.length > 0}
@@ -311,10 +318,10 @@
   .categories a {
     flex: 0 0 auto;
     scroll-snap-align: start;
-    padding: 14px 0 12px;
+    padding: 14px 0 11px;
     margin-right: 28px;
     border: none;
-    border-bottom: 1px solid transparent;
+    border-bottom: 2px solid transparent;
     border-radius: 0;
     background: none;
     white-space: nowrap;
@@ -337,7 +344,7 @@
   .categories a.active:hover {
     color: var(--text-primary);
     font-weight: 600;
-    border-bottom-color: var(--ink);
+    border-bottom-color: var(--pop);
   }
 
   .shop {
@@ -553,8 +560,8 @@
     .campaign-copy {
       padding-top: 56px;
       padding-bottom: 28px;
-      padding-left: max(24px, calc((100vw - min(100vw, var(--max-width))) / 2 + 24px));
-      padding-right: max(24px, calc((100vw - min(100vw, var(--max-width))) / 2 + 24px));
+      padding-left: max(24px, calc((100% - min(100%, var(--max-width))) / 2 + 24px));
+      padding-right: max(24px, calc((100% - min(100%, var(--max-width))) / 2 + 24px));
     }
 
     .campaign h1,

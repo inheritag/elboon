@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  altImageUrl,
   applyReceive,
   applySale,
   applySet,
@@ -42,6 +43,15 @@ describe('product colours', () => {
     expect(stockFor(product, 'Black')).toBe(2);
     expect(stockFor(product, 'White')).toBe(0);
     expect(stockFor({ stockQty: 10, colors: [], sizes: [] })).toBe(10);
+  });
+});
+
+describe('catalogue photos', () => {
+  it('keeps a second photo when the product has another one', () => {
+    expect(altImageUrl(['/a.jpg', '/b.jpg'])).toBe('/b.jpg');
+    expect(altImageUrl(['/a.jpg', '/a.jpg'])).toBeNull();
+    expect(altImageUrl(['/a.jpg'])).toBeNull();
+    expect(altImageUrl([])).toBeNull();
   });
 });
 

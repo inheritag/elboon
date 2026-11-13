@@ -5,6 +5,7 @@ import { canNestUnder, DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } 
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
+import { discountPercentFromRow, salePrice } from '../domain/price';
 import { applySale, applySet, planStockTake, productFromRow, type ProductRow } from '../domain/product';
 import { isShortStock } from '../domain/stock';
 import type {
@@ -241,7 +242,9 @@ export class LocalStore implements Store {
   }
 
   private productPrice(productId: string): number {
-    return this.data.products.find((product) => product.id === productId)?.price_cents ?? 0;
+    const product = this.data.products.find((row) => row.id === productId);
+    if (!product) return 0;
+    return salePrice(product.price_cents, discountPercentFromRow(product.discount_percent)).priceCents;
   }
 
   async listActiveProducts(category?: string | null): Promise<ProductRow[]> {
@@ -268,6 +271,7 @@ export class LocalStore implements Store {
       name: input.name,
       description: input.description,
       price_cents: input.priceCents,
+      discount_percent: input.discountPercent ?? 0,
       currency: 'GBP',
       category: input.category,
       image_urls: input.imageUrls ?? [],
@@ -289,6 +293,7 @@ export class LocalStore implements Store {
     product.name = input.name;
     product.description = input.description;
     product.price_cents = input.priceCents;
+    product.discount_percent = input.discountPercent ?? 0;
     product.category = input.category;
     product.stock_qty = input.stockQty;
     product.low_stock_threshold = input.lowStockThreshold;

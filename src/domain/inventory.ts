@@ -1,3 +1,4 @@
+import { salePrice } from './price';
 import { isLowStock } from './stock';
 import { stockFor, type Product } from './product';
 
@@ -87,7 +88,7 @@ function line(
     onHand,
     held: heldQty,
     available,
-    priceCents: product.priceCents,
+    priceCents: salePrice(product.priceCents, product.discountPercent).priceCents,
     currency: product.currency,
     lowStockThreshold: product.lowStockThreshold,
     low: isLowStock(available, product.lowStockThreshold),

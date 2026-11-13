@@ -1,9 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { categoryPath } from '../../../../domain/catalog';
+  import { salePrice } from '../../../../domain/price';
   import { formatPrice } from '../../../../domain/product';
   import CategoryFields from '../../../CategoryFields.svelte';
+  import DiscountField from '../../../DiscountField.svelte';
   import NumberStepper from '../../../NumberStepper.svelte';
+  import PriceTag from '../../../PriceTag.svelte';
   import OfferToggle from '../../../OfferToggle.svelte';
   import PhotoDropzone from '../../../PhotoDropzone.svelte';
   import VariantFields from '../../../VariantFields.svelte';
@@ -13,6 +16,7 @@
   let categoryChoice = $state('__new__');
   let primed = $state(false);
   let price = $state<number | ''>('');
+  let discount = $state<number | ''>(0);
   let stockQty = $state(0);
   let lowStockThreshold = $state(3);
   let sizeNames = $state<string[]>([]);
@@ -81,6 +85,7 @@
         <label for="price">Price</label>
         <NumberStepper id="price" name="price" min={0.01} step={0.01} required bind:value={price} />
       </div>
+      <DiscountField bind:value={discount} {price} />
       <div class="field">
         <label for="lowStockThreshold">Low-stock threshold</label>
         <NumberStepper
@@ -139,6 +144,7 @@
     </thead>
     <tbody>
       {#each visible as product}
+        {@const sale = salePrice(product.price_cents, product.discount_percent ?? 0)}
         <tr>
           <td>
             {#if product.image_urls[0]}
@@ -146,7 +152,14 @@
             {/if}
           </td>
           <td class="name"><a href="/admin/products/{product.id}">{product.name}</a></td>
-          <td>{formatPrice(product.price_cents, product.currency)}</td>
+          <td>
+            <PriceTag
+              cents={sale.priceCents}
+              wasCents={sale.wasCents}
+              percent={sale.discountPercent}
+              currency={product.currency}
+            />
+          </td>
           <td>
             {#if data.stock[product.id]}
               {data.stock[product.id].available} free
