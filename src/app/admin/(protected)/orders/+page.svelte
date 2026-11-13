@@ -1,9 +1,9 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { formatPrice } from '../../../../domain/product';
-  import type { PageData } from './$types';
+  import type { ActionData, PageData } from './$types';
 
-  let { data }: { data: PageData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
 
   let toSend = $derived(
     data.orders.filter((order) => order.payment_status === 'paid' && order.logistics_status === 'awaiting_partner')
@@ -14,6 +14,8 @@
 
 <section class="container orders-admin">
   <h1>Orders</h1>
+  {#if form?.error}<p class="error-text">{form.error}</p>{/if}
+  {#if form?.emailed}<p class="muted">Acknowledgement sent.</p>{/if}
 
   <h2>To send ({toSend.length})</h2>
   {#each toSend as order}
@@ -41,6 +43,10 @@
         <input type="hidden" name="id" value={order.id} />
         <button class="btn btn-primary" type="submit">Mark as sent</button>
       </form>
+      <form method="POST" action="?/acknowledge" use:enhance>
+        <input type="hidden" name="id" value={order.id} />
+        <button class="btn btn-secondary" type="submit">Email acknowledgement</button>
+      </form>
     </article>
   {:else}
     <p class="muted">Nothing to send.</p>
@@ -53,6 +59,10 @@
         {new Date(order.created_at).toLocaleString('en-GB')} · {order.shipping_address.fullName} ·
         {formatPrice(order.total_cents, 'GBP')}{#if order.tracking_number} · {order.tracking_number}{/if}
       </p>
+      <form method="POST" action="?/acknowledge" use:enhance>
+        <input type="hidden" name="id" value={order.id} />
+        <button class="text-btn" type="submit">Email acknowledgement</button>
+      </form>
     {/each}
   {/if}
 
@@ -98,5 +108,23 @@
     color: var(--text-secondary);
     font-size: 14px;
     margin: 4px 0;
+  }
+
+  form + form {
+    margin-top: 10px;
+  }
+
+  .text-btn {
+    margin: 0 0 12px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
   }
 </style>

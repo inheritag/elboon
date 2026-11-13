@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ownerOrderHtml } from './email';
+import { emailFailure, ownerOrderHtml } from './email';
 
 describe('owner order email', () => {
   it('tells the shop who paid, what to send, and where', () => {
@@ -28,5 +28,22 @@ describe('owner order email', () => {
     expect(html).toContain('Ada &lt;script&gt;');
     expect(html).toContain('Not booked with Royal Mail yet.');
     expect(html).toContain('https://elboon.com/admin/orders');
+  });
+});
+
+describe('email send result', () => {
+  it('treats a Resend error as a failed send', () => {
+    expect(emailFailure({ data: null, error: { message: 'The domain is not verified' } })).toBe(
+      'The domain is not verified'
+    );
+    expect(emailFailure({ data: null, error: { message: '' } })).toBe('Email was not sent');
+  });
+
+  it('treats a missing id as a failed send', () => {
+    expect(emailFailure({ data: null, error: null })).toBe('Email was not sent');
+  });
+
+  it('accepts a send that returned an id', () => {
+    expect(emailFailure({ data: { id: 'em_1' }, error: null })).toBeNull();
   });
 });

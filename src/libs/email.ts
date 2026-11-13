@@ -17,6 +17,16 @@ function getResend(): Resend | null {
 
 const FROM_ADDRESS = 'Elboon <orders@elboon.com>';
 
+/** Resend returns `{ error }` instead of throwing. A missing id is also a failed send. */
+export function emailFailure(result: {
+  data: { id: string } | null;
+  error: { message?: string } | null;
+}): string | null {
+  if (result.error) return result.error.message || 'Email was not sent';
+  if (!result.data?.id) return 'Email was not sent';
+  return null;
+}
+
 async function deliver(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
   if (config.isDevMode()) {
     await getLocalStore().recordEmail({ to, subject, html });
@@ -26,17 +36,21 @@ async function deliver(to: string, subject: string, html: string, replyTo?: stri
 
   const resend = getResend();
   if (!resend) {
-    console.info(`[email skipped] to=${to} subject=${subject}`);
-    return;
+    throw new Error('RESEND_API_KEY is not set');
   }
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM_ADDRESS,
     to,
     subject,
     html,
     ...(replyTo ? { replyTo } : {})
   });
+  const failure = emailFailure(result);
+  if (failure) {
+    console.error('[email failed]', failure);
+    throw new Error(failure);
+  }
 }
 
 export async function sendSupportEmail(params: { email: string; message: string }): Promise<void> {

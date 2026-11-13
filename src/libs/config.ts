@@ -15,7 +15,7 @@ import {
  * for scripts and tests.
  *
  * DEV_MODE=true skips Postgres: the app uses a local JSON/memory store.
- * Owner email is optional to send. Orders and haggles still show in admin.
+ * Production mail uses Resend. A missing key throws so a paid order is not marked emailed.
  */
 
 function envValue(name: string): string | undefined {
@@ -45,7 +45,7 @@ export const config = {
 
   databaseUrl: () => envValue('POSTGRES_URL') || envValue('DATABASE_URL') || requireEnv('POSTGRES_URL'),
 
-  /** Optional. Offers still appear in admin if this is unset. */
+  /** Required for live mail. Dev mode does not call Resend. */
   resendApiKey: () => envValue('RESEND_API_KEY'),
 
   adminPasswordHash: () => {

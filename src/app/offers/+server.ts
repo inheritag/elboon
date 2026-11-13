@@ -38,12 +38,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     userId: customer?.id ?? null
   });
 
-  await sendNewOfferAlertEmail({
-    productName: product.name,
-    customerEmail: email,
-    offerPriceCents: body.offerPriceCents,
-    askingCents: product.price_cents
-  });
+  try {
+    await sendNewOfferAlertEmail({
+      productName: product.name,
+      customerEmail: email,
+      offerPriceCents: body.offerPriceCents,
+      askingCents: product.price_cents
+    });
+  } catch (err) {
+    console.error('[offer email]', err instanceof Error ? err.message : 'send failed');
+  }
 
   return json({ ok: true, email }, { status: 201 });
 };
