@@ -108,7 +108,7 @@
   </div>
 
   {#if status === 'sent'}
-    <p class="sent">Offer sent. We will email {email}.</p>
+    <p class="sent">Offer sent.</p>
     {#if !signedInEmail}
       <p class="fine">
         <a href={authHref(page.url, 'signup', { redirectTo: '/account/offers', email })}>Create an account</a>

@@ -15,7 +15,20 @@ function getResend(): Resend | null {
   return client;
 }
 
-const FROM_ADDRESS = 'Elboon <orders@elboon.com>';
+/** Resend's test sender. It can deliver to the Resend account inbox without a verified elboon.com domain. */
+const FROM_ADDRESS = 'Elboon <onboarding@resend.dev>';
+
+/** Every message goes to the shop inbox. A buyer address is named in the body, not used as the recipient. */
+export function addressMail(
+  inbox: string,
+  to: string,
+  html: string
+): { to: string; html: string; replyTo?: string } {
+  const shop = inbox.trim();
+  const about = to.trim();
+  if (about.toLowerCase() === shop.toLowerCase()) return { to: shop, html };
+  return { to: shop, html: `<p>For ${escapeHtml(about)}.</p>${html}`, replyTo: about };
+}
 
 /** Resend returns `{ error }` instead of throwing. A missing id is also a failed send. */
 export function emailFailure(result: {
@@ -28,9 +41,12 @@ export function emailFailure(result: {
 }
 
 async function deliver(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
+  const mail = addressMail(config.ownerEmail(), to, html);
+  const reply = replyTo ?? mail.replyTo;
+
   if (config.isDevMode()) {
-    await getLocalStore().recordEmail({ to, subject, html });
-    console.info(`[dev email] to=${to} subject=${subject}`);
+    await getLocalStore().recordEmail({ to: mail.to, subject, html: mail.html });
+    console.info(`[dev email] to=${mail.to} subject=${subject}`);
     return;
   }
 
@@ -41,10 +57,10 @@ async function deliver(to: string, subject: string, html: string, replyTo?: stri
 
   const result = await resend.emails.send({
     from: FROM_ADDRESS,
-    to,
+    to: mail.to,
     subject,
-    html,
-    ...(replyTo ? { replyTo } : {})
+    html: mail.html,
+    ...(reply ? { replyTo: reply } : {})
   });
   const failure = emailFailure(result);
   if (failure) {

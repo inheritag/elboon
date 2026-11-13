@@ -10,8 +10,8 @@
     to an address search on OpenStreetMap so we can suggest a match. We do not store the search.
   </p>
   <p>
-    Offers are stored against your email, and against your account if you are signed in. Ignored offers are
-    not emailed.
+    Offers are stored against your email, and against your account if you are signed in. We email the shop
+    about an offer. We do not email you.
   </p>
   <p>
     A support message is emailed to the shop with the address you type. We do not put it on the site.

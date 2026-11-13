@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emailFailure, ownerOrderHtml } from './email';
+import { addressMail, emailFailure, ownerOrderHtml } from './email';
 
 describe('owner order email', () => {
   it('tells the shop who paid, what to send, and where', () => {
@@ -45,5 +45,22 @@ describe('email send result', () => {
 
   it('accepts a send that returned an id', () => {
     expect(emailFailure({ data: { id: 'em_1' }, error: null })).toBeNull();
+  });
+});
+
+describe('shop inbox', () => {
+  it('sends every message to the shop, and names a buyer in the body', () => {
+    const mail = addressMail('elboonltd@gmail.com', 'ada@example.com', '<p>Payment received.</p>');
+    expect(mail.to).toBe('elboonltd@gmail.com');
+    expect(mail.html).toContain('For ada@example.com.');
+    expect(mail.html).toContain('Payment received.');
+    expect(mail.replyTo).toBe('ada@example.com');
+  });
+
+  it('does not add a for-line when the shop is already the recipient', () => {
+    const mail = addressMail('elboonltd@gmail.com', 'elboonltd@gmail.com', '<p>Paid.</p>');
+    expect(mail.to).toBe('elboonltd@gmail.com');
+    expect(mail.html).toBe('<p>Paid.</p>');
+    expect(mail.replyTo).toBeUndefined();
   });
 });
