@@ -88,7 +88,7 @@
         </li>
       {/each}
     </ul>
-    <p class="ship">Shipping <strong>Free</strong>. <a href="/policies">Delivery, returns, and defects</a>.</p>
+    <p class="ship">Shipping <strong>Free</strong>. <a href="/policies">Delivery and returns</a>.</p>
     <p class="total">Total: {formatPrice(totalCents, 'GBP')}</p>
 
     <form onsubmit={submit} class="card">

@@ -12,6 +12,7 @@ function item(id: string, category: string): ProductSummary {
     imageUrl: null,
     altImageUrl: null,
     lowStock: false,
+    outOfStock: false,
     remainingQty: null,
     offerEnabled: false,
     colors: [],

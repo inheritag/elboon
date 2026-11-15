@@ -216,9 +216,9 @@
           <p class="stock in">In stock</p>
         {/if}
       {:else}
-        <p class="stock out">Out of stock</p>
+        <p class="stock out"><span aria-hidden="true">🚫</span>{' '}Temporarily out of stock</p>
       {/if}
-      <p class="dispatch">Free delivery. <a href="/policies">Shipping, returns, and defects</a>.</p>
+      <p class="dispatch">Free delivery. <a href="/policies">Delivery and returns</a>.</p>
 
       {#if inStock}
         <div class="qty">
@@ -310,7 +310,9 @@
                 {/each}
               </p>
             {/if}
-            {#if product.remainingQty !== null}
+            {#if product.outOfStock}
+              <p class="badge badge-out"><span aria-hidden="true">🚫</span>{' '}Temporarily out of stock</p>
+            {:else if product.remainingQty !== null}
               <p class="badge badge-low-stock">Only {product.remainingQty} left</p>
             {/if}
           </div>
@@ -504,6 +506,10 @@
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 0;
+  }
+
+  .stock.out {
+    color: var(--text-secondary);
   }
 
   .dispatch {

@@ -64,7 +64,7 @@
   <form onsubmit={submit} class="card">
     <h2>Shipping</h2>
     <ShippingFields bind:fullName bind:phone bind:line1 bind:city bind:postcode bind:country>
-      <p class="ship">Shipping is free. <a href="/policies">Delivery, returns, and defects</a>.</p>
+      <p class="ship">Shipping is free. <a href="/policies">Delivery and returns</a>.</p>
     </ShippingFields>
     <button class="btn btn-primary" type="submit" disabled={status === 'submitting'}>
       {status === 'submitting' ? 'Continuing…' : 'Continue to payment'}

@@ -27,6 +27,7 @@ export interface Listing {
   imageUrl: string | null;
   altImageUrl: string | null;
   lowStock: boolean;
+  outOfStock: boolean;
   remainingQty: number | null;
   offerEnabled: boolean;
   colors: ProductSummary['colors'];
@@ -235,6 +236,7 @@ export function groupListings(items: ProductSummary[]): Listing[] {
       imageUrl: representative.imageUrl,
       altImageUrl: representative.altImageUrl,
       lowStock: representative.lowStock,
+      outOfStock: group.members.every((member) => member.outOfStock),
       remainingQty: representative.remainingQty,
       offerEnabled: group.members.some((member) => member.offerEnabled),
       colors: [...colors.values()],
@@ -334,6 +336,7 @@ export function listingToSummary(listing: Listing): ProductSummary {
     imageUrl: listing.imageUrl,
     altImageUrl: listing.altImageUrl,
     lowStock: listing.lowStock,
+    outOfStock: listing.outOfStock,
     remainingQty: listing.remainingQty,
     offerEnabled: listing.offerEnabled,
     colors: listing.colors,

@@ -82,4 +82,22 @@ describe('product price', () => {
     expect(product.discountPercent).toBe(0);
     expect(toProductSummary(product).wasCents).toBeNull();
   });
+
+  it('marks zero available stock as out, and keeps a low count only when some remain', () => {
+    const product = productFromRow({
+      id: '1',
+      name: 'Cable',
+      description: '',
+      price_cents: 1200,
+      currency: 'GBP',
+      category: 'tech',
+      image_urls: [],
+      stock_qty: 2,
+      low_stock_threshold: 3,
+      offer_enabled: false,
+      active: true
+    });
+    expect(toProductSummary(product)).toMatchObject({ outOfStock: false, remainingQty: 2 });
+    expect(toProductSummary(product, 0)).toMatchObject({ outOfStock: true, remainingQty: null, lowStock: false });
+  });
 });

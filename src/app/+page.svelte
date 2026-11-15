@@ -110,7 +110,9 @@
           {/each}
         </p>
       {/if}
-      {#if product.remainingQty !== null}
+      {#if product.outOfStock}
+        <p class="badge badge-out"><span aria-hidden="true">🚫</span>{' '}Temporarily out of stock</p>
+      {:else if product.remainingQty !== null}
         <p class="badge badge-low-stock">Only {product.remainingQty} left</p>
       {/if}
     </div>

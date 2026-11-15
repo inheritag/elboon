@@ -136,7 +136,9 @@ export interface ProductSummary {
   /** A second photo, shown when the catalogue card is hovered. */
   altImageUrl: string | null;
   lowStock: boolean;
-  /** Remaining units, only set when stock is low, shown to create urgency. */
+  /** Nothing left to sell, including units already held for an open checkout. */
+  outOfStock: boolean;
+  /** Remaining units when stock is low but not zero. */
   remainingQty: number | null;
   offerEnabled: boolean;
   colors: { name: string; hex: string }[];
@@ -398,8 +400,9 @@ export function toProductSummary(product: Product, availableQty = product.stockQ
     category: product.category,
     imageUrl: product.imageUrls[0] ?? null,
     altImageUrl: altImageUrl(product.imageUrls),
-    lowStock: isLowStock(availableQty, product.lowStockThreshold),
-    remainingQty: isLowStock(availableQty, product.lowStockThreshold) ? availableQty : null,
+    lowStock: availableQty > 0 && isLowStock(availableQty, product.lowStockThreshold),
+    outOfStock: availableQty <= 0,
+    remainingQty: availableQty > 0 && isLowStock(availableQty, product.lowStockThreshold) ? availableQty : null,
     offerEnabled: product.offerEnabled,
     colors: product.colors.map((color) => ({ name: color.name, hex: color.hex })),
     sizes: product.sizes.map((size) => ({ name: size.name }))

@@ -20,6 +20,7 @@ function item(id: string, name: string, category = 'clothing', priceCents = 1000
     imageUrl: `/uploads/${id}.jpg`,
     altImageUrl: null,
     lowStock: false,
+    outOfStock: false,
     remainingQty: null,
     offerEnabled: false,
     colors: [],

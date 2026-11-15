@@ -387,6 +387,13 @@ input[type='number'] {
   border: none;
 }
 
+.badge-out {
+  background: none;
+  color: var(--text-secondary);
+  border: none;
+  font-weight: 600;
+}
+
 .badge-haggle {
   background: none;
   color: var(--accent);
