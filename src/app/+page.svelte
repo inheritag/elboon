@@ -121,26 +121,28 @@
 
 {#if showCampaign && data.hero}
   <a
-    class="campaign"
-    class:stage={data.hero.fit === 'stage'}
-    style="--photo-w: {data.hero.width}px"
+    class="campaign container"
+    style="--photo-w: {data.hero.width}px; --photo-h: {data.hero.height}px"
     data-hero
     href={data.hero.href}
   >
-    {#if data.hero.fit === 'stage'}
-      <img class="fill" src={data.hero.imageUrl} alt="" aria-hidden="true" />
-    {/if}
-    <img class="photo" src={data.hero.imageUrl} alt="" />
     <div class="campaign-copy">
       <p>Offers on selected items</p>
-      <h1>Shop everything. Haggle when it counts.</h1>
+      <h1>Shop everything. <br />Haggle when it counts.</h1>
     </div>
+    <img
+      class="photo"
+      src={data.hero.imageUrl}
+      alt=""
+      width={data.hero.width}
+      height={data.hero.height}
+    />
   </a>
 {:else if !data.category && !data.q && !loadingCatalog}
   <section class="hero-plain" data-hero>
     <div class="container">
       <p>Offers on selected items</p>
-      <h1>Shop everything. Haggle when it counts.</h1>
+      <h1>Shop everything. <br />Haggle when it counts.</h1>
     </div>
   </section>
 {/if}
@@ -253,56 +255,27 @@
 
 <style>
   .campaign {
-    position: relative;
-    display: flex;
+    --frame: 360px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
     align-items: center;
-    justify-content: center;
-    height: 400px;
-    overflow: hidden;
-    color: #fff;
-    background: #111;
-  }
-
-  .campaign:hover {
-    color: #fff;
+    column-gap: clamp(16px, 4vw, 64px);
+    padding-top: 28px;
+    padding-bottom: 12px;
+    color: inherit;
+    text-decoration: none;
   }
 
   .campaign .photo {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .campaign .fill {
-    position: absolute;
-    left: -24px;
-    top: -24px;
-    z-index: 0;
-    width: calc(100% + 48px);
-    height: calc(100% + 48px);
-    object-fit: cover;
-    filter: blur(18px);
-  }
-
-  .campaign.stage .photo {
-    width: auto;
+    display: block;
+    justify-self: end;
+    width: min(100%, var(--photo-w), calc(var(--frame) * var(--photo-w) / var(--photo-h)));
     height: auto;
-    max-width: min(100%, var(--photo-w));
-    max-height: 100%;
-    object-fit: contain;
+    min-width: 0;
   }
 
   .campaign-copy {
-    z-index: 2;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 36px 16px 20px;
-    background: linear-gradient(transparent, rgb(0 0 0 / 62%));
+    min-width: 0;
   }
 
   .campaign-copy p,
@@ -314,6 +287,10 @@
     text-transform: uppercase;
   }
 
+  .campaign-copy p {
+    color: var(--text-secondary);
+  }
+
   .campaign h1,
   .hero-plain h1 {
     max-width: 16ch;
@@ -321,7 +298,11 @@
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.05;
-    color: #fff;
+  }
+
+  .campaign h1 {
+    max-width: none;
+    color: var(--text-primary);
   }
 
   .hero-plain {
@@ -626,14 +607,9 @@
 
   @media (min-width: 1280px) {
     .campaign {
-      height: 460px;
-    }
-
-    .campaign-copy {
-      padding-top: 56px;
-      padding-bottom: 28px;
-      padding-left: max(24px, calc((100% - min(100%, var(--max-width))) / 2 + 24px));
-      padding-right: max(24px, calc((100% - min(100%, var(--max-width))) / 2 + 24px));
+      --frame: 480px;
+      padding-top: 36px;
+      padding-bottom: 8px;
     }
 
     .campaign h1,
@@ -642,6 +618,11 @@
       font-size: 48px;
       line-height: 1;
       letter-spacing: -0.035em;
+    }
+
+    .campaign h1 {
+      max-width: none;
+      font-size: 44px;
     }
 
     .hero-plain {
@@ -664,6 +645,10 @@
   }
 
   @media (min-width: 1536px) {
+    .campaign h1 {
+      font-size: 48px;
+    }
+
     .grid {
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
@@ -671,11 +656,32 @@
 
   @media (max-width: 720px) {
     .campaign {
-      height: 280px;
+      --frame: 188px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+      column-gap: 12px;
+      padding-top: 16px;
+      padding-bottom: 4px;
     }
 
     .campaign-copy {
-      padding: 20px 16px 16px;
+      display: contents;
+    }
+
+    .campaign-copy p {
+      grid-column: 1 / -1;
+      letter-spacing: 0.08em;
+    }
+
+    .campaign h1 {
+      grid-column: 1;
+      grid-row: 2;
+      font-size: 26px;
+      max-width: none;
+    }
+
+    .campaign .photo {
+      grid-column: 2;
+      grid-row: 2;
     }
 
     .empty .btn {

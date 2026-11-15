@@ -1,9 +1,9 @@
 import { childrenOf, rootCategory, type CategoryRecord } from './catalog';
 
-/** A photo this wide and tall can cover the banner without being blown up. */
+/** Used only to prefer a clearer photo. The banner does not enlarge up to this. */
 export const COVER_MIN_WIDTH = 1400;
 export const COVER_MIN_HEIGHT = 700;
-/** Smaller than this stays off the banner. It would only look soft. */
+/** Smaller than this stays off the banner. Shown at its own size, it would look soft. */
 export const STAGE_MIN_EDGE = 480;
 
 export interface HeroShot {
@@ -19,18 +19,15 @@ export interface HeroPick {
   id: string;
   imageUrl: string;
   href: string;
-  /** Cover fills the banner. Stage keeps a smaller photo at its own size. */
-  fit: 'cover' | 'stage';
   width: number;
   height: number;
 }
 
 /**
  * One banner photo for this page load.
- * Unavailable items are left out. A photo large enough to cover the banner
- * wins over a smaller one. Departments take turns, the same way All does,
- * and a sharper photo in that department is the more likely draw.
- * The same seed always returns the same photo.
+ * Unavailable items are left out, and so is a photo too small to show whole.
+ * Departments take turns, the same way All does. A sharper photo is the more
+ * likely draw inside its department. The same seed always returns the same photo.
  */
 export function pickHero(shots: HeroShot[], categories: CategoryRecord[], seed: number): HeroPick | null {
   const usable = shots.filter(
@@ -38,8 +35,7 @@ export function pickHero(shots: HeroShot[], categories: CategoryRecord[], seed: 
   );
   if (usable.length === 0) return null;
 
-  const cover = usable.filter((shot) => shot.width >= COVER_MIN_WIDTH && shot.height >= COVER_MIN_HEIGHT);
-  const pool = bestPerProduct(cover.length > 0 ? cover : usable);
+  const pool = bestPerProduct(usable);
   const byDepartment = new Map<string, HeroShot[]>();
   for (const shot of pool) {
     const slug = rootCategory(shot.category, categories)?.slug ?? shot.category;
@@ -52,12 +48,10 @@ export function pickHero(shots: HeroShot[], categories: CategoryRecord[], seed: 
   const department = order[mod(seed, order.length)];
   const options = (byDepartment.get(department) ?? []).sort((a, b) => a.id.localeCompare(b.id));
   const chosen = options[weightedIndex(options.map(weight), mixSeed(seed))];
-  const fit = chosen.width >= COVER_MIN_WIDTH && chosen.height >= COVER_MIN_HEIGHT ? 'cover' : 'stage';
   return {
     id: chosen.id,
     imageUrl: chosen.imageUrl,
     href: `/product/${chosen.id}`,
-    fit,
     width: chosen.width,
     height: chosen.height
   };

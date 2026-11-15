@@ -31,18 +31,18 @@ describe('pickHero', () => {
       categories,
       1
     );
-    expect(pick).toMatchObject({ id: 'throw', fit: 'stage' });
+    expect(pick).toMatchObject({ id: 'throw', width: 1024, height: 1024 });
   });
 
-  it('keeps a sharp photo on the banner when smaller ones are also in stock', () => {
+  it('still gives a smaller in-stock photo a turn beside a sharper one', () => {
     const shots = [
       shot({ id: 'dress', category: 'fashion', width: 1024, height: 1024 }),
       shot({ id: 'watch', category: 'tech', width: 2400, height: 1600 }),
       shot({ id: 'mug', category: 'home', width: 900, height: 900 })
     ];
-    for (let seed = 0; seed < 12; seed += 1) {
-      expect(pickHero(shots, categories, seed)?.id).toBe('watch');
-    }
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 3; seed += 1) seen.add(pickHero(shots, categories, seed)?.id ?? '');
+    expect(seen).toEqual(new Set(['dress', 'watch', 'mug']));
   });
 
   it('uses the sharper photo on a product, and gives each department a turn', () => {
@@ -55,7 +55,6 @@ describe('pickHero', () => {
     const seen = new Set<string>();
     for (let seed = 0; seed < 3; seed += 1) {
       const pick = pickHero(shots, categories, seed);
-      expect(pick?.fit).toBe('cover');
       if (pick?.id === 'dress') expect(pick.imageUrl).toBe('/uploads/dress-large.jpg');
       seen.add(pick?.id ?? '');
     }
