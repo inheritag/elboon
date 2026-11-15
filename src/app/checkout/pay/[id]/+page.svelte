@@ -67,12 +67,34 @@
   .lines li {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lines li:last-child {
+    border-bottom: none;
+  }
+
+  .lines li span:first-child {
+    min-width: 0;
+  }
+
+  .lines li span:last-child {
+    flex: none;
   }
 
   .actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
+  }
+
+  @media (max-width: 520px) {
+    .actions {
+      flex-direction: column;
+    }
   }
 
   .fine {

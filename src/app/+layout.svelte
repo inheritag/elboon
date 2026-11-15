@@ -224,6 +224,7 @@
         customer={data.customer}
         admin={data.admin}
         categories={data.categories}
+        categoryMetrics={data.categoryMetrics}
         cartCount={cartCount}
         onClose={closeMenu}
       />
@@ -240,6 +241,7 @@
       <nav>
         <a href="/privacy">Privacy</a>
         <a href="/policies">Delivery & returns</a>
+        <a href="/support">Support</a>
         <a href="/cart">Cart</a>
       </nav>
     </div>
@@ -388,9 +390,9 @@
     padding: 8px 2px;
     background: none;
     color: var(--text-primary);
+    font: inherit;
     font-weight: 600;
     font-size: 14px;
-    font: inherit;
     cursor: pointer;
   }
 

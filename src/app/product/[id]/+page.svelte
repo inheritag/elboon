@@ -450,6 +450,11 @@
     border: 1px solid color-mix(in srgb, var(--text-primary) 35%, transparent);
     cursor: pointer;
     padding: 0;
+    transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .swatch:hover {
+    transform: scale(1.06);
   }
 
   .swatch.active {
@@ -485,6 +490,11 @@
     cursor: pointer;
     text-decoration: none;
     text-align: center;
+    transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  }
+
+  .size-pick:hover {
+    border-color: var(--ink);
   }
 
   .size-pick.active {
@@ -762,7 +772,22 @@
     }
   }
 
-  @media (max-width: 1279px) {
+  @media (hover: hover) and (pointer: fine) {
+    .related-card:hover .related-body h3 {
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--ink) 45%, transparent);
+      text-underline-offset: 3px;
+    }
+  }
+
+  @media (min-width: 760px) {
+    .related-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 40px 20px;
+    }
+  }
+
+  @media (max-width: 899px) {
     .gallery {
       display: flex;
       flex-direction: column;
@@ -774,7 +799,21 @@
     }
 
     .info {
+      width: 100%;
       max-width: 560px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (min-width: 900px) and (max-width: 1279px) {
+    .product-detail {
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, 380px);
+      gap: 36px;
+      padding: 28px 0 56px;
+    }
+
+    .info h1 {
+      font-size: 20px;
     }
   }
 

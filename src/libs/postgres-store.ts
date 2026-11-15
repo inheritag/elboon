@@ -1,4 +1,4 @@
-import { canNestUnder, slugFromLabel, type CategoryRecord } from '../domain/catalog';
+import { canNestUnder, slugFromLabel, type CategoryMetric, type CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
@@ -157,6 +157,33 @@ export class PostgresStore implements Store {
     const sql = await readyDb();
     const rows = await sql<CategoryRow[]>`SELECT slug, label, parent_slug FROM categories ORDER BY label ASC`;
     return rows.map(asCategory);
+  }
+
+  async listCategoryMetrics(): Promise<CategoryMetric[]> {
+    const sql = await readyDb();
+    const rows = await sql<
+      {
+        category: string;
+        active_count: number;
+        offer_count: number;
+        discounted_count: number;
+      }[]
+    >`
+      SELECT
+        category,
+        COUNT(*)::int AS active_count,
+        COUNT(*) FILTER (WHERE offer_enabled)::int AS offer_count,
+        COUNT(*) FILTER (WHERE discount_percent > 0)::int AS discounted_count
+      FROM products
+      WHERE active = true
+      GROUP BY category
+    `;
+    return rows.map((row) => ({
+      category: row.category,
+      activeCount: Number(row.active_count) || 0,
+      offerCount: Number(row.offer_count) || 0,
+      discountedCount: Number(row.discounted_count) || 0
+    }));
   }
 
   async createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord> {

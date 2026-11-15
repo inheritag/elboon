@@ -8,7 +8,15 @@ import {
 } from '../domain/catalog';
 import { heldMap, totalAvailable } from '../domain/inventory';
 import { pickHero, type HeroPick, type HeroShot } from '../domain/hero';
-import { groupListings, mixByDepartment, parseSort, sortListings } from '../domain/listing';
+import {
+  deferHeroListing,
+  familyKey,
+  groupListings,
+  mixByDepartment,
+  parseSort,
+  sortListings,
+  type Listing
+} from '../domain/listing';
 import { paginate } from '../domain/paging';
 import { productFromRow, toProductSummary, type Product, type ProductRow } from '../domain/product';
 import { measureImages } from '../libs/image-measure';
@@ -22,6 +30,18 @@ function matchesQuery(row: ProductRow, query: string): boolean {
 }
 
 const emptyNav: { top: CategoryRecord[]; levels: CategoryNavLevel[] } = { top: [], levels: [] };
+
+function heroListingId(heroId: string | undefined, products: Product[], listings: Listing[]): string | null {
+  if (!heroId) return null;
+  if (listings.some((listing) => listing.id === heroId || listing.options.some((option) => option.id === heroId))) {
+    return heroId;
+  }
+  const heroProduct = products.find((product) => product.id === heroId);
+  if (!heroProduct) return heroId;
+  const heroKey = `${heroProduct.category}::${familyKey(heroProduct.name)}`;
+  const match = listings.find((listing) => `${listing.category}::${familyKey(listing.name)}` === heroKey);
+  return match?.id ?? heroId;
+}
 
 function heroShots(products: Product[], held: Map<string, number>): HeroShot[] {
   const shots: HeroShot[] = [];
@@ -78,7 +98,9 @@ export const load: PageServerLoad = async ({ url }) => {
           return null;
         })
       : null;
-    const homeListings = browsingAll ? mixByDepartment(grouped, categories) : grouped;
+    const homeListings = browsingAll
+      ? deferHeroListing(mixByDepartment(grouped, categories), heroListingId(hero?.id, products, grouped))
+      : grouped;
     const window = paginate(homeListings, requestedPage);
     return {
       products: window.items,

@@ -1,7 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { categoryTrail, childrenOf, type CategoryRecord } from '../domain/catalog';
+  import {
+    categoryTrail,
+    childrenOf,
+    partitionSideMenuCategories,
+    rootCategory,
+    type CategoryMetric,
+    type CategoryRecord
+  } from '../domain/catalog';
   import { authHref } from './auth-href';
   import Icon from './Icon.svelte';
 
@@ -11,6 +18,7 @@
     customer,
     admin,
     categories,
+    categoryMetrics = [],
     cartCount,
     onClose
   }: {
@@ -21,11 +29,13 @@
     customer: { email: string; fullName: string } | null;
     admin: boolean;
     categories: CategoryRecord[];
+    categoryMetrics?: CategoryMetric[];
     cartCount: number;
     onClose: () => void;
   } = $props();
 
   let expanded = $state<string[]>([]);
+  let showAllCategories = $state(false);
   let closeBtn = $state<HTMLButtonElement | null>(null);
   let panel = $state<HTMLElement | null>(null);
   let seen = '';
@@ -34,6 +44,15 @@
   let category = $derived(page.url.searchParams.get('category'));
   let onShop = $derived(page.url.pathname === '/');
   let shown = $derived(modal || docked);
+  let partitioned = $derived(partitionSideMenuCategories(categories, categoryMetrics));
+  let activeRootSlug = $derived(category ? (rootCategory(category, categories)?.slug ?? category) : null);
+  let activeInRest = $derived(
+    Boolean(activeRootSlug && partitioned.rest.some((row) => row.slug === activeRootSlug))
+  );
+
+  $effect(() => {
+    if (activeInRest) showAllCategories = true;
+  });
 
   $effect(() => {
     const current = page.url.pathname + page.url.search;
@@ -169,34 +188,58 @@
         class:current={onShop && !category}
         aria-current={onShop && !category ? 'page' : undefined}
         onclick={leave}>All</a>
-      {#snippet nodes(parent: string | null, depth: number)}
-        {#each childrenOf(parent, categories) as row (row.slug)}
-          {@const kids = childrenOf(row.slug, categories)}
-          <div class="cat" style="--depth: {depth}">
-            <a
-              href="/?category={row.slug}"
-              class:current={category === row.slug}
-              aria-current={category === row.slug ? 'page' : undefined}
-              onclick={leave}>{row.label}</a>
-            {#if kids.length > 0}
-              <button
-                type="button"
-                aria-expanded={expanded.includes(row.slug)}
-                aria-label="{expanded.includes(row.slug) ? 'Hide' : 'Show'} {row.label}"
-                onclick={() => toggle(row.slug)}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" class:open={expanded.includes(row.slug)}>
-                  <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
-                </svg>
-              </button>
-            {/if}
-          </div>
-          {#if kids.length > 0 && expanded.includes(row.slug)}
-            {@render nodes(row.slug, depth + 1)}
+      {#snippet branch(row: CategoryRecord, depth: number)}
+        {@const kids = childrenOf(row.slug, categories)}
+        <div class="cat" style="--depth: {depth}">
+          <a
+            href="/?category={row.slug}"
+            class:current={category === row.slug}
+            aria-current={category === row.slug ? 'page' : undefined}
+            onclick={leave}>{row.label}</a>
+          {#if kids.length > 0}
+            <button
+              type="button"
+              aria-expanded={expanded.includes(row.slug)}
+              aria-label="{expanded.includes(row.slug) ? 'Hide' : 'Show'} {row.label}"
+              onclick={() => toggle(row.slug)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" class:open={expanded.includes(row.slug)}>
+                <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+              </svg>
+            </button>
           {/if}
-        {/each}
+        </div>
+        {#if kids.length > 0 && expanded.includes(row.slug)}
+          {#each kids as child (child.slug)}
+            {@render branch(child, depth + 1)}
+          {/each}
+        {/if}
       {/snippet}
-      {@render nodes(null, 0)}
+      {#each partitioned.featured as row (row.slug)}
+        {@render branch(row, 0)}
+      {/each}
+      {#if showAllCategories}
+        {#each partitioned.rest as row (row.slug)}
+          {@render branch(row, 0)}
+        {/each}
+      {/if}
+      {#if partitioned.rest.length > 0}
+        <button
+          type="button"
+          class="more-cats"
+          aria-expanded={showAllCategories}
+          onclick={() => (showAllCategories = !showAllCategories)}
+        >
+          <span>
+            {showAllCategories
+              ? 'Show fewer'
+              : `List all categories (${partitioned.featured.length + partitioned.rest.length})`}
+          </span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class:open={showAllCategories}>
+            <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      {/if}
     </nav>
     </section>
 
@@ -398,6 +441,45 @@
     transform: rotate(180deg);
   }
 
+  .more-cats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 40px;
+    padding: 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .more-cats:hover {
+    color: var(--ink);
+  }
+
+  .more-cats:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .more-cats svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    margin-right: 2px;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .more-cats svg.open {
+    transform: rotate(180deg);
+  }
+
   @media (min-width: 1280px) {
     .drawer {
       position: static;
@@ -417,7 +499,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .drawer,
-    .cat svg {
+    .cat svg,
+    .more-cats svg {
       animation: none;
       transition: none;
     }
@@ -437,6 +520,7 @@
     .item,
     .cat a,
     .cat-link,
+    .more-cats,
     .mark,
     .label,
     .email {
@@ -449,7 +533,8 @@
     .email,
     .item,
     .cat,
-    .cat-link {
+    .cat-link,
+    .more-cats {
       border-color: CanvasText;
     }
 

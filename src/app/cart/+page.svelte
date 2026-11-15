@@ -101,6 +101,7 @@
     width: 64px;
     height: 64px;
     object-fit: cover;
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--bg-subtle);
   }
@@ -144,10 +145,18 @@
   }
 
   .link-button {
+    min-height: 44px;
+    padding: 0 4px;
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
+  }
+
+  .link-button:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .summary {
@@ -200,10 +209,13 @@
       grid-template-areas:
         'thumb meta remove'
         'thumb stepper total';
+      gap: 12px;
     }
 
     .thumb {
       grid-area: thumb;
+      width: 56px;
+      height: 56px;
     }
 
     .meta {

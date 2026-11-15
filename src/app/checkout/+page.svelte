@@ -129,9 +129,18 @@
   .lines li {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     gap: 16px;
     padding: 16px 2px;
     border-bottom: 1px solid var(--border);
+  }
+
+  .lines li span:first-child {
+    min-width: 0;
+  }
+
+  .lines li span:last-child {
+    flex: none;
   }
 
   .lines li:first-child {

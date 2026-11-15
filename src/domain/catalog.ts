@@ -9,6 +9,15 @@ export interface CategoryRecord {
   parentSlug: string | null;
 }
 
+export interface CategoryMetric {
+  category: string;
+  activeCount: number;
+  offerCount: number;
+  discountedCount: number;
+}
+
+export const SIDE_MENU_CATEGORY_LIMIT = 6;
+
 export const DEFAULT_CATEGORIES: CategoryRecord[] = DEFAULT_CATEGORY_SLUGS.map((slug) => ({
   slug,
   label: slug,
@@ -187,6 +196,51 @@ export function categoryNav(
     });
   }
   return { top, levels };
+}
+
+/**
+ * Split top-level categories into a dynamic handful of the most interesting
+ * departments (by live product volume, offers, discounts, and nested depth)
+ * plus the alphabetical remainder for "List all categories".
+ */
+export function partitionSideMenuCategories(
+  categories: CategoryRecord[],
+  metrics: CategoryMetric[],
+  limit = SIDE_MENU_CATEGORY_LIMIT
+): { featured: CategoryRecord[]; rest: CategoryRecord[] } {
+  const roots = childrenOf(null, categories);
+  const cap = Math.max(1, Math.floor(limit) || SIDE_MENU_CATEGORY_LIMIT);
+  if (roots.length <= cap) return { featured: roots, rest: [] };
+
+  const totals = new Map<string, { active: number; offers: number; discounted: number }>();
+  for (const metric of metrics) {
+    const rootSlug = rootCategory(metric.category, categories)?.slug ?? metric.category;
+    const current = totals.get(rootSlug) ?? { active: 0, offers: 0, discounted: 0 };
+    current.active += Math.max(0, metric.activeCount);
+    current.offers += Math.max(0, metric.offerCount);
+    current.discounted += Math.max(0, metric.discountedCount);
+    totals.set(rootSlug, current);
+  }
+
+  const scored = roots.map((root) => {
+    const stat = totals.get(root.slug) ?? { active: 0, offers: 0, discounted: 0 };
+    const descendants = Math.max(0, withDescendants(root.slug, categories).length - 1);
+    const hasActive = stat.active > 0 ? 1 : 0;
+    const score = stat.active * 10 + stat.offers * 4 + stat.discounted * 3 + Math.min(descendants, 6) * 2;
+    return { root, hasActive, score };
+  });
+
+  scored.sort(
+    (a, b) =>
+      b.hasActive - a.hasActive ||
+      b.score - a.score ||
+      a.root.label.localeCompare(b.root.label)
+  );
+
+  const featured = scored.slice(0, cap).map((entry) => entry.root);
+  const featuredSlugs = new Set(featured.map((row) => row.slug));
+  const rest = roots.filter((row) => !featuredSlugs.has(row.slug));
+  return { featured, rest };
 }
 
 /** @deprecated Use isCategorySlug. Kept so older imports still type-check during edit. */

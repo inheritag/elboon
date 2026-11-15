@@ -1,7 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { canNestUnder, DEFAULT_CATEGORIES, slugFromLabel, type CategoryRecord } from '../domain/catalog';
+import {
+  canNestUnder,
+  DEFAULT_CATEGORIES,
+  slugFromLabel,
+  type CategoryMetric,
+  type CategoryRecord
+} from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
@@ -322,6 +328,24 @@ export class LocalStore implements Store {
 
   async listCategories(): Promise<CategoryRecord[]> {
     return [...this.data.categories].sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  async listCategoryMetrics(): Promise<CategoryMetric[]> {
+    const counts = new Map<string, CategoryMetric>();
+    for (const product of this.data.products) {
+      if (!product.active) continue;
+      const entry = counts.get(product.category) ?? {
+        category: product.category,
+        activeCount: 0,
+        offerCount: 0,
+        discountedCount: 0
+      };
+      entry.activeCount += 1;
+      if (product.offer_enabled) entry.offerCount += 1;
+      if (discountPercentFromRow(product.discount_percent) > 0) entry.discountedCount += 1;
+      counts.set(product.category, entry);
+    }
+    return [...counts.values()];
   }
 
   async createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord> {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   categoryBands,
   choiceHeading,
+  deferHeroListing,
   familyKey,
   groupListings,
   mixByDepartment,
@@ -162,5 +163,43 @@ describe('mixByDepartment', () => {
       categories
     );
     expect(mixed.map((row) => row.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('deferHeroListing', () => {
+  it('moves the banner product or one of its variants to the bottom of page 1 without shifting page 2', () => {
+    const listings = groupListings([
+      item('one-m', 'Alpha Tee (M)', 'fashion', 1200),
+      item('one-l', 'Alpha Tee (L)', 'fashion', 1400),
+      item('two', 'Beta Lamp', 'home', 2200),
+      item('three', 'Gamma Cable', 'tech', 900),
+      item('four', 'Delta Vase', 'home', 1800),
+      item('five', 'Epsilon Mug', 'home', 1100)
+    ]);
+
+    const deferred = deferHeroListing(listings, 'one-l', 3);
+    expect(deferred.map((row) => row.id)).toEqual(['two', 'three', 'one-m', 'four', 'five']);
+  });
+
+  it('moves the banner product to the end when everything fits on page 1', () => {
+    const listings = groupListings([
+      item('one', 'Alpha Tee', 'fashion', 1200),
+      item('two', 'Beta Lamp', 'home', 2200),
+      item('three', 'Gamma Cable', 'tech', 900)
+    ]);
+
+    expect(deferHeroListing(listings, 'one', 24).map((row) => row.id)).toEqual(['two', 'three', 'one']);
+  });
+
+  it('leaves order unchanged when hero is already on page 2 or missing', () => {
+    const listings = groupListings([
+      item('one', 'Alpha Tee', 'fashion', 1200),
+      item('two', 'Beta Lamp', 'home', 2200),
+      item('three', 'Gamma Cable', 'tech', 900),
+      item('four', 'Delta Vase', 'home', 1800)
+    ]);
+
+    expect(deferHeroListing(listings, 'four', 3).map((row) => row.id)).toEqual(['one', 'two', 'three', 'four']);
+    expect(deferHeroListing(listings, null, 3).map((row) => row.id)).toEqual(['one', 'two', 'three', 'four']);
   });
 });

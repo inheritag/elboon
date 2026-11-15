@@ -1,4 +1,4 @@
-import type { CategoryRecord } from '../domain/catalog';
+import type { CategoryMetric, CategoryRecord } from '../domain/catalog';
 import type { OfferStatus } from '../domain/offer';
 import type { LogisticsStatus, OrderItem, PaymentStatus, ShippingAddress } from '../domain/order';
 import type { HeldUnit } from '../domain/inventory';
@@ -88,6 +88,7 @@ export interface Store {
   setProductStock(id: string, quantity: number, color?: string | null, size?: string | null): Promise<boolean>;
   listHeldUnits(): Promise<HeldUnit[]>;
   listCategories(): Promise<CategoryRecord[]>;
+  listCategoryMetrics(): Promise<CategoryMetric[]>;
   createCategory(label: string, parentSlug?: string | null): Promise<CategoryRecord>;
 
   isOfferEnabledProduct(id: string): Promise<boolean>;

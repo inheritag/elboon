@@ -1,4 +1,5 @@
 import { childrenOf, rootCategory, type CategoryRecord } from './catalog';
+import { CATALOG_PAGE_SIZE } from './paging';
 import type { ProductSummary } from './product';
 
 export const CATALOG_SORTS = ['featured', 'price-asc', 'price-desc', 'name'] as const;
@@ -291,6 +292,27 @@ export function mixByDepartment(listings: Listing[], categories: CategoryRecord[
     if (!took) break;
   }
   return mixed;
+}
+
+/**
+ * Move the banner product to the last slot on page 1 so it does not sit
+ * directly beneath the campaign banner while keeping page 2+ unchanged.
+ */
+export function deferHeroListing(
+  listings: Listing[],
+  heroId: string | null | undefined,
+  pageSize = CATALOG_PAGE_SIZE
+): Listing[] {
+  if (!heroId || listings.length <= 1) return listings;
+  const index = listings.findIndex(
+    (listing) => listing.id === heroId || listing.options.some((option) => option.id === heroId)
+  );
+  const target = Math.min(listings.length, Math.max(1, Math.floor(pageSize) || 1)) - 1;
+  if (index === -1 || index >= target) return listings;
+  const reordered = [...listings];
+  const [hero] = reordered.splice(index, 1);
+  reordered.splice(target, 0, hero);
+  return reordered;
 }
 
 export function categoryBands(

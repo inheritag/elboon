@@ -5,13 +5,18 @@ import { getStore } from '../libs/store';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
-  const customer = await customerFromCookies(cookies);
-  const categories = await getStore().listCategories();
+  const store = getStore();
+  const [customer, categories, categoryMetrics] = await Promise.all([
+    customerFromCookies(cookies),
+    store.listCategories(),
+    store.listCategoryMetrics()
+  ]);
   return {
     devMode: config.isDevMode(),
     devStore: config.isDevMode() ? config.devStore() : null,
     customer: customer ? { id: customer.id, email: customer.email, fullName: customer.fullName } : null,
     admin: isValidSessionToken(cookies.get(SESSION_COOKIE_NAME)),
-    categories
+    categories,
+    categoryMetrics
   };
 };

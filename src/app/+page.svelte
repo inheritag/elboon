@@ -499,6 +499,14 @@
     color: inherit;
   }
 
+  @media (hover: hover) and (pointer: fine) {
+    .product-card:hover .product-card-body h3 {
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--ink) 45%, transparent);
+      text-underline-offset: 3px;
+    }
+  }
+
   .thumb {
     position: relative;
   }
@@ -605,6 +613,19 @@
     width: 40%;
   }
 
+  @media (min-width: 760px) {
+    .campaign h1,
+    .hero-plain h1 {
+      font-size: clamp(32px, 4.2vw, 40px);
+    }
+
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 40px 20px;
+      padding-top: 24px;
+    }
+  }
+
   @media (min-width: 1280px) {
     .campaign {
       --frame: 480px;
@@ -656,7 +677,7 @@
 
   @media (max-width: 720px) {
     .campaign {
-      --frame: 188px;
+      --frame: clamp(132px, 40vw, 188px);
       grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
       column-gap: 12px;
       padding-top: 16px;
@@ -675,7 +696,7 @@
     .campaign h1 {
       grid-column: 1;
       grid-row: 2;
-      font-size: 26px;
+      font-size: clamp(20px, 5.8vw, 26px);
       max-width: none;
     }
 

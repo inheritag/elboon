@@ -7,6 +7,7 @@ import {
   categoryTrail,
   flattenTree,
   inCategoryTree,
+  partitionSideMenuCategories,
   rootCategory,
   withDescendants,
   type CategoryRecord
@@ -65,5 +66,49 @@ describe('category tree', () => {
       'phone-accessories',
       'samsung'
     ]);
+  });
+
+  it('dynamically picks the most interesting root categories and keeps the rest alphabetical', () => {
+    const many: CategoryRecord[] = [
+      { slug: 'accessories', label: 'accessories', parentSlug: null },
+      { slug: 'automotive', label: 'Automotive', parentSlug: null },
+      { slug: 'beauty', label: 'beauty', parentSlug: null },
+      { slug: 'clothing', label: 'clothing', parentSlug: null },
+      { slug: 'fashion', label: 'fashion', parentSlug: null },
+      { slug: 'food-packaging', label: 'food packaging', parentSlug: null },
+      { slug: 'home', label: 'home', parentSlug: null },
+      { slug: 'lab-bottles', label: 'Laboratory bottles', parentSlug: null },
+      { slug: 'tech', label: 'tech', parentSlug: null },
+      { slug: 'phones', label: 'phones', parentSlug: 'tech' },
+      { slug: 'cases', label: 'cases', parentSlug: 'phones' }
+    ];
+    const metrics = [
+      { category: 'phones', activeCount: 8, offerCount: 2, discountedCount: 1 },
+      { category: 'cases', activeCount: 4, offerCount: 1, discountedCount: 0 },
+      { category: 'fashion', activeCount: 10, offerCount: 3, discountedCount: 2 },
+      { category: 'home', activeCount: 9, offerCount: 1, discountedCount: 2 },
+      { category: 'beauty', activeCount: 6, offerCount: 2, discountedCount: 1 },
+      { category: 'clothing', activeCount: 5, offerCount: 0, discountedCount: 1 },
+      { category: 'accessories', activeCount: 4, offerCount: 1, discountedCount: 0 },
+      { category: 'food-packaging', activeCount: 1, offerCount: 0, discountedCount: 0 },
+      { category: 'lab-bottles', activeCount: 1, offerCount: 0, discountedCount: 0 }
+    ];
+
+    const { featured, rest } = partitionSideMenuCategories(many, metrics, 6);
+    expect(featured.map((row) => row.slug)).toEqual([
+      'tech',
+      'fashion',
+      'home',
+      'beauty',
+      'clothing',
+      'accessories'
+    ]);
+    expect(rest.map((row) => row.slug)).toEqual(['automotive', 'food-packaging', 'lab-bottles']);
+  });
+
+  it('returns all roots in featured with no remainder when under the cap', () => {
+    const { featured, rest } = partitionSideMenuCategories(tree, [], 6);
+    expect(featured.map((row) => row.slug)).toEqual(['fashion', 'tech']);
+    expect(rest).toEqual([]);
   });
 });
