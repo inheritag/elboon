@@ -33,7 +33,7 @@
         {/each}
       </ul>
       <p class="total">{formatPrice(order.totalCents, 'GBP')}</p>
-      <p>{order.status}</p>
+      <p class="status">{order.status}</p>
     </article>
   {:else}
     <p class="empty">No orders yet.</p>
@@ -88,5 +88,17 @@
 
   .btn {
     width: auto;
+  }
+
+  .status {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
   }
 </style>

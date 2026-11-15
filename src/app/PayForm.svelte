@@ -125,7 +125,7 @@
 
 <style>
   .pay-form {
-    padding: 20px;
+    padding: clamp(18px, 4vw, 24px);
   }
 
   h2 {
@@ -143,5 +143,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 16px;
+  }
+
+  @media (max-width: 420px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

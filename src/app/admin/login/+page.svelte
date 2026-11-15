@@ -13,7 +13,7 @@
     {/if}
     <div class="field">
       <label for="password">Password</label>
-      <input id="password" name="password" type="password" required />
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
     </div>
     <button class="btn btn-primary" type="submit">Log in</button>
     {#if form?.error}
@@ -25,8 +25,12 @@
 <style>
   .login {
     max-width: 360px;
-    margin: 80px auto;
+    margin: clamp(32px, 8vw, 80px) auto;
     padding: 0;
+  }
+
+  h1 {
+    margin-bottom: 16px;
   }
 
   form {

@@ -8,7 +8,7 @@
 <section class="container offers">
   <p class="back"><a href="/account">Your account</a></p>
   <h1>Your offers</h1>
-  <p>Accepted and countered offers can be checked out at the agreed price.</p>
+  <p class="lede">Accepted and countered offers can be checked out at the agreed price.</p>
 
   {#each data.offers as offer}
     <OfferCard {offer} />
@@ -33,6 +33,15 @@
   .back a {
     color: var(--ink);
     text-decoration: underline;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+  }
+
+  .lede {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
   }
 
   .empty {

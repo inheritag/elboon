@@ -175,7 +175,7 @@
       <form class="search" action="/" method="get" role="search">
         <label class="sr-only" for="q">Find products</label>
         <span class="search-icon"><Icon name="search" /></span>
-        <input id="q" name="q" type="search" placeholder="Find products" value={query} />
+        <input id="q" name="q" type="search" enterkeyhint="search" placeholder="Find products" value={query} />
       </form>
       <nav>
         <a

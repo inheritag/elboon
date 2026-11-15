@@ -39,14 +39,16 @@
           Booked with Royal Mail{#if order.tracking_number} · {order.tracking_number}{/if}
         </p>
       {/if}
-      <form method="POST" action="?/handoff" use:enhance>
-        <input type="hidden" name="id" value={order.id} />
-        <button class="btn btn-primary" type="submit">Mark as sent</button>
-      </form>
-      <form method="POST" action="?/acknowledge" use:enhance>
-        <input type="hidden" name="id" value={order.id} />
-        <button class="btn btn-secondary" type="submit">Email acknowledgement</button>
-      </form>
+      <div class="ticket-actions">
+        <form method="POST" action="?/handoff" use:enhance>
+          <input type="hidden" name="id" value={order.id} />
+          <button class="btn btn-primary" type="submit">Mark as sent</button>
+        </form>
+        <form method="POST" action="?/acknowledge" use:enhance>
+          <input type="hidden" name="id" value={order.id} />
+          <button class="btn btn-secondary" type="submit">Email acknowledgement</button>
+        </form>
+      </div>
     </article>
   {:else}
     <p class="muted">Nothing to send.</p>
@@ -110,8 +112,11 @@
     margin: 4px 0;
   }
 
-  form + form {
-    margin-top: 10px;
+  .ticket-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
   }
 
   .text-btn {

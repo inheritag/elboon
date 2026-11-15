@@ -22,7 +22,10 @@
         Payment received. We will be in touch about delivery.
       {/if}
     </p>
-    <a class="btn btn-primary" href="/">Continue shopping</a>
+    <div class="actions">
+      <a class="btn btn-primary" href="/">Continue shopping</a>
+      <a class="btn btn-secondary" href="/account/orders">View orders</a>
+    </div>
   {:else if data.view === 'checking'}
     <h1>Payment is being checked</h1>
     <p>We have not confirmed this payment yet. Your cart is still here.</p>
@@ -44,5 +47,12 @@
   .success p {
     color: var(--text-secondary);
     margin: 12px 0 24px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
   }
 </style>

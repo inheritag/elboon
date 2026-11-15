@@ -294,6 +294,7 @@ a:hover {
 .field textarea:focus,
 .btn:focus-visible,
 .nav-item:focus-visible,
+button:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;

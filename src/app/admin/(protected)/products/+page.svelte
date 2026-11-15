@@ -341,7 +341,8 @@
     border: none;
     color: var(--ink);
     cursor: pointer;
-    padding: 0;
+    padding: 8px 4px;
+    margin: -8px -4px;
     font: inherit;
     font-weight: 600;
     text-decoration: underline;

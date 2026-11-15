@@ -162,7 +162,7 @@
   }
 
   form {
-    padding: 28px;
+    padding: clamp(18px, 4vw, 28px);
   }
 
   form h2 {

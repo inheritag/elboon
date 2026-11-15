@@ -10,6 +10,9 @@
   <header class="top">
     <div>
       <h1>Your account</h1>
+      {#if data.profile.fullName.trim()}
+        <p class="name">{data.profile.fullName}</p>
+      {/if}
       <p class="email">{data.profile.email}</p>
       <p class="jumps"><a href="/account/orders">Orders</a></p>
     </div>
@@ -60,6 +63,11 @@
     flex-wrap: wrap;
   }
 
+  .name {
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
   .email {
     color: var(--text-secondary);
   }
@@ -95,6 +103,10 @@
 
   .address {
     padding: 16px 20px;
+  }
+
+  .address p + p {
+    margin-top: 4px;
   }
 
   .block .btn-primary {

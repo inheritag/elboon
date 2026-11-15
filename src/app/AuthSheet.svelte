@@ -88,15 +88,16 @@
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div class="field">
         <label for="auth-name">Name</label>
-        <input id="auth-name" name="fullName" />
+        <input id="auth-name" name="fullName" autocomplete="name" />
       </div>
       <div class="field">
         <label for="auth-email">Email</label>
-        <input id="auth-email" name="email" type="email" value={emailPrefill} required />
+        <input id="auth-email" name="email" type="email" autocomplete="email" value={emailPrefill} required />
       </div>
       <div class="field">
         <label for="auth-password">Password</label>
-        <input id="auth-password" name="password" type="password" minlength="8" required />
+        <input id="auth-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+        <p class="field-hint">At least 8 characters</p>
       </div>
       <button class="btn btn-primary" type="submit" disabled={submitting}>
         {submitting ? 'Creating…' : 'Create account'}
@@ -115,11 +116,11 @@
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div class="field">
         <label for="auth-email">Email</label>
-        <input id="auth-email" name="email" type="email" value={emailPrefill} required />
+        <input id="auth-email" name="email" type="email" autocomplete="email" value={emailPrefill} required />
       </div>
       <div class="field">
         <label for="auth-password">Password</label>
-        <input id="auth-password" name="password" type="password" required />
+        <input id="auth-password" name="password" type="password" autocomplete="current-password" required />
       </div>
       <button class="btn btn-primary" type="submit" disabled={submitting}>
         {submitting ? 'Signing in…' : 'Sign in'}
@@ -135,7 +136,9 @@
   {/if}
 
   {#if guest}
-    <a class="btn btn-secondary" href="/checkout">Continue as guest</a>
+    <div class="guest-wrap">
+      <a class="btn btn-secondary" href="/checkout">Continue as guest</a>
+    </div>
   {/if}
 </dialog>
 
@@ -146,20 +149,20 @@
     max-height: 90dvh;
     overflow-y: auto;
     margin: auto;
-    padding: 28px 48px 20px 22px;
-    border: 1px solid var(--border);
+    padding: 24px;
+    border: 1px solid var(--ink);
     border-radius: var(--card-radius);
     background: var(--surface);
     color: var(--text-primary);
-    box-shadow: var(--shadow-md);
+    box-shadow: 6px 6px 0 rgb(17 17 17 / 12%);
   }
 
   .close {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 36px;
-    height: 36px;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -171,6 +174,7 @@
 
   .close:hover {
     color: var(--ink);
+    opacity: 0.65;
   }
 
   dialog.sheet::backdrop {
@@ -179,7 +183,8 @@
 
   h2 {
     font-size: 26px;
-    margin-bottom: 8px;
+    padding-right: 36px;
+    margin-bottom: 16px;
   }
 
   p {
@@ -187,13 +192,25 @@
     margin-bottom: 16px;
   }
 
+  .field-hint {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
   form {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .switch {
     font-size: 14px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
+  }
+
+  .guest-wrap {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
   }
 
   .text-link {

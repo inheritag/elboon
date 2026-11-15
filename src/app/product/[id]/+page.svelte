@@ -464,7 +464,22 @@
 
   .swatch.gone,
   .size-pick.gone {
-    opacity: 0.35;
+    opacity: 0.4;
+  }
+
+  .swatch.gone {
+    background:
+      linear-gradient(
+        -45deg,
+        transparent 46%,
+        color-mix(in srgb, var(--ink) 75%, transparent) 46% 54%,
+        transparent 54%
+      ),
+      var(--swatch);
+  }
+
+  .size-pick.gone {
+    text-decoration: line-through;
   }
 
   .size-picks {

@@ -96,6 +96,7 @@
           id="haggle-amount"
           class="bid"
           type="number"
+          inputmode="decimal"
           min={floorCents / 100}
           max={askingCents / 100}
           step="0.5"
@@ -238,8 +239,19 @@
     padding: 0;
   }
 
+  .bid {
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 2px;
+  }
+
   .bid:focus {
     outline: none;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .bid:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
   .bid-label {

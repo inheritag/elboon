@@ -210,6 +210,7 @@
               · page {data.page} of {data.pages}{/if}
           </p>
           {#if data.q}
+            <a class="clear-search" href={catalogHref({ q: '', page: 1 })}>Clear</a>
             {@render sortControl()}
           {/if}
         </div>
@@ -416,7 +417,16 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+
+  .clear-search {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .sort {
@@ -717,6 +727,16 @@
       display: inline-flex;
       align-items: center;
       min-height: 44px;
+    }
+
+    .category-bar {
+      position: static;
+    }
+  }
+
+  @media (max-height: 680px) {
+    .category-bar {
+      position: static;
     }
   }
 

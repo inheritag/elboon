@@ -43,7 +43,7 @@
             </p>
           </div>
           <div class="stepper" role="group" aria-label="Quantity for {line.name}">
-            <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity - 1, line.color, line.size)} aria-label="Decrease">-</button>
+            <button type="button" class="step" disabled={line.quantity <= 1} onclick={() => setCartQuantity(line.productId, line.quantity - 1, line.color, line.size)} aria-label="Decrease">-</button>
             <span class="qty">{line.quantity}</span>
             <button type="button" class="step" onclick={() => setCartQuantity(line.productId, line.quantity + 1, line.color, line.size)} aria-label="Increase">+</button>
           </div>
@@ -128,8 +128,18 @@
     height: 44px;
     border: none;
     background: var(--bg-subtle);
+    color: var(--text-primary);
     font-size: 16px;
     cursor: pointer;
+  }
+
+  .step:hover:not(:disabled) {
+    background: var(--border);
+  }
+
+  .step:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   .qty {
@@ -160,8 +170,9 @@
   }
 
   .summary {
-    margin-top: 8px;
-    padding: 52px 18px 18px;
+    margin-top: 16px;
+    padding: 36px 20px 20px;
+    background: linear-gradient(180deg, transparent 0%, #111 24px);
   }
 
   .summary .ship {
