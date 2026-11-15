@@ -4,7 +4,6 @@
   import { categoryTrail, childrenOf, type CategoryRecord } from '../domain/catalog';
   import { authHref } from './auth-href';
   import Icon from './Icon.svelte';
-  import SupportForm from './SupportForm.svelte';
 
   let {
     modal = false,
@@ -27,7 +26,6 @@
   } = $props();
 
   let expanded = $state<string[]>([]);
-  let supportOpen = $state(false);
   let closeBtn = $state<HTMLButtonElement | null>(null);
   let panel = $state<HTMLElement | null>(null);
   let seen = '';
@@ -46,7 +44,6 @@
   $effect(() => {
     if (!shown) {
       seeded = false;
-      supportOpen = false;
       return;
     }
     if (seeded) return;
@@ -207,22 +204,7 @@
     <p class="label">Help</p>
     <a class="item" href="/policies" onclick={leave}>Delivery & returns</a>
     <a class="item" href="/privacy" onclick={leave}>Privacy</a>
-    <button
-      type="button"
-      class="item support-toggle"
-      aria-expanded={supportOpen}
-      onclick={() => (supportOpen = !supportOpen)}
-    >
-      Customer support
-      <svg viewBox="0 0 24 24" aria-hidden="true" class:open={supportOpen}>
-        <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
-      </svg>
-    </button>
-    {#if supportOpen}
-      <div class="support">
-        <SupportForm initialEmail={customer?.email ?? ''} />
-      </div>
-    {/if}
+    <a class="item" href="/support" onclick={leave}>Customer support</a>
     </section>
   </div>
 
@@ -406,26 +388,14 @@
     cursor: pointer;
   }
 
-  .cat svg,
-  .support-toggle svg {
+  .cat svg {
     width: 16px;
     height: 16px;
     transition: transform var(--dur-fast) var(--ease-out);
   }
 
-  .cat svg.open,
-  .support-toggle svg.open {
+  .cat svg.open {
     transform: rotate(180deg);
-  }
-
-  .support-toggle {
-    justify-content: space-between;
-  }
-
-  .support {
-    padding: 12px 0 4px;
-    border-bottom: 1px solid var(--border);
-    font-family: var(--font-body);
   }
 
   @media (min-width: 1280px) {
@@ -447,8 +417,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .drawer,
-    .cat svg,
-    .support-toggle svg {
+    .cat svg {
       animation: none;
       transition: none;
     }
@@ -480,8 +449,7 @@
     .email,
     .item,
     .cat,
-    .cat-link,
-    .support {
+    .cat-link {
       border-color: CanvasText;
     }
 
