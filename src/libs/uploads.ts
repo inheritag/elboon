@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
+import { imageSize } from '../domain/image-size';
 import { config } from './config';
 
 const UPLOAD_DIR = resolve('.data/uploads');
@@ -80,10 +81,11 @@ async function persistImage(name: string, mime: string, bytes: Buffer): Promise<
     }
   }
 
-  const { getDb, readyDb } = await import('./db');
+  const size = imageSize(bytes);
+  const { readyDb } = await import('./db');
   const sql = await readyDb();
   await sql`
-    INSERT INTO product_images (id, mime, bytes)
-    VALUES (${name}, ${mime}, ${bytes})
+    INSERT INTO product_images (id, mime, bytes, width, height)
+    VALUES (${name}, ${mime}, ${bytes}, ${size?.width ?? null}, ${size?.height ?? null})
   `;
 }

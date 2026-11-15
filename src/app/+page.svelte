@@ -120,8 +120,17 @@
 {/snippet}
 
 {#if showCampaign && data.hero}
-  <a class="campaign" data-hero href={data.hero.href}>
-    <img src={data.hero.imageUrl} alt="" />
+  <a
+    class="campaign"
+    class:stage={data.hero.fit === 'stage'}
+    style="--photo-w: {data.hero.width}px"
+    data-hero
+    href={data.hero.href}
+  >
+    {#if data.hero.fit === 'stage'}
+      <img class="fill" src={data.hero.imageUrl} alt="" aria-hidden="true" />
+    {/if}
+    <img class="photo" src={data.hero.imageUrl} alt="" />
     <div class="campaign-copy">
       <p>Offers on selected items</p>
       <h1>Shop everything. Haggle when it counts.</h1>
@@ -246,7 +255,10 @@
   .campaign {
     position: relative;
     display: flex;
+    align-items: center;
     justify-content: center;
+    height: 400px;
+    overflow: hidden;
     color: #fff;
     background: #111;
   }
@@ -255,14 +267,36 @@
     color: #fff;
   }
 
-  .campaign img {
+  .campaign .photo {
+    position: relative;
+    z-index: 1;
     width: 100%;
-    height: 400px;
+    height: 100%;
     object-fit: cover;
-    object-position: center 42%;
+    object-position: center;
+  }
+
+  .campaign .fill {
+    position: absolute;
+    left: -24px;
+    top: -24px;
+    z-index: 0;
+    width: calc(100% + 48px);
+    height: calc(100% + 48px);
+    object-fit: cover;
+    filter: blur(18px);
+  }
+
+  .campaign.stage .photo {
+    width: auto;
+    height: auto;
+    max-width: min(100%, var(--photo-w));
+    max-height: 100%;
+    object-fit: contain;
   }
 
   .campaign-copy {
+    z-index: 2;
     position: absolute;
     left: 0;
     right: 0;
@@ -591,7 +625,7 @@
   }
 
   @media (min-width: 1280px) {
-    .campaign img {
+    .campaign {
       height: 460px;
     }
 
@@ -636,7 +670,7 @@
   }
 
   @media (max-width: 720px) {
-    .campaign img {
+    .campaign {
       height: 280px;
     }
 

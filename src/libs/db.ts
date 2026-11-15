@@ -79,6 +79,8 @@ const SCHEMA_STATEMENTS = [
   bytes      bytea NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 )`,
+  `ALTER TABLE product_images ADD COLUMN IF NOT EXISTS width integer`,
+  `ALTER TABLE product_images ADD COLUMN IF NOT EXISTS height integer`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_session_id text`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier_ref text`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number text`,

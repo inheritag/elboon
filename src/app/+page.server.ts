@@ -7,9 +7,11 @@ import {
   type CategoryRecord
 } from '../domain/catalog';
 import { heldMap, totalAvailable } from '../domain/inventory';
+import { pickHero, type HeroPick, type HeroShot } from '../domain/hero';
 import { groupListings, mixByDepartment, parseSort, sortListings } from '../domain/listing';
 import { paginate } from '../domain/paging';
-import { productFromRow, toProductSummary, type ProductRow } from '../domain/product';
+import { productFromRow, toProductSummary, type Product, type ProductRow } from '../domain/product';
+import { measureImages } from '../libs/image-measure';
 import { getStore } from '../libs/store';
 import type { PageServerLoad } from './$types';
 
@@ -21,13 +23,32 @@ function matchesQuery(row: ProductRow, query: string): boolean {
 
 const emptyNav: { top: CategoryRecord[]; levels: CategoryNavLevel[] } = { top: [], levels: [] };
 
-function coverImage(rows: ProductRow[], slug: string | null, categories: CategoryRecord[]): string | null {
-  const row = rows.find((item) => {
-    if (!item.image_urls[0]) return false;
-    if (!slug) return true;
-    return inCategoryTree(item.category, slug, categories);
-  });
-  return row?.image_urls[0] ?? null;
+function heroShots(products: Product[], held: Map<string, number>): HeroShot[] {
+  const shots: HeroShot[] = [];
+  for (const product of products) {
+    const available = totalAvailable(product, held) > 0;
+    const urls = [
+      ...product.imageUrls,
+      ...product.colors.flatMap((color) => color.imageUrls)
+    ].filter((url, index, all) => url.trim() && all.indexOf(url) === index);
+    for (const imageUrl of urls) {
+      shots.push({ id: product.id, category: product.category, imageUrl, width: 0, height: 0, available });
+    }
+  }
+  return shots;
+}
+
+async function campaignHero(products: Product[], categories: CategoryRecord[], held: Map<string, number>): Promise<HeroPick | null> {
+  const shots = heroShots(products, held).filter((shot) => shot.available);
+  if (shots.length === 0) return null;
+  const sizes = await measureImages(shots.map((shot) => shot.imageUrl));
+  for (const shot of shots) {
+    const size = sizes.get(shot.imageUrl);
+    if (!size) continue;
+    shot.width = size.width;
+    shot.height = size.height;
+  }
+  return pickHero(shots, categories, Math.floor(Math.random() * 0x7fffffff));
 }
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -43,20 +64,21 @@ export const load: PageServerLoad = async ({ url }) => {
       store.listHeldUnits()
     ]);
     const held = heldMap(holds);
-    const matched = rows
+    const products = rows
       .filter((row) => inCategoryTree(row.category, category, categories))
       .filter((row) => matchesQuery(row, q))
-      .map(productFromRow)
-      .map((product) => toProductSummary(product, totalAvailable(product, held)));
+      .map(productFromRow);
+    const matched = products.map((product) => toProductSummary(product, totalAvailable(product, held)));
     const grouped = sortListings(groupListings(matched), sort);
     const nav = categoryNav(category, categories);
-    const heroImage = !category && !q ? (coverImage(rows, 'fashion', categories) ?? coverImage(rows, null, categories)) : null;
-    const heroProduct = heroImage ? rows.find((row) => row.image_urls[0] === heroImage) : undefined;
     const browsingAll = !category && !q;
-    const withoutHero = grouped.filter(
-      (item) => !(heroProduct && item.options.length === 1 && item.id === heroProduct.id)
-    );
-    const homeListings = browsingAll ? mixByDepartment(withoutHero, categories) : grouped;
+    const hero = browsingAll
+      ? await campaignHero(products, categories, held).catch((err) => {
+          console.error('Hero image', err);
+          return null;
+        })
+      : null;
+    const homeListings = browsingAll ? mixByDepartment(grouped, categories) : grouped;
     const window = paginate(homeListings, requestedPage);
     return {
       products: window.items,
@@ -70,7 +92,7 @@ export const load: PageServerLoad = async ({ url }) => {
       trail: categoryTrail(category, categories),
       categoryLabel: category ? categoryPath(category, categories) : null,
       q,
-      hero: heroImage && heroProduct ? { imageUrl: heroImage, href: `/product/${heroProduct.id}` } : null
+      hero
     };
   } catch (err) {
     console.error('Failed to load catalog', err);
